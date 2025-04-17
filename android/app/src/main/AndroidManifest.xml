@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="sync2sing"
+        android:label="Sync2Sing"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

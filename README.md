@@ -1,16 +1,14 @@
 # sync2sing
 
-A new Flutter project.
+Sinc2Sing 프로젝트 
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+🛠 라이브러리 설정 관련: 터미널에서 다음 명령어를 입력해주세요. 
+flutter pub get
 
-A few resources to get you started if this is your first Flutter project:
+🛠 dev_config.dart는 초기 설정 공유용 파일입니다.
+- 이 파일은 clone 후 각자 환경에 맞게 수정해도 되지만, Git에 반영되지 않도록 설정해 주세요.
+git update-index --assume-unchanged lib/dev/dev_config.dart
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- 음성 분석 관련 라이브러리는 아직 추가하지 않았습니다. 추후에 사용하게 될 때 다시 추가하겠습니다. 

@@ -5,8 +5,8 @@ abstract class AppRouteNames {
   static const voiceSample = 'voiceSample';
   static const minimumPitch = 'minimumPitch';
   static const maximumPitch = 'maximumPitch';
-  static const recordingGuide = 'recordingGuide';
-  static const guestRecording = 'guestRecording';
+  static const onboardingRecordingGuide = 'onboardingRecordingGuide';
+  static const onboardingRecordingSong = 'onboardingRecordingSong';
   static const analysisLoading = 'analysisLoading';
 }
 
@@ -17,7 +17,7 @@ abstract class AppRoutePaths {
   static const voiceSample = '/onboarding/voice_sample';
   static const minimumPitch = '/onboarding/min_pitch';
   static const maximumPitch = '/onboarding/max_pitch';
-  static const recordingGuide = '/onboarding/recording_guide';
-  static const guestRecording = '/onboarding/guest_recording';
+  static const onboardingRecordingGuide = '/onboarding/recording_guide';
+  static const onboardingRecordingSong = '/onboarding/recording_song';
   static const vocalAnalysisLoading = '/onboarding/analysis_loading';
 }

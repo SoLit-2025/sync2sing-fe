@@ -5,12 +5,12 @@ import '../../features/onboarding/presentation/pages/user_birth_info_input_page.
 import '../../features/onboarding/voice_analysis/presentation/pages/voice_sample_page.dart';
 import '../../features/onboarding/voice_analysis/presentation/pages/maximum_pitch_page.dart';
 import '../../features/onboarding/voice_analysis/presentation/pages/minimum_pitch_page.dart';
-import '../../features/training_common/presentation/pages/recording_guide_page.dart';
-import '../../features/training_common/presentation/pages/guest_recording_song_page.dart';
+import '../../features/training_common/presentation/pages/onboarding_recording_guide_page.dart';
+import '../../features/training_common/presentation/pages/onboarding_recording_song_page.dart';
 import '../../features/training_common/presentation/pages/vocal_analysis_loading_page.dart';
 import 'route_names.dart';
 
-final List<GoRoute> onboardRoutes = [
+final List<GoRoute> onboardingRoutes = [
   GoRoute(
     path: AppRoutePaths.onboardingQuestion,
     name: AppRouteNames.onboardingQuestion,
@@ -42,14 +42,14 @@ final List<GoRoute> onboardRoutes = [
     builder: (context, state) => const MaximumPitchPage(),
   ),
   GoRoute(
-    path: AppRoutePaths.recordingGuide,
-    name: AppRouteNames.recordingGuide,
-    builder: (context, state) => const RecordingGuidePage(),
+    path: AppRoutePaths.onboardingRecordingGuide,
+    name: AppRouteNames.onboardingRecordingGuide,
+    builder: (context, state) => const OnboardingRecordingGuidePage(),
   ),
   GoRoute(
-    path: AppRoutePaths.guestRecording,
-    name: AppRouteNames.guestRecording,
-    builder: (context, state) => const GuestRecordingSongPage(),
+    path: AppRoutePaths.onboardingRecordingSong,
+    name: AppRouteNames.onboardingRecordingSong,
+    builder: (context, state) => const OnboardingRecordingSongPage(),
   ),
   GoRoute(
     path: AppRoutePaths.vocalAnalysisLoading,
