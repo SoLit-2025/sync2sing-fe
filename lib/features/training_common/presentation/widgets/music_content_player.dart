@@ -17,7 +17,7 @@ class MusicContentPlayer extends StatelessWidget {
         children: [
           Container(
             margin: EdgeInsets.fromLTRB(0, 10.h, 0, 5.h),
-            child: SongInformationWidget(),
+            child: SongInformationWidget(), // 노래 제목 및 가수
           ),
 
           Container(
@@ -25,7 +25,6 @@ class MusicContentPlayer extends StatelessWidget {
             child: LyricsSection(),
           ),
           Container(
-            // width: 295.w,
             width: double.infinity,
             height: 155.w,
             decoration: BoxDecoration(
@@ -35,12 +34,11 @@ class MusicContentPlayer extends StatelessWidget {
             child: VocalPitchIndicator(),
           ),
           Container(
-            margin: EdgeInsets.fromLTRB(0, 20.h, 0, 0),
-            // width: 295.w,
+            margin: EdgeInsets.fromLTRB(0, 10.h, 0, 0),
             width: double.infinity,
             height: 42.w,
-
             child: Row(
+              // 키 조절 버튼 및 재생/멈춤 버튼
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _KeyControlButton(textContent: "Key -"),
@@ -60,6 +58,7 @@ class _KeyControlButton extends StatelessWidget {
   const _KeyControlButton({super.key, required this.textContent});
 
   bool isEnabled() {
+    // TODO 버튼 활성화 조건
     return true;
   }
 
@@ -69,7 +68,7 @@ class _KeyControlButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 98.w,
-      height: 42.w,
+      height: 42.h,
       child: CupertinoButton(
         minSize: 0.0,
         padding: EdgeInsets.all(0),
@@ -84,7 +83,7 @@ class _KeyControlButton extends StatelessWidget {
             style: TextStyle(
               fontSize: 17.w,
               color: AppColors.neutralGray,
-              fontVariations: <FontVariation>[FontVariation('wght', 600)],
+              fontVariations: <FontVariation>[FontVariation('wght', 400)],
             ),
           ),
         ),
@@ -97,12 +96,6 @@ class _KeyMinusButton extends _KeyControlButton {
   _KeyMinusButton({required super.textContent});
 
   @override
-  bool isEnabled() {
-    // TODO: 버튼 활성화 조건
-    return super.isEnabled();
-  }
-
-  @override
   void performAction() {
     // TODO: 키 내리기
     super.performAction();
@@ -111,12 +104,6 @@ class _KeyMinusButton extends _KeyControlButton {
 
 class _KeyPlusButton extends _KeyControlButton {
   _KeyPlusButton({required super.textContent});
-
-  @override
-  bool isEnabled() {
-    // TODO: 버튼 활성화 조건
-    return super.isEnabled();
-  }
 
   @override
   void performAction() {
@@ -133,17 +120,14 @@ class _playButton extends StatelessWidget {
     return CupertinoButton(
       minSize: 0.0,
       padding: EdgeInsets.all(0),
-      child: Icon(
-        CupertinoIcons.play_fill,
-        color: AppColors.neutralBlack,
+      child: ImageIcon(
+        AssetImage("assets/images/play.png"),
+        color: AppColors.neutralGray,
         size: 25.w,
       ),
-      // ImageIcon(
-      //   AssetImage("assets/images/play.png"),
-      //   color: AppColors.neutralBlack,
-      //   size: 25.w,
-      // ),
-      onPressed: () {},
+      onPressed: () {
+        // TODO 재생
+      },
     );
   }
 }
@@ -158,10 +142,11 @@ class _pauseButton extends StatelessWidget {
       padding: EdgeInsets.all(0),
       child: ImageIcon(
         AssetImage("assets/images/pause.png"),
-        color: AppColors.neutralBlack,
+        color: AppColors.neutralGray,
         size: 25.w,
       ),
       onPressed: () {},
+      // TODO 멈춤
     );
   }
 }

@@ -50,7 +50,7 @@ class OnboardingRecordingSongPage extends StatelessWidget {
 
                 // 보컬 분석 리포트 생성 버튼
                 Container(
-                  margin: EdgeInsets.fromLTRB(0, 30.w, 0, 10.w),
+                  margin: EdgeInsets.fromLTRB(0, 40.w, 0, 10.w),
                   width: 327.w,
                   height: 50.w,
                   child: Consumer(
@@ -69,12 +69,15 @@ class OnboardingRecordingSongPage extends StatelessWidget {
                                 }
                                 : null, // 조건을 만족하지 않으면 버튼 비활성화
                         child: Text(
-                          "보컬 분석 시작하기",
+                          "보컬 분석 리포트 생성하기",
                           style: TextStyle(
                             color: AppColors.neutralWhite,
                             fontSize: 17.w,
                             fontVariations: <FontVariation>[
-                              FontVariation('wght', 600),
+                              FontVariation(
+                                'wght',
+                                (isVocalAnalysisButtonEnabled()) ? 600 : 400,
+                              ),
                             ],
                           ),
                         ),
@@ -88,36 +91,5 @@ class OnboardingRecordingSongPage extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class DisabledButton extends StatelessWidget {
-  final String textContent;
-  const DisabledButton({super.key, required this.textContent});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 10.w),
-      width: 327.w,
-      height: 50.w,
-      child: CupertinoButton(
-        disabledColor: Color(0xFFF8D6DA),
-        borderRadius: BorderRadius.circular(10.w),
-        onPressed: null,
-        child: Text(
-          textContent,
-          style: TextStyle(
-            color: AppColors.neutralWhite,
-            fontSize: 17.w,
-            fontVariations: <FontVariation>[FontVariation('wght', 400)],
-          ),
-        ),
-      ),
-    );
-  }
-
-  bool enableCondition(bool boolean) {
-    return boolean;
   }
 }
