@@ -16,6 +16,8 @@ dependencies:
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
   flutter_launcher_icons: ^0.14.3
+  dots_indicator: ^4.0.1
+  flutter_screenutil: ^5.9.3
 
 dev_dependencies:
   flutter_test:

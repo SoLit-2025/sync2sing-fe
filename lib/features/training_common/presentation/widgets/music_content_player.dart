@@ -1,0 +1,167 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/features/training_common/presentation/widgets/lyrics_display_widget.dart';
+import 'package:sync2sing/features/training_common/presentation/widgets/song_information_widget.dart';
+import 'package:sync2sing/features/training_common/presentation/widgets/vocal_pitch_indicator.dart';
+
+class MusicContentPlayer extends StatelessWidget {
+  const MusicContentPlayer({super.key});
+
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 10.h, 0, 5.h),
+            child: SongInformationWidget(),
+          ),
+
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 5.h, 0, 10.h),
+            child: LyricsSection(),
+          ),
+          Container(
+            // width: 295.w,
+            width: double.infinity,
+            height: 155.w,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadiusDirectional.circular(10.w),
+              color: AppColors.neutralGhost,
+            ),
+            child: VocalPitchIndicator(),
+          ),
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 20.h, 0, 0),
+            // width: 295.w,
+            width: double.infinity,
+            height: 42.w,
+
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _KeyControlButton(textContent: "Key -"),
+                _playButton(),
+                _KeyControlButton(textContent: "Key +"),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _KeyControlButton extends StatelessWidget {
+  final String textContent;
+  const _KeyControlButton({super.key, required this.textContent});
+
+  bool isEnabled() {
+    return true;
+  }
+
+  void performAction() {}
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 98.w,
+      height: 42.w,
+      child: CupertinoButton(
+        minSize: 0.0,
+        padding: EdgeInsets.all(0),
+
+        onPressed: (isEnabled()) ? performAction : null,
+        borderRadius: BorderRadius.circular(10.r),
+        color: AppColors.neutralLightGray,
+
+        child: Center(
+          child: Text(
+            textContent,
+            style: TextStyle(
+              fontSize: 17.w,
+              color: AppColors.neutralGray,
+              fontVariations: <FontVariation>[FontVariation('wght', 600)],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _KeyMinusButton extends _KeyControlButton {
+  _KeyMinusButton({required super.textContent});
+
+  @override
+  bool isEnabled() {
+    // TODO: 버튼 활성화 조건
+    return super.isEnabled();
+  }
+
+  @override
+  void performAction() {
+    // TODO: 키 내리기
+    super.performAction();
+  }
+}
+
+class _KeyPlusButton extends _KeyControlButton {
+  _KeyPlusButton({required super.textContent});
+
+  @override
+  bool isEnabled() {
+    // TODO: 버튼 활성화 조건
+    return super.isEnabled();
+  }
+
+  @override
+  void performAction() {
+    // TODO: 키 올리기
+    super.performAction();
+  }
+}
+
+class _playButton extends StatelessWidget {
+  const _playButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      minSize: 0.0,
+      padding: EdgeInsets.all(0),
+      child: Icon(
+        CupertinoIcons.play_fill,
+        color: AppColors.neutralBlack,
+        size: 25.w,
+      ),
+      // ImageIcon(
+      //   AssetImage("assets/images/play.png"),
+      //   color: AppColors.neutralBlack,
+      //   size: 25.w,
+      // ),
+      onPressed: () {},
+    );
+  }
+}
+
+class _pauseButton extends StatelessWidget {
+  const _pauseButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      minSize: 0.0,
+      padding: EdgeInsets.all(0),
+      child: ImageIcon(
+        AssetImage("assets/images/pause.png"),
+        color: AppColors.neutralBlack,
+        size: 25.w,
+      ),
+      onPressed: () {},
+    );
+  }
+}
