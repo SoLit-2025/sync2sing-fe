@@ -70,7 +70,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.white,
+      backgroundColor: AppColors.neutralGhost,
       child: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
