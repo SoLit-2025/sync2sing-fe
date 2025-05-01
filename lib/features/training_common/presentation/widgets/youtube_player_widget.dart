@@ -1,37 +1,63 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sync2sing/shared/providers/watch_youtube_providers.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-class YoutubePlayerWidget extends StatefulWidget {
-  const YoutubePlayerWidget({super.key});
+class YoutubePlayerWidget extends ConsumerStatefulWidget {
+  final String videoId;
+  final YoutubePlayerFlags flags;
+
+  const YoutubePlayerWidget({
+    super.key,
+    required this.videoId,
+    required this.flags,
+  });
 
   @override
-  State<YoutubePlayerWidget> createState() => _YoutubePlayerWidgetState();
+  ConsumerState<YoutubePlayerWidget> createState() => _VideoPlayerWidgetState();
 }
 
-class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
-  static String youtubeId = 'Qy9cj-zwbVY';
+class _VideoPlayerWidgetState extends ConsumerState<YoutubePlayerWidget> {
+  late YoutubePlayerController _controller;
+  Timer? _timer;
 
-  final YoutubePlayerController _con = YoutubePlayerController(
-    initialVideoId: youtubeId,
+  @override
+  void initState() {
+    super.initState();
 
-    flags: const YoutubePlayerFlags(autoPlay: false, mute: false),
-  );
+    _controller = YoutubePlayerController(
+      initialVideoId: widget.videoId,
+      flags: widget.flags,
+    );
+
+    _startWatchTracking();
+  }
+
+  void _startWatchTracking() {
+    _timer = Timer.periodic(Duration(seconds: 1), (_) {
+      // 1초 간격으로 추적
+      if (_controller.value.isPlaying) {
+        final current = ref.read(watchedDurationProvider);
+        ref.read(watchedDurationProvider.notifier).state =
+            current + Duration(seconds: 1);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return YoutubePlayer(
-      controller: _con,
+      controller: _controller,
       showVideoProgressIndicator: true,
-      aspectRatio: 4 / 3,
-      // progressIndicatorColor: Colors.amber,
-      // progressColors: const ProgressBarColors(
-      //   playedColor: Colors.amber,
-      //   handleColor: Colors.amberAccent,
-      // ),
-      onReady: () {
-        print('plalyer is ready.');
-      },
     );
   }
 }
