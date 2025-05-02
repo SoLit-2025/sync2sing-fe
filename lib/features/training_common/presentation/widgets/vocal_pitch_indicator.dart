@@ -13,7 +13,7 @@ class _VocalPitchIndicatorState extends State<VocalPitchIndicator> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Center(child: Text("pitch", style: TextStyle(fontSize: 20.w))),
+      child: Center(child: Text("pitch", style: TextStyle(fontSize: 20.sp))),
     );
   }
 }

@@ -15,7 +15,7 @@ class _LyricsSectionState extends State<LyricsSection> {
     return Text(
       "(전주중) \nDO - a deer, \na female deer \nRE - a drop of",
       style: TextStyle(
-        fontSize: 40.w,
+        fontSize: 40.sp,
         color: AppColors.neutralGray,
         fontVariations: <FontVariation>[FontVariation('wght', 600)],
         height: 1.4,

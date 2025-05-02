@@ -14,7 +14,7 @@ class SongInformationWidget extends StatelessWidget {
         Text(
           "Do-Re-Mi Song",
           style: TextStyle(
-            fontSize: 20.w,
+            fontSize: 20.sp,
             color: AppColors.neutralBlack,
             fontVariations: <FontVariation>[FontVariation('wght', 600)],
             height: 1.4,
@@ -24,7 +24,7 @@ class SongInformationWidget extends StatelessWidget {
         Text(
           "Sound of Music",
           style: TextStyle(
-            fontSize: 17.w,
+            fontSize: 17.sp,
             color: AppColors.neutralGray,
             fontVariations: <FontVariation>[FontVariation('wght', 400)],
             height: 1.4,

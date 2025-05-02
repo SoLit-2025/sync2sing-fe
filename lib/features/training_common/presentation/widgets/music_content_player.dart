@@ -9,52 +9,47 @@ import 'package:sync2sing/features/training_common/presentation/widgets/vocal_pi
 class MusicContentPlayer extends StatelessWidget {
   const MusicContentPlayer({super.key});
 
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            margin: EdgeInsets.fromLTRB(0, 10.h, 0, 5.h),
-            child: SongInformationWidget(), // 노래 제목 및 가수
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SongInformationWidget(),
+        SizedBox(height: 15.h),
+        LyricsSection(),
+        SizedBox(height: 15.h),
+        Container(
+          width: double.infinity,
+          height: 155.w,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadiusDirectional.circular(10.r),
+            color: AppColors.neutralGhost,
           ),
-
-          Container(
-            margin: EdgeInsets.fromLTRB(0, 5.h, 0, 10.h),
-            child: LyricsSection(),
+          child: VocalPitchIndicator(),
+        ),
+        SizedBox(height: 20.h),
+        SizedBox(
+          width: double.infinity,
+          height: 42.w,
+          child: Row(
+            // 키 조절 버튼 및 재생/멈춤 버튼
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _KeyMinusButton(textContent: "Key -"),
+              _playButton(),
+              _KeyPlusButton(textContent: "Key +"),
+            ],
           ),
-          Container(
-            width: double.infinity,
-            height: 155.w,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadiusDirectional.circular(10.w),
-              color: AppColors.neutralGhost,
-            ),
-            child: VocalPitchIndicator(),
-          ),
-          Container(
-            margin: EdgeInsets.fromLTRB(0, 10.h, 0, 0),
-            width: double.infinity,
-            height: 42.w,
-            child: Row(
-              // 키 조절 버튼 및 재생/멈춤 버튼
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _KeyControlButton(textContent: "Key -"),
-                _playButton(),
-                _KeyControlButton(textContent: "Key +"),
-              ],
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
 class _KeyControlButton extends StatelessWidget {
   final String textContent;
+
   const _KeyControlButton({super.key, required this.textContent});
 
   bool isEnabled() {
@@ -72,19 +67,18 @@ class _KeyControlButton extends StatelessWidget {
       child: CupertinoButton(
         minSize: 0.0,
         padding: EdgeInsets.all(0),
-
         onPressed: (isEnabled()) ? performAction : null,
         borderRadius: BorderRadius.circular(10.r),
         color: AppColors.neutralLightGray,
-
-        child: Center(
-          child: Text(
-            textContent,
-            style: TextStyle(
-              fontSize: 17.w,
-              color: AppColors.neutralGray,
-              fontVariations: <FontVariation>[FontVariation('wght', 400)],
-            ),
+        child: Text(
+          textContent,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 17.sp,
+            color: AppColors.neutralGray,
+            fontVariations: <FontVariation>[
+              FontVariation('wght', isEnabled() ? 600 : 400),
+            ],
           ),
         ),
       ),
@@ -123,7 +117,6 @@ class _playButton extends StatelessWidget {
       child: ImageIcon(
         AssetImage("assets/images/play.png"),
         color: AppColors.neutralGray,
-        size: 25.w,
       ),
       onPressed: () {
         // TODO 재생
@@ -143,10 +136,9 @@ class _pauseButton extends StatelessWidget {
       child: ImageIcon(
         AssetImage("assets/images/pause.png"),
         color: AppColors.neutralGray,
-        size: 25.w,
       ),
       onPressed: () {},
-      // TODO 멈춤
+      // TODO 멈춤 기능
     );
   }
 }
