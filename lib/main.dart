@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'config/routes/go_router_provider.dart';
 import 'config/theme/app_theme.dart';
 
@@ -13,10 +14,18 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(goRouterProvider);
-    return MaterialApp.router(
-      routerConfig: router,
-      title: "sync2sing",
-      theme: appTheme,
+
+    return ScreenUtilInit(
+      designSize: const Size(390, 844),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MaterialApp.router(
+          routerConfig: router,
+          title: "sync2sing",
+          theme: appTheme,
+        );
+      },
     );
   }
 }

@@ -16,8 +16,6 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ScreenUtil.init(context, designSize: const Size(390, 844));
-
     final bool _isButtonEnabled = ref.watch(
       isOnboardingRecordingStartButtonEnabledProvider,
     );
@@ -80,7 +78,7 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
                     alignment: Alignment(0.0, 0.0),
                     child: CupertinoButton(
                       color: AppColors.primaryPink,
-                      disabledColor: Color(0xFFF8D6DA),
+                      disabledColor: Color(0xFFF8D6DA), // 비활성화 색
                       borderRadius: BorderRadius.circular(10.r),
                       minSize: 0.0,
                       padding: EdgeInsets.all(0),
