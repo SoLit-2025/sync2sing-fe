@@ -14,10 +14,18 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(goRouterProvider);
-    return MaterialApp.router(
-      routerConfig: router,
-      title: "sync2sing",
-      theme: appTheme,
+
+    return ScreenUtilInit(
+      designSize: const Size(390, 844),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MaterialApp.router(
+          routerConfig: router,
+          title: "sync2sing",
+          theme: appTheme,
+        );
+      },
     );
   }
 }
