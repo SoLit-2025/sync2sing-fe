@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:sync2sing/features/training_common/presentation/pages/vocal_analysis_loading_handler.dart';
 import '../../features/onboarding/presentation/pages/audio_environment_check_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_question_page.dart';
 import '../../features/onboarding/presentation/pages/user_birth_info_input_page.dart';
@@ -22,8 +23,8 @@ final List<GoRoute> onboardingRoutes = [
     builder: (context, state) => const AudioEnvironmentCheckPage(),
   ),
   GoRoute(
-    path: AppRoutePaths.userBirthInfo ,
-    name: AppRouteNames.userBirthInfo ,
+    path: AppRoutePaths.userBirthInfo,
+    name: AppRouteNames.userBirthInfo,
     builder: (context, state) => const UserBirthInfoInputPage(),
   ),
   GoRoute(
@@ -32,13 +33,13 @@ final List<GoRoute> onboardingRoutes = [
     builder: (context, state) => const VoiceSamplePage(),
   ),
   GoRoute(
-    path: AppRoutePaths.minimumPitch ,
-    name: AppRouteNames.minimumPitch ,
+    path: AppRoutePaths.minimumPitch,
+    name: AppRouteNames.minimumPitch,
     builder: (context, state) => const MinimumPitchPage(),
   ),
   GoRoute(
-    path: AppRoutePaths.maximumPitch ,
-    name: AppRouteNames.maximumPitch ,
+    path: AppRoutePaths.maximumPitch,
+    name: AppRouteNames.maximumPitch,
     builder: (context, state) => const MaximumPitchPage(),
   ),
   GoRoute(
@@ -54,6 +55,6 @@ final List<GoRoute> onboardingRoutes = [
   GoRoute(
     path: AppRoutePaths.vocalAnalysisLoading,
     name: AppRouteNames.analysisLoading,
-    builder: (context, state) => const VocalAnalysisLoadingPage(),
+    builder: (context, state) => const VocalAnalysisLoadingHandler(),
   ),
 ];
