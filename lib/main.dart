@@ -17,7 +17,7 @@ class MyApp extends ConsumerWidget {
 
     // ScreenUtilInit으로 앱 전체를 감쌈 (반응형)
     return ScreenUtilInit(
-      designSize: const Size(375, 812), // Figma 기준 해상도(px)
+      designSize: const Size(390, 844), // Figma 기준 해상도(px)
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
