@@ -1,4 +1,5 @@
 abstract class AppRouteNames {
+  // onboarding
   static const onboardingQuestion = 'onboardingQuestion';
   static const audioEnvironment = 'audioEnvironment';
   static const userBirthInfo = 'userBirthInfo';
@@ -8,6 +9,18 @@ abstract class AppRouteNames {
   static const onboardingRecordingGuide = 'onboardingRecordingGuide';
   static const onboardingRecordingSong = 'onboardingRecordingSong';
   static const analysisLoading = 'analysisLoading';
+
+  // auth
+  static const signupIdPassword = 'signupIdPassword';
+  static const signupProfileInfo = 'signupProfileInfo';
+  static const signupComplete = 'signupComplete';
+  static const login = 'login';
+
+  // 로그인 후 진입
+  static const mainHome = 'main';
+  static const soloTrainingHome = 'soloTraining';
+  static const dualTrainingHome = 'dualTrainingHome';
+  static const my = 'my';
 }
 
 abstract class AppRoutePaths {
@@ -20,4 +33,16 @@ abstract class AppRoutePaths {
   static const onboardingRecordingGuide = '/onboarding/recording_guide';
   static const onboardingRecordingSong = '/onboarding/recording_song';
   static const vocalAnalysisLoading = '/onboarding/analysis_loading';
+
+  // auth
+  static const signupIdPassword = '/auth/signup_id_password';
+  static const signupProfileInfo = '/auth/signup_profile_info';
+  static const signupComplete = '/auth/signup_complete';
+  static const login = '/auth/login';
+
+  // 로그인 후 진입
+  static const mainHome = '/main';
+  static const soloTrainingHome = '/solo_training/home';
+  static const dualTrainingHome = '/dual_training/home';
+  static const my = '/my';
 }
