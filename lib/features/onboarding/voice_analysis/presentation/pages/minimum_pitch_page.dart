@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
 
 class MinimumPitchPage extends StatefulWidget {
   const MinimumPitchPage({super.key});
@@ -21,7 +22,7 @@ class _MinimumPitchPageState extends State<MinimumPitchPage> {
 
   void _navigateToMaximumPitchPage() {
     if (_isButtonActive) {
-      context.go('/onboarding/max_pitch');
+      context.go(AppRoutePaths.maximumPitch);
     }
   }
 
