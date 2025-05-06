@@ -46,6 +46,9 @@ class EarphoneAlertDialog extends StatelessWidget {
                     style: AppTextStyles.body1Bold.copyWith(
                       color: const Color(0xFF1A1A1C),
                       height: 1.7,
+                      fontVariations: <FontVariation>[
+                        FontVariation('wght', 600),
+                      ],
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -55,6 +58,9 @@ class EarphoneAlertDialog extends StatelessWidget {
                     style: AppTextStyles.body4.copyWith(
                       color: const Color(0xFF1A1A1C),
                       height: 1.4,
+                      fontVariations: <FontVariation>[
+                        FontVariation('wght', 400),
+                      ],
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -81,6 +87,9 @@ class EarphoneAlertDialog extends StatelessWidget {
                         style: AppTextStyles.body1Bold.copyWith(
                           color: const Color(0xFF1A1A1C),
                           height: 1.4,
+                          fontVariations: <FontVariation>[
+                            FontVariation('wght', 600),
+                          ],
                         ),
                         textAlign: TextAlign.center,
                       ),
