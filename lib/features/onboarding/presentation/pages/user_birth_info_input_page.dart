@@ -146,21 +146,18 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                         ),
                       ),
                       alignment: Alignment.center,
-                      child: Center(
-                        child: Text(
-                          _selectedYear ?? '태어난 연도를 선택해주세요',
-                          style: TextStyle(
-                            color:
-                                _selectedYear == null
-                                    ? AppColors.neutralGray
-                                    : AppColors.neutralBlack,
-                            fontSize: 17.sp,
-                            fontFamily: 'Pretendard Variable',
-                            fontWeight: FontWeight.w400,
-                            height: 1.4,
-                            decoration: TextDecoration.none,
-                          ),
-                          textAlign: TextAlign.center, // 가운데 정렬
+                      child: Text(
+                        _selectedYear ?? '태어난 연도를 선택해주세요',
+                        style: TextStyle(
+                          color:
+                              _selectedYear == null
+                                  ? AppColors.neutralGray
+                                  : AppColors.neutralBlack,
+                          fontSize: 17.sp,
+                          fontFamily: 'Pretendard Variable',
+                          fontWeight: FontWeight.w400,
+                          height: 1.4,
+                          decoration: TextDecoration.none,
                         ),
                       ),
                     ),
