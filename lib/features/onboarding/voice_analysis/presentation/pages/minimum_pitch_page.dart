@@ -17,7 +17,7 @@ class _MinimumPitchPageState extends State<MinimumPitchPage> {
   bool get _isMicOn => _isVoiceDetected;
   bool get _isButtonActive => _isVoiceDetected;
 
-  final List<String> _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
+  static const List<String> _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
   void _navigateToMaximumPitchPage() {
     if (_isButtonActive) {
