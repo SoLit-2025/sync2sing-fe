@@ -15,9 +15,8 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(goRouterProvider);
 
-    // ScreenUtilInit으로 앱 전체를 감쌈 (반응형)
     return ScreenUtilInit(
-      designSize: const Size(390, 844), // Figma 기준 해상도(px)
+      designSize: const Size(390, 844),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
