@@ -4,13 +4,12 @@ import '../../main.dart';
 import '../../dev/dev_config.dart';
 import 'onboarding_routes.dart';
 
-
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-      initialLocation: myDevRoute,
-      routes: [
-        GoRoute(path: '/', builder: (context, state) => const MyWidget()),
-        ...onboardingRoutes
-      ],
+    initialLocation: myDevRoute,
+    routes: [
+      GoRoute(path: '/', builder: (context, state) => const MyWidget()),
+      ...onboardingRoutes,
+    ],
   );
 });
