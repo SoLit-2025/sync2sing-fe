@@ -137,10 +137,16 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                       width: (326.w).roundToDouble(),
                       height: (50.h).roundToDouble(),
                       padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      clipBehavior: Clip.hardEdge, // 여기에 추가!
+                      clipBehavior: Clip.hardEdge,
                       decoration: BoxDecoration(
                         color: AppColors.neutralWhite,
-                        borderRadius: BorderRadius.circular(10.r),
+                        borderRadius:
+                            _isYearPickerVisible
+                                ? BorderRadius.only(
+                                  topLeft: Radius.circular(10.r),
+                                  topRight: Radius.circular(10.r),
+                                )
+                                : BorderRadius.circular(10.r),
                         border: Border.all(
                           color: AppColors.neutralMediumGray,
                           width: 1.0,
