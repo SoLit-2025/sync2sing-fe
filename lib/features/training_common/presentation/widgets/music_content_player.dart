@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/training_common/presentation/widgets/lyrics_display_widget.dart';
 import 'package:sync2sing/features/training_common/presentation/widgets/song_information_widget.dart';
 import 'package:sync2sing/features/training_common/presentation/widgets/vocal_pitch_indicator.dart';
@@ -16,7 +17,7 @@ class MusicContentPlayer extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SongInformationWidget(),
-        SizedBox(height: 15.h),
+        SizedBox(height: 10.h),
         LyricsSection(),
         SizedBox(height: 15.h),
         Container(
@@ -73,13 +74,12 @@ class _KeyControlButton extends StatelessWidget {
         child: Text(
           textContent,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 17.sp,
-            color: AppColors.neutralGray,
-            fontVariations: <FontVariation>[
-              FontVariation('wght', isEnabled() ? 600 : 400),
-            ],
-          ),
+          style:
+              isEnabled()
+                  ? AppTextStyles.body1Bold.copyWith(
+                    color: AppColors.neutralGray,
+                  )
+                  : AppTextStyles.body1.copyWith(color: AppColors.neutralGray),
         ),
       ),
     );
@@ -117,6 +117,7 @@ class _playButton extends StatelessWidget {
       child: ImageIcon(
         AssetImage("assets/images/play.png"),
         color: AppColors.neutralGray,
+        size: 20.w,
       ),
       onPressed: () {
         // TODO 재생
@@ -136,6 +137,7 @@ class _pauseButton extends StatelessWidget {
       child: ImageIcon(
         AssetImage("assets/images/pause.png"),
         color: AppColors.neutralGray,
+        size: 20.w,
       ),
       onPressed: () {},
       // TODO 멈춤 기능

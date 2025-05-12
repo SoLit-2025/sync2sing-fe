@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/config/theme/app_text_styles.dart';
 
 class LyricsSection extends StatefulWidget {
   const LyricsSection({super.key});
@@ -14,12 +15,7 @@ class _LyricsSectionState extends State<LyricsSection> {
   Widget build(BuildContext context) {
     return Text(
       "(전주중) \nDO - a deer, \na female deer \nRE - a drop of",
-      style: TextStyle(
-        fontSize: 40.sp,
-        color: AppColors.neutralGray,
-        fontVariations: <FontVariation>[FontVariation('wght', 600)],
-        height: 1.4,
-      ),
+      style: AppTextStyles.display1Bold.copyWith(color: AppColors.neutralGray),
       textAlign: TextAlign.left,
     );
   }
