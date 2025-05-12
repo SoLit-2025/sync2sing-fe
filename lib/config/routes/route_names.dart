@@ -19,7 +19,7 @@ abstract class AppRouteNames {
   // 로그인 후 진입
   static const mainHome = 'main';
   static const soloTrainingHome = 'soloTraining';
-  static const dualTrainingHome = 'dualTrainingHome';
+  static const duetTrainingHome = 'duetTrainingHome';
   static const my = 'my';
 }
 
@@ -43,6 +43,6 @@ abstract class AppRoutePaths {
   // 로그인 후 진입
   static const mainHome = '/main';
   static const soloTrainingHome = '/solo_training/home';
-  static const dualTrainingHome = '/dual_training/home';
+  static const duetTrainingHome = '/duet_training/home';
   static const my = '/my';
 }

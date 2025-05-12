@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/auth_routes.dart';
-import 'package:sync2sing/config/routes/dual_training_routes.dart';
+import 'package:sync2sing/config/routes/duet_training_routes.dart';
 import 'package:sync2sing/config/routes/my_routes.dart';
 import 'package:sync2sing/config/routes/solo_training_routes.dart';
 import '../../main.dart';
@@ -18,7 +18,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...authRoutes,
       ...mainRoutes,
       ...soloTrainingRoutes,
-      ...dualTrainingRoutes,
+      ...duetTrainingRoutes,
       ...myRoutes,
     ],
   );
