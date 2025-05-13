@@ -21,89 +21,97 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
     );
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Container(
-            alignment: Alignment(0.0, -1.0),
-            margin: EdgeInsets.symmetric(vertical: 10.h),
-            child: SizedBox(
-              width: 327.w,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  PageIndicator(currentPage: 4, pageCount: 6), // 상단 페이지네이션 위젯
-                  Container(
-                    margin: EdgeInsets.fromLTRB(0, 30.h, 0, 20.h),
-                    width: 327.w,
-                    alignment: Alignment(-1.0, -1.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          // 텍스트 필드 (글씨 안내)
-                          padding: EdgeInsets.symmetric(vertical: 5.h),
-                          child: Text(
-                            "마지막 과정이에요",
-                            textAlign: TextAlign.left,
-                            style: AppTextStyles.heading3Bold,
+        child: Container(
+          alignment: Alignment(0.0, -1.0),
+          margin: EdgeInsets.fromLTRB(0, 12.h, 0, 40.h), // 상하 여백
+          child: SizedBox(
+            width: 327.w,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                PageIndicator(currentPage: 4, pageCount: 6), // 상단 페이지네이션 위젯
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 32.h, 0, 20.h),
+                        width: 327.w,
+                        alignment: Alignment(-1.0, -1.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              // 텍스트 필드 (글씨 안내)
+                              padding: EdgeInsets.symmetric(vertical: 4.h),
+                              child: Text(
+                                "마지막 과정이에요",
+                                textAlign: TextAlign.left,
+                                style: AppTextStyles.heading3Bold,
+                              ),
+                            ),
+
+                            Text(
+                              "아래 음원을 듣고 \n후렴구를 똑같이 따라 불러주세요",
+                              textAlign: TextAlign.left,
+                              style: AppTextStyles.heading4,
+                            ),
+                          ],
+                        ),
+                      ),
+                      // 유튜브 영상
+                      Container(
+                        width: 327.w,
+                        margin: EdgeInsets.symmetric(vertical: 20.h),
+                        child: YoutubePlayerWidget(
+                          videoId: 'Qy9cj-zwbVY', // 도레미송 공식 가사 비디오
+                          // do a deer 부분에서 영상 시작, 자동 재생 금지
+                          flags: YoutubePlayerFlags(
+                            autoPlay: false,
+                            startAt: 42,
                           ),
                         ),
+                      ),
+                    ],
+                  ),
+                ),
 
-                        Text(
-                          "아래 음원을 듣고 \n후렴구를 똑같이 따라 불러주세요",
-                          textAlign: TextAlign.left,
-                          style: AppTextStyles.heading4,
-                        ),
-                      ],
-                    ),
-                  ),
-                  // 유튜브 영상
-                  Container(
-                    width: 327.w,
-                    margin: EdgeInsets.symmetric(vertical: 20.w),
-                    child: YoutubePlayerWidget(
-                      videoId: 'Qy9cj-zwbVY', // 도레미송 공식 가사 비디오
-                      // do a deer 부분에서 영상 시작, 자동 재생 금지
-                      flags: YoutubePlayerFlags(autoPlay: false, startAt: 42),
-                    ),
-                  ),
-                  // 시작하기 버튼
-                  Container(
-                    width: double.infinity,
-                    height: 50.w,
-                    margin: EdgeInsets.fromLTRB(0, 30.h, 0, 30.h),
-                    alignment: Alignment(0.0, 0.0),
-                    child: CupertinoButton(
-                      color: AppColors.primaryPink,
-                      disabledColor: Color(0xFFF8D6DA), // 비활성화 색
-                      borderRadius: BorderRadius.circular(10.r),
-                      minSize: 0.0,
-                      padding: EdgeInsets.all(0),
-                      // 버튼 활성화 조건을 만족하면 onboardingRecordingSong 페이지로 이동 / 아니면 비활성화 상태
-                      onPressed:
-                          _isButtonEnabled
-                              ? () {
-                                context.goNamed(
-                                  AppRouteNames.onboardingRecordingSong,
-                                );
-                              }
-                              : null,
-                      child: Center(
-                        child: Text(
-                          "시작하기",
-                          style:
-                              _isButtonEnabled
-                                  ? AppTextStyles.body1BoldWhite
-                                  : AppTextStyles.body1White,
-                        ),
+                // 시작하기 버튼
+                Container(
+                  width: double.infinity,
+                  height: 50.w,
+                  margin: EdgeInsets.only(top: 32.h),
+                  alignment: Alignment(0.0, 0.0),
+                  child: CupertinoButton(
+                    color: AppColors.primaryPink,
+                    disabledColor: Color(0xFFF8D6DA), // 비활성화 색
+                    borderRadius: BorderRadius.circular(10.r),
+                    minSize: 0.0,
+                    padding: EdgeInsets.all(0),
+                    // 버튼 활성화 조건을 만족하면 onboardingRecordingSong 페이지로 이동 / 아니면 비활성화 상태
+                    onPressed:
+                        _isButtonEnabled
+                            ? () {
+                              context.pushNamed(
+                                AppRouteNames.onboardingRecordingSong,
+                              );
+                            }
+                            : null,
+                    child: Center(
+                      child: Text(
+                        "시작하기",
+                        style:
+                            _isButtonEnabled
+                                ? AppTextStyles.body1BoldWhite
+                                : AppTextStyles.body1White,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
