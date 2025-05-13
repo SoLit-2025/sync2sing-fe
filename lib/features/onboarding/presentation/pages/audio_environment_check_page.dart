@@ -14,8 +14,8 @@ class AudioEnvironmentCheckPage extends StatefulWidget {
 
 class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
   bool _canUseEarphones = false;
-  bool _showAlertB = false;
-  bool _shouldNavigateAfterAlert = false;
+  bool _showEarphoneCheckAlert = false;
+  bool _shouldNavigateAfterEarphoneCheckAlert = false;
 
   void _onStartButtonPressed() {
     if (_canUseEarphones) {
@@ -24,26 +24,26 @@ class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
     } else {
       // 알림창 띄우고, 확인 누르면 이동
       setState(() {
-        _showAlertB = true;
-        _shouldNavigateAfterAlert = true;
+        _showEarphoneCheckAlert = true;
+        _shouldNavigateAfterEarphoneCheckAlert = true;
       });
     }
   }
 
-  void _onAlertBConfirmed() {
+  void _onEarphoneCheckAlertConfirmed() {
     setState(() {
-      _showAlertB = false;
+      _showEarphoneCheckAlert = false;
     });
-    if (_shouldNavigateAfterAlert) {
-      _shouldNavigateAfterAlert = false;
+    if (_shouldNavigateAfterEarphoneCheckAlert) {
+      _shouldNavigateAfterEarphoneCheckAlert = false;
       // context.pushNamed(AppRouteNames.userBirthInfoInput);
     }
   }
 
-  void _onAlertDismissed() {
+  void _onEarphoneCheckAlertDismissed() {
     setState(() {
-      _showAlertB = false;
-      _shouldNavigateAfterAlert = false;
+      _showEarphoneCheckAlert = false;
+      _shouldNavigateAfterEarphoneCheckAlert = false;
     });
   }
 
@@ -73,9 +73,9 @@ class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
           ),
         ),
         EarphoneAlertDialog(
-          showAlert: _showAlertB,
-          onConfirm: _onAlertBConfirmed,
-          onDismiss: _onAlertDismissed,
+          showAlert: _showEarphoneCheckAlert,
+          onConfirm: _onEarphoneCheckAlertConfirmed,
+          onDismiss: _onEarphoneCheckAlertDismissed,
         ),
       ],
     );
