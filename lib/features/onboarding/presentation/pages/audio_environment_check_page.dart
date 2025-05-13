@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
@@ -58,9 +59,9 @@ class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
                 children: [
                   const Spacer(flex: 2),
                   _buildMainTitle(),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   _buildSubtitle(),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildEnvironmentNotice(),
                   const Spacer(flex: 1),
                   _buildCheckboxContainer(),
@@ -83,10 +84,12 @@ class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
 
   Widget _buildMainTitle() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: 32.w),
       child: Text(
         '노래로 연결되는 순간,\nSync2Sing',
-        style: AppTextStyles.heading2Bold,
+        style: AppTextStyles.heading2Bold.copyWith(
+          fontSize: AppTextStyles.heading2Bold.fontSize?.sp,
+        ),
         textAlign: TextAlign.center,
       ),
     );
@@ -94,10 +97,12 @@ class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
 
   Widget _buildSubtitle() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: 32.w),
       child: Text(
         '맞춤형 커리큘럼 설계를 위한\n보컬 분석을 시작합니다\n아래 내용에 해당하는지 확인해주세요',
-        style: AppTextStyles.body1,
+        style: AppTextStyles.body1.copyWith(
+          fontSize: AppTextStyles.body1.fontSize?.sp,
+        ),
         textAlign: TextAlign.center,
       ),
     );
@@ -105,10 +110,13 @@ class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
 
   Widget _buildEnvironmentNotice() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: 32.w),
       child: Text(
         '※ 소리를 낼 수 있는 환경이어야 합니다.',
-        style: AppTextStyles.body4.copyWith(color: AppColors.primaryRed),
+        style: AppTextStyles.body4.copyWith(
+          color: AppColors.primaryRed,
+          fontSize: AppTextStyles.body4.fontSize?.sp,
+        ),
         textAlign: TextAlign.center,
       ),
     );
@@ -116,11 +124,11 @@ class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
 
   Widget _buildCheckboxContainer() {
     return Container(
-      width: 327,
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+      width: 327.w,
+      padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 20.w),
       decoration: BoxDecoration(
         color: AppColors.neutralGhost,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
       child: _buildCheckbox('이어폰을 사용할 수 있나요?', _canUseEarphones, (value) {
         setState(() {
@@ -138,36 +146,51 @@ class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
     return Row(
       children: [
         SizedBox(
-          width: 24,
-          height: 24,
+          width: 24.w,
+          height: 24.h,
           child: Checkbox(
             value: value,
             onChanged: onChanged,
-            shape: const CircleBorder(),
+            shape: CircleBorder(
+              side: BorderSide(width: 0, style: BorderStyle.none),
+            ),
             activeColor: AppColors.primaryRed,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ),
-        const SizedBox(width: 12),
-        Expanded(child: Text(text, style: AppTextStyles.body1)),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Text(
+            text,
+            style: AppTextStyles.body1.copyWith(
+              fontSize: AppTextStyles.body1.fontSize?.sp,
+            ),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildButton() {
     return SizedBox(
-      width: 327,
-      height: 50,
+      width: 327.w,
+      height: 50.h,
       child: ElevatedButton(
         onPressed: _onStartButtonPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryRed,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(10.r),
           ),
           elevation: 0,
         ),
-        child: Text('보컬 분석 시작하기', style: AppTextStyles.body1BoldWhite),
+        child: Text(
+          '보컬 분석 시작하기',
+          style: AppTextStyles.body1BoldWhite.copyWith(
+            fontSize: AppTextStyles.body1BoldWhite.fontSize?.sp,
+          ),
+        ),
       ),
     );
   }
