@@ -2,7 +2,7 @@ abstract class AppRouteNames {
   // onboarding
   static const onboardingQuestion = 'onboardingQuestion';
   static const audioEnvironment = 'audioEnvironment';
-  static const userBirthInfo = 'userBirthInfo';
+  static const userBirthInfoInput = 'userBirthInfo';
   static const voiceSample = 'voiceSample';
   static const minimumPitch = 'minimumPitch';
   static const maximumPitch = 'maximumPitch';
@@ -26,7 +26,7 @@ abstract class AppRouteNames {
 abstract class AppRoutePaths {
   static const onboardingQuestion = '/onboarding';
   static const audioEnvironment = '/onboarding/audio_env';
-  static const userBirthInfo = '/onboarding/birth_info';
+  static const userBirthInfoInput = '/onboarding/birth_info';
   static const voiceSample = '/onboarding/voice_sample';
   static const minimumPitch = '/onboarding/min_pitch';
   static const maximumPitch = '/onboarding/max_pitch';

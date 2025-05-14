@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
@@ -21,7 +22,7 @@ class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
   void _onStartButtonPressed() {
     if (_canUseEarphones) {
       // 바로 이동
-      // context.pushNamed(AppRouteNames.userBirthInfoInput);
+      context.pushNamed(AppRouteNames.userBirthInfoInput);
     } else {
       // 알림창 띄우고, 확인 누르면 이동
       setState(() {
@@ -37,7 +38,7 @@ class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
     });
     if (_shouldNavigateAfterEarphoneCheckAlert) {
       _shouldNavigateAfterEarphoneCheckAlert = false;
-      // context.pushNamed(AppRouteNames.userBirthInfoInput);
+      context.pushNamed(AppRouteNames.userBirthInfoInput);
     }
   }
 
@@ -127,7 +128,7 @@ class _AudioEnvironmentCheckPageState extends State<AudioEnvironmentCheckPage> {
       width: 327.w,
       padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 20.w),
       decoration: BoxDecoration(
-        color: AppColors.neutralGhost,
+        color: AppColors.grayscale7,
         borderRadius: BorderRadius.circular(10.r),
       ),
       child: _buildCheckbox('이어폰을 사용할 수 있나요?', _canUseEarphones, (value) {

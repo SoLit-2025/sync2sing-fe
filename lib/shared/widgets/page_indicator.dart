@@ -21,8 +21,8 @@ class PageIndicator extends StatelessWidget {
       position: currentPage,
 
       decorator: DotsDecorator(
-        color: AppColors.neutralLightGray,
-        activeColor: AppColors.neutralGray,
+        color: AppColors.grayscale5,
+        activeColor: AppColors.grayscale3,
         size: Size.square(10.r),
         activeSize: Size.square(10.r),
         spacing: EdgeInsets.symmetric(horizontal: 5.r),

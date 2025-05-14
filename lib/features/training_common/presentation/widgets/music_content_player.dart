@@ -25,7 +25,7 @@ class MusicContentPlayer extends StatelessWidget {
           height: 155.w,
           decoration: BoxDecoration(
             borderRadius: BorderRadiusDirectional.circular(10.r),
-            color: AppColors.neutralGhost,
+            color: AppColors.grayscale7,
           ),
           child: VocalPitchIndicator(),
         ),
@@ -70,16 +70,16 @@ class _KeyControlButton extends StatelessWidget {
         padding: EdgeInsets.all(0),
         onPressed: (isEnabled()) ? performAction : null,
         borderRadius: BorderRadius.circular(10.r),
-        color: AppColors.neutralLightGray,
+        color: AppColors.grayscale5,
         child: Text(
           textContent,
           textAlign: TextAlign.center,
           style:
               isEnabled()
                   ? AppTextStyles.body1Bold.copyWith(
-                    color: AppColors.neutralGray,
+                    color: AppColors.grayscale3,
                   )
-                  : AppTextStyles.body1.copyWith(color: AppColors.neutralGray),
+                  : AppTextStyles.body1.copyWith(color: AppColors.grayscale3),
         ),
       ),
     );
@@ -116,7 +116,7 @@ class _playButton extends StatelessWidget {
       padding: EdgeInsets.all(0),
       child: ImageIcon(
         AssetImage("assets/images/play.png"),
-        color: AppColors.neutralGray,
+        color: AppColors.grayscale3,
         size: 20.w,
       ),
       onPressed: () {
@@ -136,7 +136,7 @@ class _pauseButton extends StatelessWidget {
       padding: EdgeInsets.all(0),
       child: ImageIcon(
         AssetImage("assets/images/pause.png"),
-        color: AppColors.neutralGray,
+        color: AppColors.grayscale3,
         size: 20.w,
       ),
       onPressed: () {},

@@ -23,8 +23,8 @@ final List<GoRoute> onboardingRoutes = [
     builder: (context, state) => const AudioEnvironmentCheckPage(),
   ),
   GoRoute(
-    path: AppRoutePaths.userBirthInfo,
-    name: AppRouteNames.userBirthInfo,
+    path: AppRoutePaths.userBirthInfoInput,
+    name: AppRouteNames.userBirthInfoInput,
     builder: (context, state) => const UserBirthInfoInputPage(),
   ),
   GoRoute(

@@ -44,7 +44,7 @@ class _MaximumPitchPageState extends State<MaximumPitchPage> {
     final int noteCount = _notes.length;
 
     return CupertinoPageScaffold(
-      backgroundColor: AppColors.neutralWhite,
+      backgroundColor: AppColors.grayscale8,
       child: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -65,7 +65,7 @@ class _MaximumPitchPageState extends State<MaximumPitchPage> {
                         width: donutSize,
                         height: donutSize,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF5F5F5),
+                          color: AppColors.grayscale7,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -74,7 +74,7 @@ class _MaximumPitchPageState extends State<MaximumPitchPage> {
                         width: innerDonutSize,
                         height: innerDonutSize,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFFFFF),
+                          color: AppColors.grayscale8,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -94,7 +94,7 @@ class _MaximumPitchPageState extends State<MaximumPitchPage> {
                               child: Text(
                                 _notes[i],
                                 style: TextStyle(
-                                  color: const Color(0xFFC0C0C0),
+                                  color: AppColors.grayscale4,
                                   fontSize: 17.sp,
                                   fontFamily: 'Pretendard Variable',
                                   fontWeight: FontWeight.w600,
@@ -120,7 +120,7 @@ class _MaximumPitchPageState extends State<MaximumPitchPage> {
                           width: 20.w,
                           height: 20.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFD9D9D9),
+                            color: AppColors.grayscale5,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -144,7 +144,7 @@ class _MaximumPitchPageState extends State<MaximumPitchPage> {
               Text(
                 '낼 수 있는 가장 높은 음을\n3초 이상 유지해주세요',
                 style: TextStyle(
-                  color: AppColors.neutralBlack,
+                  color: AppColors.grayscale1,
                   fontSize: 20.sp,
                   fontFamily: 'Pretendard Variable',
                   fontWeight: FontWeight.w400,
@@ -169,13 +169,13 @@ class _MaximumPitchPageState extends State<MaximumPitchPage> {
                       color:
                           _isButtonActive
                               ? AppColors.primaryPink
-                              : const Color(0xFFF8D6DA),
+                              : AppColors.primaryPinkDisabled,
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(
                       '확인',
                       style: TextStyle(
-                        color: AppColors.neutralWhite,
+                        color: AppColors.grayscale8,
                         fontSize: 17.sp,
                         fontFamily: 'Pretendard Variable',
                         fontWeight:

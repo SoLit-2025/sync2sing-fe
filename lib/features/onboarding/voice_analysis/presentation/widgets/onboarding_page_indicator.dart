@@ -16,8 +16,8 @@ class OnboardingPageIndicator extends StatelessWidget {
       position: currentPage,
 
       decorator: DotsDecorator(
-        color: AppColors.neutralLightGray, // Inactive color
-        activeColor: AppColors.neutralGray,
+        color: AppColors.grayscale5, // Inactive color
+        activeColor: AppColors.grayscale3,
         size: Size.square(10.w),
         activeSize: Size.square(10.w),
         spacing: EdgeInsets.symmetric(horizontal: 5.w),
