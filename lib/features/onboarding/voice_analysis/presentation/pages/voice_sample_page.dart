@@ -37,7 +37,7 @@ class _VoiceSamplePageState extends State<VoiceSamplePage> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppColors.neutralWhite,
+      backgroundColor: AppColors.grayscale8,
       child: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -52,7 +52,7 @@ class _VoiceSamplePageState extends State<VoiceSamplePage> {
               Text(
                 '아래 문장을 읽어주세요',
                 style: TextStyle(
-                  color: AppColors.neutralBlack,
+                  color: AppColors.grayscale1,
                   fontSize: 22.sp,
                   fontFamily: 'Pretendard Variable',
                   fontWeight: FontWeight.w600,
@@ -66,7 +66,7 @@ class _VoiceSamplePageState extends State<VoiceSamplePage> {
               Text(
                 '평소처럼 자연스럽게 읽어주시면\n목소리를 더 정확히 분석할 수 있어요',
                 style: TextStyle(
-                  color: AppColors.neutralBlack,
+                  color: AppColors.grayscale1,
                   fontSize: 20.sp,
                   fontFamily: 'Pretendard Variable',
                   fontWeight: FontWeight.w400,
@@ -89,7 +89,7 @@ class _VoiceSamplePageState extends State<VoiceSamplePage> {
                   child: Text(
                     sampleSentence,
                     style: TextStyle(
-                      color: AppColors.neutralGray,
+                      color: AppColors.grayscale3,
                       fontSize: 34.sp,
                       fontFamily: 'Pretendard Variable',
                       fontWeight: FontWeight.w600,
@@ -124,8 +124,8 @@ class _VoiceSamplePageState extends State<VoiceSamplePage> {
                       style: TextStyle(
                         color:
                             _isButtonActive
-                                ? AppColors.neutralWhite
-                                : AppColors.neutralWhite,
+                                ? AppColors.grayscale8
+                                : AppColors.grayscale8,
                         fontSize: 17.sp,
                         fontFamily: 'Pretendard Variable',
                         fontWeight:

@@ -87,7 +87,7 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
                   alignment: Alignment(0.0, 0.0),
                   child: CupertinoButton(
                     color: AppColors.primaryPink,
-                    disabledColor: Color(0xFFF8D6DA), // 비활성화 색
+                    disabledColor: AppColors.primaryPinkDisabled, // 비활성화 색
                     borderRadius: BorderRadius.circular(10.r),
                     minSize: 0.0,
                     padding: EdgeInsets.all(0),

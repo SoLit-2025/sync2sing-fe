@@ -15,7 +15,7 @@ class _LyricsSectionState extends State<LyricsSection> {
   Widget build(BuildContext context) {
     return Text(
       "(전주중) \nDO - a deer, \na female deer \nRE - a drop of",
-      style: AppTextStyles.display1Bold.copyWith(color: AppColors.neutralGray),
+      style: AppTextStyles.display1Bold.copyWith(color: AppColors.grayscale3),
       textAlign: TextAlign.left,
     );
   }

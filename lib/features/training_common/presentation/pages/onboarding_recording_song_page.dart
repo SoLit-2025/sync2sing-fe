@@ -56,7 +56,7 @@ class OnboardingRecordingSongPage extends StatelessWidget {
                   builder: (context, ref, child) {
                     return CupertinoButton(
                       color: AppColors.primaryPink,
-                      disabledColor: const Color(0xFFF8D6DA),
+                      disabledColor: AppColors.primaryPinkDisabled,
                       borderRadius: BorderRadius.circular(10.w),
                       onPressed:
                           isVocalAnalysisButtonEnabled()

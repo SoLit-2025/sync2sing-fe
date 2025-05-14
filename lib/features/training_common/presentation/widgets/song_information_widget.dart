@@ -15,7 +15,7 @@ class SongInformationWidget extends StatelessWidget {
 
         Text(
           "Sound of Music",
-          style: AppTextStyles.body1.copyWith(color: AppColors.neutralGray),
+          style: AppTextStyles.body1.copyWith(color: AppColors.grayscale3),
         ),
       ],
     );

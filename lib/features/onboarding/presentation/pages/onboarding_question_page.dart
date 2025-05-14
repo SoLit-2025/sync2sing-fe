@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/config/theme/app_colors.dart';
 
 class OnboardingQuestionPage extends StatelessWidget {
   const OnboardingQuestionPage({super.key});
@@ -35,7 +36,7 @@ class OnboardingQuestionPage extends StatelessWidget {
                       Text(
                         'Sync2Sing이 처음이신가요?',
                         style: TextStyle(
-                          color: const Color(0xFF1A1A1C),
+                          color: AppColors.grayscale1,
                           fontSize: 20.sp,
                           fontFamily: 'Pretendard Variable',
                           fontWeight: FontWeight.w400,
@@ -57,10 +58,10 @@ class OnboardingQuestionPage extends StatelessWidget {
                           child: ElevatedButton(
                             onPressed: () {
                               // todo: 회원가입 페이지로 이동
-                              // context.goNamed(AppRouteNames.signup);
+                              context.goNamed(AppRouteNames.audioEnvironment);
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFECECEC),
+                              backgroundColor: AppColors.grayscale6,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10.r),
                               ),
@@ -69,7 +70,7 @@ class OnboardingQuestionPage extends StatelessWidget {
                             child: Text(
                               '네, 처음이에요',
                               style: TextStyle(
-                                color: const Color(0xFF1A1A1C),
+                                color: AppColors.grayscale1,
                                 fontSize: 17.sp,
                                 fontFamily: 'Pretendard Variable',
                                 fontWeight: FontWeight.w400,
@@ -86,10 +87,10 @@ class OnboardingQuestionPage extends StatelessWidget {
                           child: ElevatedButton(
                             onPressed: () {
                               // todo: 로그인 페이지로 이동
-                              // context.goNamed(AppRouteNames.login);
+                              context.goNamed(AppRouteNames.login);
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFECECEC),
+                              backgroundColor: AppColors.grayscale6,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10.r),
                               ),
@@ -98,7 +99,7 @@ class OnboardingQuestionPage extends StatelessWidget {
                             child: Text(
                               '아뇨, 계정이 있어요',
                               style: TextStyle(
-                                color: const Color(0xFF1A1A1C),
+                                color: AppColors.grayscale1,
                                 fontSize: 17.sp,
                                 fontFamily: 'Pretendard Variable',
                                 fontWeight: FontWeight.w400,

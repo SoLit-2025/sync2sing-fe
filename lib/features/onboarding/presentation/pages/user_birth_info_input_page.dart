@@ -70,7 +70,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppColors.neutralGhost,
+      backgroundColor: AppColors.grayscale7,
       child: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -86,7 +86,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
               Text(
                 '맞춤형 보컬 분석을 시작합니다',
                 style: TextStyle(
-                  color: AppColors.neutralBlack,
+                  color: AppColors.grayscale1,
                   fontSize: 22.sp,
                   fontFamily: 'Pretendard Variable',
                   fontWeight: FontWeight.w600,
@@ -100,7 +100,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
               Text(
                 '입력된 정보를 통해\n음역대를 더 정확하게 측정할 수 있어요',
                 style: TextStyle(
-                  color: AppColors.neutralBlack,
+                  color: AppColors.grayscale1,
                   fontSize: 20.sp,
                   fontFamily: 'Pretendard Variable',
                   fontWeight: FontWeight.w400,
@@ -139,7 +139,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                       padding: EdgeInsets.symmetric(horizontal: 16.w),
                       clipBehavior: Clip.hardEdge,
                       decoration: BoxDecoration(
-                        color: AppColors.neutralWhite,
+                        color: AppColors.grayscale8,
                         borderRadius:
                             _isYearPickerVisible
                                 ? BorderRadius.only(
@@ -148,7 +148,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                                 )
                                 : BorderRadius.circular(10.r),
                         border: Border.all(
-                          color: AppColors.neutralMediumGray,
+                          color: AppColors.grayscale4,
                           width: 1.0,
                           strokeAlign: BorderSide.strokeAlignInside,
                         ),
@@ -159,8 +159,8 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                         style: TextStyle(
                           color:
                               _selectedYear == null
-                                  ? AppColors.neutralGray
-                                  : AppColors.neutralBlack,
+                                  ? AppColors.grayscale3
+                                  : AppColors.grayscale1,
                           fontSize: 17.sp,
                           fontFamily: 'Pretendard Variable',
                           fontWeight: FontWeight.w400,
@@ -201,7 +201,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                                               fontSize: 22.sp,
                                               fontFamily: 'Pretendard Variable',
                                               fontWeight: FontWeight.w400,
-                                              color: AppColors.neutralBlack,
+                                              color: AppColors.grayscale1,
                                             ),
                                           ),
                                         ),
@@ -242,7 +242,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                       color:
                           _isButtonActive
                               ? AppColors.primaryPink
-                              : AppColors.neutralLightGray,
+                              : AppColors.grayscale5,
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(
@@ -250,8 +250,8 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                       style: TextStyle(
                         color:
                             _isButtonActive
-                                ? AppColors.neutralWhite
-                                : AppColors.neutralDarkGray,
+                                ? AppColors.grayscale8
+                                : AppColors.grayscale2,
                         fontSize: 17.sp,
                         fontFamily: 'Pretendard Variable',
                         fontWeight:
@@ -282,16 +282,14 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
         width: 154.w,
         height: 50.h,
         decoration: BoxDecoration(
-          color:
-              isSelected ? AppColors.primaryPink : AppColors.neutralLightGray,
+          color: isSelected ? AppColors.primaryPink : AppColors.grayscale5,
           borderRadius: BorderRadius.circular(10.r),
         ),
         alignment: Alignment.center,
         child: Text(
           text,
           style: TextStyle(
-            color:
-                isSelected ? AppColors.neutralWhite : AppColors.neutralDarkGray,
+            color: isSelected ? AppColors.grayscale8 : AppColors.grayscale2,
             fontSize: 17.sp,
             fontFamily: 'Pretendard Variable',
             fontWeight: FontWeight.w400,
