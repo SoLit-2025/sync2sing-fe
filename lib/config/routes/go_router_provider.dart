@@ -4,6 +4,7 @@ import 'package:sync2sing/config/routes/auth_routes.dart';
 import 'package:sync2sing/config/routes/duet_training_routes.dart';
 import 'package:sync2sing/config/routes/my_routes.dart';
 import 'package:sync2sing/config/routes/solo_training_routes.dart';
+import 'package:sync2sing/shared/utils/use_permission.dart';
 import '../../main.dart';
 import '../../dev/dev_config.dart';
 import 'main_routes.dart';

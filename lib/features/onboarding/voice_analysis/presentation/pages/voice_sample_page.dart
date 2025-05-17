@@ -1,17 +1,20 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sync2sing/shared/utils/mic_permission_helper.dart';
 
-class VoiceSamplePage extends StatefulWidget {
+class VoiceSamplePage extends ConsumerStatefulWidget {
   const VoiceSamplePage({super.key});
 
   @override
-  State<VoiceSamplePage> createState() => _VoiceSamplePageState();
+  ConsumerState<VoiceSamplePage> createState() => _VoiceSamplePageState();
 }
 
-class _VoiceSamplePageState extends State<VoiceSamplePage> {
+class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
   // 실제 구현에서는 음성 인식으로 읽기 완료 상태를 판단할 예정
   // 여기서는 임시로 버튼을 항상 활성화로 두고, 실제 구현시 읽기 완료 로직으로 변경
   bool _isSentenceRead = true;
@@ -32,6 +35,24 @@ class _VoiceSamplePageState extends State<VoiceSamplePage> {
     if (_isButtonActive) {
       context.go('/onboarding/min_pitch');
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async {
+      final granted = await ensureMicPermission(ref); // 공통 함수 재사용
+
+      if (granted) {
+        // startRecording(); // 녹음 시작 로직 실행
+      } else {
+        // showPermissionDialog(); // 또는 설정 안내 등
+        // 권한이 없으면 안내하고 return
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
+      }
+    });
   }
 
   @override
