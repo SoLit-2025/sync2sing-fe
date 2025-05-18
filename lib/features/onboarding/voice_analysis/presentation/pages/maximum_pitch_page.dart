@@ -49,112 +49,125 @@ class _MaximumPitchPageState extends State<MaximumPitchPage> {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              SizedBox(height: 32.h),
-              Center(child: OnboardingPageIndicator(currentPage: 3)), // 4번째 페이지
-              SizedBox(height: 60.h),
-              Center(
-                child: SizedBox(
-                  width: stackSize,
-                  height: stackSize,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // 도넛 외부 원
-                      Container(
-                        width: donutSize,
-                        height: donutSize,
-                        decoration: BoxDecoration(
-                          color: AppColors.grayscale7,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      // 도넛 내부 원
-                      Container(
-                        width: innerDonutSize,
-                        height: innerDonutSize,
-                        decoration: BoxDecoration(
-                          color: AppColors.grayscale8,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      // 계이름
-                      ...List.generate(noteCount, (i) {
-                        final angle =
-                            startAngle + (sweepAngle / (noteCount - 1)) * i;
-                        final x = center + noteRadius * cos(angle) - 15.w;
-                        final y = center + noteRadius * sin(angle) - 15.h;
-                        return Positioned(
-                          left: x,
-                          top: y,
-                          child: SizedBox(
-                            width: 30.w,
-                            height: 30.h,
-                            child: Center(
-                              child: Text(
-                                _notes[i],
-                                style: TextStyle(
-                                  color: AppColors.grayscale4,
-                                  fontSize: 17.sp,
-                                  fontFamily: 'Pretendard Variable',
-                                  fontWeight: FontWeight.w600,
-                                  height: 1.4,
-                                  decoration: TextDecoration.none,
+              Column(
+                children: [
+                  SizedBox(height: 32.h),
+                  Center(child: OnboardingPageIndicator(currentPage: 3)),
+                  SizedBox(height: 16.h),
+                ],
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: SizedBox(
+                        width: stackSize,
+                        height: stackSize,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // 도넛 외부 원
+                            Container(
+                              width: donutSize,
+                              height: donutSize,
+                              decoration: BoxDecoration(
+                                color: AppColors.grayscale7,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            // 도넛 내부 원
+                            Container(
+                              width: innerDonutSize,
+                              height: innerDonutSize,
+                              decoration: BoxDecoration(
+                                color: AppColors.grayscale8,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            // 계이름
+                            ...List.generate(noteCount, (i) {
+                              final angle =
+                                  startAngle +
+                                  (sweepAngle / (noteCount - 1)) * i;
+                              final x = center + noteRadius * cos(angle) - 15.w;
+                              final y = center + noteRadius * sin(angle) - 15.h;
+                              return Positioned(
+                                left: x,
+                                top: y,
+                                child: SizedBox(
+                                  width: 30.w,
+                                  height: 30.h,
+                                  child: Center(
+                                    child: Text(
+                                      _notes[i],
+                                      style: TextStyle(
+                                        color: AppColors.grayscale4,
+                                        fontSize: 17.sp,
+                                        fontFamily: 'Pretendard Variable',
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.4,
+                                        decoration: TextDecoration.none,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                            // 음정 감지 동그라미 (C2 위치, 도넛 위에 배치)
+                            Positioned(
+                              left:
+                                  center +
+                                  (donutRadius * 0.95) * cos(indicatorAngle) -
+                                  indicatorRadius,
+                              top:
+                                  center +
+                                  (donutRadius * 0.95) * sin(indicatorAngle) -
+                                  indicatorRadius,
+                              child: Container(
+                                width: 20.w,
+                                height: 20.w,
+                                decoration: BoxDecoration(
+                                  color: AppColors.grayscale5,
+                                  shape: BoxShape.circle,
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      }),
-                      // 음정 감지 동그라미 (C2 위치, 도넛 위에 배치)
-                      Positioned(
-                        left:
-                            center +
-                            (donutRadius * 0.95) * cos(indicatorAngle) -
-                            indicatorRadius,
-                        top:
-                            center +
-                            (donutRadius * 0.95) * sin(indicatorAngle) -
-                            indicatorRadius,
-                        child: Container(
-                          width: 20.w,
-                          height: 20.w,
-                          decoration: BoxDecoration(
-                            color: AppColors.grayscale5,
-                            shape: BoxShape.circle,
-                          ),
+                            // 마이크 아이콘
+                            Center(
+                              child: Image.asset(
+                                _isMicOn
+                                    ? 'assets/images/mic-on.png'
+                                    : 'assets/images/mic-off.png',
+                                width: 84.w,
+                                height: 84.w,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      // 마이크 아이콘
-                      Center(
-                        child: Image.asset(
-                          _isMicOn
-                              ? 'assets/images/mic-on.png'
-                              : 'assets/images/mic-off.png',
-                          width: 84.w,
-                          height: 84.w,
-                          fit: BoxFit.contain,
-                        ),
+                    ),
+                    SizedBox(height: 20.h),
+                    Text(
+                      '낼 수 있는 가장 높은 음을\n3초 이상 유지해주세요',
+                      style: TextStyle(
+                        color: AppColors.grayscale1,
+                        fontSize: 20.sp,
+                        fontFamily: 'Pretendard Variable',
+                        fontWeight: FontWeight.w400,
+                        height: 1.4,
+                        decoration: TextDecoration.none,
                       ),
-                    ],
-                  ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 20.h),
-              Text(
-                '낼 수 있는 가장 높은 음을\n3초 이상 유지해주세요',
-                style: TextStyle(
-                  color: AppColors.grayscale1,
-                  fontSize: 20.sp,
-                  fontFamily: 'Pretendard Variable',
-                  fontWeight: FontWeight.w400,
-                  height: 1.4,
-                  decoration: TextDecoration.none,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 60.h),
-              Center(
+              Padding(
+                padding: EdgeInsets.only(bottom: 50.h, top: 10.h),
                 child: CupertinoButton(
                   onPressed:
                       _isButtonActive
@@ -187,7 +200,6 @@ class _MaximumPitchPageState extends State<MaximumPitchPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 50.h),
             ],
           ),
         ),
