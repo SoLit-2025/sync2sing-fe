@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
 
@@ -62,7 +63,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
 
   void _navigateToVoiceSamplePage() {
     if (_isButtonActive) {
-      context.go('/onboarding/voice_sample');
+      context.go(AppRoutePaths.voiceSample);
     }
   }
 

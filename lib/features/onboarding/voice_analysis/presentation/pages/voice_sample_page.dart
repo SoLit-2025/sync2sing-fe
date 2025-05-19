@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
 
 class VoiceSamplePage extends StatefulWidget {
   const VoiceSamplePage({super.key});
@@ -28,7 +29,7 @@ class _VoiceSamplePageState extends State<VoiceSamplePage> {
 
   void _navigateToMinimumPitchPage() {
     if (_isButtonActive) {
-      context.go('/onboarding/min_pitch');
+      context.go(AppRoutePaths.minimumPitch);
     }
   }
 
