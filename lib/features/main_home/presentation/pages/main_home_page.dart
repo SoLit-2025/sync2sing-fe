@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
-import 'package:sync2sing/shared/widgets/common_bottom_navigation_bar.dart';
 
 class MainHomePage extends StatefulWidget {
   const MainHomePage({Key? key}) : super(key: key);
@@ -13,10 +12,10 @@ class MainHomePage extends StatefulWidget {
 
 class _MainHomePageState extends State<MainHomePage> {
   final String nickname = "노래하는 해파리";
-  final bool hasSoloTraining = true;
-  final bool hasDuetTraining = false;
+  final bool hasSoloTraining = false;
+  final bool hasDuetTraining = true;
   final int soloDDay = 3;
-  final int duetDDay = 0;
+  final int duetDDay = 2;
 
   int _soloActiveCardIndex = 0;
   int _duetActiveCardIndex = 0;
@@ -45,7 +44,7 @@ class _MainHomePageState extends State<MainHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildMainHeader(),
-                  SizedBox(height: 40.h),
+                  SizedBox(height: 45.h),
                   _buildSoloTrainingSection(),
                   SizedBox(height: 40.h),
                   _buildDuetTrainingSection(),
@@ -54,23 +53,6 @@ class _MainHomePageState extends State<MainHomePage> {
               ),
             ),
           ),
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Container(
-          margin: EdgeInsets.only(bottom: 0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, -5),
-              ),
-            ],
-          ),
-          child: const CommonBottomNavigationBar(currentIndex: 0),
         ),
       ),
     );
@@ -83,7 +65,7 @@ class _MainHomePageState extends State<MainHomePage> {
       children: [
         Positioned(
           right: -70.w,
-          top: -50.h,
+          top: -45.h,
           child: Image.asset(
             'assets/images/main_home_mic_image.png',
             width: 190.w,
@@ -93,12 +75,15 @@ class _MainHomePageState extends State<MainHomePage> {
         ),
         Container(
           width: double.infinity,
-          padding: EdgeInsets.only(right: 100.w),
+          padding: EdgeInsets.only(top: 55.h, right: 80.w),
           child: Text(
             hasAnyTraining
                 ? "$nickname 님,\n진행중인\n트레이닝이 있어요"
                 : "$nickname 님,\n지금 바로\n트레이닝을 시작해보세요",
-            style: AppTextStyles.heading2Bold,
+            style: AppTextStyles.heading2Bold.copyWith(
+              color: AppColors.grayscale1,
+            ),
+            textAlign: TextAlign.left,
           ),
         ),
       ],
@@ -132,7 +117,10 @@ class _MainHomePageState extends State<MainHomePage> {
       children: [
         Text(
           hasSoloTraining ? "솔로 트레이닝 D-$soloDDay" : "솔로 트레이닝",
-          style: AppTextStyles.heading3Bold,
+          style: AppTextStyles.heading3Bold.copyWith(
+            color: AppColors.grayscale1,
+          ),
+          textAlign: TextAlign.left,
         ),
         SizedBox(height: 12.h),
         Column(
@@ -210,7 +198,10 @@ class _MainHomePageState extends State<MainHomePage> {
       children: [
         Text(
           hasDuetTraining ? "듀엣 트레이닝 D-$duetDDay" : "듀엣 트레이닝",
-          style: AppTextStyles.heading3Bold,
+          style: AppTextStyles.heading3Bold.copyWith(
+            color: AppColors.grayscale1,
+          ),
+          textAlign: TextAlign.left,
         ),
         SizedBox(height: 12.h),
         Column(
@@ -300,30 +291,41 @@ class _MainHomePageState extends State<MainHomePage> {
           Text(
             category,
             style: AppTextStyles.body3.copyWith(color: AppColors.primaryRed),
+            textAlign: TextAlign.left,
           ),
           SizedBox(height: 4.h),
-          Text(title, style: AppTextStyles.heading4Bold),
+          Text(
+            title,
+            style: AppTextStyles.heading4Bold.copyWith(
+              color: AppColors.grayscale1,
+            ),
+            textAlign: TextAlign.left,
+          ),
           SizedBox(height: 4.h),
           Text(
             description,
             style: AppTextStyles.body1.copyWith(color: AppColors.grayscale3),
+            textAlign: TextAlign.left,
           ),
           const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            height: 50.h,
-            child: ElevatedButton(
-              onPressed: onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryRed,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+          Center(
+            child: SizedBox(
+              width: 290.w,
+              height: 50.h,
+              child: ElevatedButton(
+                onPressed: onPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryRed,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
                 ),
-              ),
-              child: Text(
-                buttonText,
-                style: AppTextStyles.body1Bold.copyWith(
-                  color: AppColors.grayscale8,
+                child: Text(
+                  buttonText,
+                  style: AppTextStyles.body1Bold.copyWith(
+                    color: AppColors.grayscale8,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
@@ -347,7 +349,7 @@ class _MainHomePageState extends State<MainHomePage> {
       ),
       padding: EdgeInsets.all(20.w),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: Center(
@@ -360,21 +362,24 @@ class _MainHomePageState extends State<MainHomePage> {
               ),
             ),
           ),
-          SizedBox(
-            width: double.infinity,
-            height: 50.h,
-            child: ElevatedButton(
-              onPressed: onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryRed,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+          Center(
+            child: SizedBox(
+              width: 290.w,
+              height: 50.h,
+              child: ElevatedButton(
+                onPressed: onPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryRed,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
                 ),
-              ),
-              child: Text(
-                buttonText,
-                style: AppTextStyles.body1Bold.copyWith(
-                  color: AppColors.grayscale8,
+                child: Text(
+                  buttonText,
+                  style: AppTextStyles.body1Bold.copyWith(
+                    color: AppColors.grayscale8,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
