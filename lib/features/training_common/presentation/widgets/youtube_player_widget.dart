@@ -48,7 +48,11 @@ class _VideoPlayerWidgetState extends ConsumerState<YoutubePlayerWidget> {
 
   @override
   void dispose() {
+    // '중지' 버튼을 누르지 않고 다른 페이지로 이동하는 경우 -> 소리가 계속 나옴
+    print("flutter - jhj : youtube widget dispose()");
     _timer?.cancel();
+    _controller.pause();
+
     _controller.dispose();
     super.dispose();
   }
