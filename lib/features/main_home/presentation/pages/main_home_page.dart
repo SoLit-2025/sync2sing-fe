@@ -12,7 +12,7 @@ class MainHomePage extends StatefulWidget {
 
 class _MainHomePageState extends State<MainHomePage> {
   final String nickname = "노래하는 해파리";
-  final bool hasSoloTraining = false;
+  final bool hasSoloTraining = true;
   final bool hasDuetTraining = true;
   final int soloDDay = 3;
   final int duetDDay = 2;
@@ -80,9 +80,7 @@ class _MainHomePageState extends State<MainHomePage> {
             hasAnyTraining
                 ? "$nickname 님,\n진행중인\n트레이닝이 있어요"
                 : "$nickname 님,\n지금 바로\n트레이닝을 시작해보세요",
-            style: AppTextStyles.heading2Bold.copyWith(
-              color: AppColors.grayscale1,
-            ),
+            style: AppTextStyles.heading2Bold,
             textAlign: TextAlign.left,
           ),
         ),
@@ -117,9 +115,7 @@ class _MainHomePageState extends State<MainHomePage> {
       children: [
         Text(
           hasSoloTraining ? "솔로 트레이닝 D-$soloDDay" : "솔로 트레이닝",
-          style: AppTextStyles.heading3Bold.copyWith(
-            color: AppColors.grayscale1,
-          ),
+          style: AppTextStyles.heading3Bold,
           textAlign: TextAlign.left,
         ),
         SizedBox(height: 12.h),
@@ -296,9 +292,7 @@ class _MainHomePageState extends State<MainHomePage> {
           SizedBox(height: 4.h),
           Text(
             title,
-            style: AppTextStyles.heading4Bold.copyWith(
-              color: AppColors.grayscale1,
-            ),
+            style: AppTextStyles.heading4Bold,
             textAlign: TextAlign.left,
           ),
           SizedBox(height: 4.h),
@@ -322,9 +316,7 @@ class _MainHomePageState extends State<MainHomePage> {
                 ),
                 child: Text(
                   buttonText,
-                  style: AppTextStyles.body1Bold.copyWith(
-                    color: AppColors.grayscale8,
-                  ),
+                  style: AppTextStyles.body1BoldWhite,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -376,9 +368,7 @@ class _MainHomePageState extends State<MainHomePage> {
                 ),
                 child: Text(
                   buttonText,
-                  style: AppTextStyles.body1Bold.copyWith(
-                    color: AppColors.grayscale8,
-                  ),
+                  style: AppTextStyles.body1BoldWhite,
                   textAlign: TextAlign.center,
                 ),
               ),
