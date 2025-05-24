@@ -2,9 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/main_home/presentation/pages/main_home_page.dart';
+import 'package:sync2sing/features/my/presentation/pages/my_page.dart';
 import 'package:sync2sing/features/solo_training/presentation/pages/solo_training_home_page.dart';
 import 'package:sync2sing/features/duet_training/presentation/pages/duet_training_home_page.dart';
-import 'package:sync2sing/features/my_page/presentation/pages/my_page.dart';
 
 class MainTabScreen extends StatelessWidget {
   const MainTabScreen({super.key});

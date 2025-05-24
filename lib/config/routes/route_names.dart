@@ -21,6 +21,7 @@ abstract class AppRouteNames {
   static const soloTrainingHome = 'soloTraining';
   static const duetTrainingHome = 'duetTrainingHome';
   static const my = 'my';
+  static const vocalAnalysisReport = 'vocalAnalysisReport';
 }
 
 abstract class AppRoutePaths {
@@ -45,4 +46,5 @@ abstract class AppRoutePaths {
   static const soloTrainingHome = '/solo_training/home';
   static const duetTrainingHome = '/duet_training/home';
   static const my = '/my';
+  static const vocalAnalysisReport = '/vocal_analysis_report';
 }
