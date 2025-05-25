@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/training_common/presentation/widgets/music_content_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/shared/providers/vocal_analysis_submit_provider.dart';
@@ -61,10 +60,9 @@ class OnboardingRecordingSongPage extends StatelessWidget {
                       onPressed:
                           isVocalAnalysisButtonEnabled()
                               ? () {
+                                // context.goNamed(AppRouteNames.analysisLoading);
                                 ref.refresh(vocalAnalysisSubmitProvider);
-                                context.pushNamed(
-                                  AppRouteNames.analysisLoading,
-                                );
+                                context.goNamed(AppRouteNames.analysisLoading);
                               }
                               : null,
                       child: Text(

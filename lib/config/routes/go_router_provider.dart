@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sync2sing/config/routes/auth_routes.dart';
-import 'package:sync2sing/config/routes/duet_training_routes.dart';
-import 'package:sync2sing/config/routes/my_routes.dart';
-import 'package:sync2sing/config/routes/solo_training_routes.dart';
+import 'auth_routes.dart';
+import 'duet_training_routes.dart';
+import 'my_routes.dart';
+import 'solo_training_routes.dart';
 import '../../main.dart';
 import '../../dev/dev_config.dart';
 import 'main_routes.dart';
