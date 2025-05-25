@@ -6,6 +6,11 @@ import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/shared/utils/mic_permission_helper.dart';
+import 'package:sync2sing/features/onboarding/voice_analysis/data/voice_recorder_service.dart';
+
+
+// VoiceRecorderService를 Provider로 등록 (이름 마음에 안 들어서 나중에 직관적인 걸로 다시 지을 예정)
+final voiceRecorderProvider = Provider((ref) => VoiceRecorderService());
 
 class VoiceSamplePage extends ConsumerStatefulWidget {
   const VoiceSamplePage({super.key});
@@ -24,6 +29,20 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
 
   // 예시: 문장 텍스트
   final String sampleSentence = '물에 떠내려간\n초록색 입술들을 모아\n한 겹 아름다운\n귀를 만들고';
+
+  // 마이크 on/off 상태 (이미지 전환용)
+  bool _isMicOn = false;
+
+  // 녹음 중 여부
+  bool _isRecording = false;
+
+  // 녹음된 오디오 파일 경로 (내부 로직에서만 사용)
+  String? _audioPath;
+
+  // 감지된 평균 음역대
+  String? _centerPitch;
+
+  late final VoiceRecorderService _recorder;
 
   void _onReadSentence() {
     setState(() {
