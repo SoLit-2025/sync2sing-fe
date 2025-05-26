@@ -16,7 +16,7 @@ class VocalAnalysisReportPage extends StatelessWidget {
       "report_id": 789,
       "recording_id": 456,
       "analysis_type": "GUEST",
-      "title": "2025-04-01 애국가",
+      "title": "2025-04-01 Do-Re-Mi",
       "song": {
         "song_id": 999,
         "title": "Do-Re-Mi",
@@ -262,7 +262,7 @@ class VocalAnalysisReportPage extends StatelessWidget {
                     Stack(
                       children: [
                         Container(width: double.infinity, height: 20.h),
-                        // 시작점 (ex: E1)
+                        // 시작점 (ex: C2)
                         Positioned(
                           left: 0,
                           child: Text(
@@ -272,7 +272,7 @@ class VocalAnalysisReportPage extends StatelessWidget {
                             style: AppTextStyles.body3,
                           ),
                         ),
-                        // 채워진 끝 지점 (ex: F4)
+                        // 채워진 끝 지점 (ex: E4)
                         Positioned(
                           left:
                               (MediaQuery.of(context).size.width -
