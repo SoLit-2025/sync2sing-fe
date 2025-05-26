@@ -5,122 +5,103 @@ import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 
-typedef _Fn = void Function();
+class PitchData {
+  final double pitch;
+  final double probability;
+
+  PitchData({required this.pitch, required this.probability});
+}
 
 class AudioRecorderUtil {
-  FlutterSoundRecorder? _mRecorder = FlutterSoundRecorder();
-  final PitchDetector _pitchDetector = PitchDetector(
-    audioSampleRate: cstSAMPLERATE.toDouble(),
-    bufferSize: 1024,
-  );
+  final bool isFileSave;
+  final bool isPitchDetection;
+  final bool enableRhythmDetection;
+  final void Function(double pitch)? onPitchDetected;
 
-  static const int cstSAMPLERATE = 44100;
-  static const int cstCHANNELNB = 1;
+  late final FlutterSoundRecorder _recorder;
+  IOSink? _fileSink;
+  StreamController<PitchData>? _pitchStreamController;
+  late final PitchDetector _pitchDetector;
 
-  bool _mRecorderIsInited = false;
-  bool mRecorderStarted = false;
-  bool mRecordingIsRecording = false;
-  String? _mPath;
-  Codec codecSelected = Codec.pcm16;
+  AudioRecorderUtil({
+    this.isFileSave = false,
+    this.isPitchDetection = false,
+    this.onPitchDetected,
+    this.enableRhythmDetection = false,
+  });
 
-  StreamSubscription? _mRecordingDataSubscription;
+  Future<void> init() async {
+    _recorder = FlutterSoundRecorder();
+    await _recorder.openRecorder();
 
-  void init() {
-    _openRecorder();
-  }
-
-  Future<void> _openRecorder() async {
-    await _mRecorder!.openRecorder();
-
-    _mRecorderIsInited = true;
-  }
-
-  void closeAll() {
-    stopRecorder();
-    _mRecorder!.closeRecorder();
-    _mRecorder = null;
-  }
-
-  Future<IOSink> createFile() async {
-    var tempDir = await getTemporaryDirectory();
-    var timeStamp = DateTime.now().millisecondsSinceEpoch;
-    _mPath = '${tempDir.path}/flutter_sound_$timeStamp.pcm';
-    var outputFile = File(_mPath!);
-    if (outputFile.existsSync()) {
-      await outputFile.delete();
+    if (isPitchDetection) {
+      _pitchDetector = PitchDetector(audioSampleRate: 44100, bufferSize: 1024);
+      _pitchStreamController = StreamController<PitchData>.broadcast();
     }
-    return outputFile.openWrite();
   }
 
-  Future<void> record() async {
-    StreamSink<List<int>>? sink;
-    sink = await createFile();
+  Stream<PitchData>? get pitchStream => _pitchStreamController?.stream;
 
-    var recordingDataController = StreamController<Uint8List>();
-    _mRecordingDataSubscription = recordingDataController.stream.listen((
-      buffer,
-    ) {
-      sink!.add(buffer);
-      _pitchDetector.getPitchFromIntBuffer(buffer).then((result) {
+  Future<void> startOrResumeRecorder() async {
+    if (_recorder.isPaused) {
+      _recorder.resumeRecorder();
+    } else {
+      startRecorder();
+    }
+  }
+
+  Future<void> startRecorder() async {
+    if (isFileSave) {
+      _fileSink = await _createFileSink();
+    }
+
+    final controller = StreamController<Uint8List>();
+    controller.stream.listen((buffer) async {
+      if (isFileSave) {
+        _fileSink?.add(buffer);
+      }
+
+      if (isPitchDetection) {
+        final result = await _pitchDetector.getPitchFromIntBuffer(buffer);
         if (result.pitched) {
-          // 오류: stream으로 받은 버퍼 크기가 pitchDetector 에 지정한 버퍼 사이즈보다 작음
-          // TODO : 위젯에서 pitch를 받을 수 있게 수정
-          print(
-            "flutter - jhj: getPitch ${result.pitch} | probibility: ${result.probability}",
+          _pitchStreamController?.add(
+            PitchData(pitch: result.pitch, probability: result.probability),
           );
-        } else {
-          print("flutter - jhj:result no pitched");
         }
-      });
+      }
+
+      // TODO: enableRhythmDetection 추가 구현 예정
     });
-    await _mRecorder!.startRecorder(
-      toStream: recordingDataController.sink,
-      codec: codecSelected,
-      numChannels: cstCHANNELNB,
-      sampleRate: cstSAMPLERATE,
-      bufferSize: 8192,
-      audioSource: AudioSource.defaultSource,
+
+    await _recorder.startRecorder(
+      toStream: controller.sink,
+      codec: Codec.pcm16,
+      sampleRate: 44100,
+      numChannels: 1,
     );
-    mRecorderStarted = true;
-    mRecordingIsRecording = true;
-    _mRecorderIsInited = true;
   }
 
   Future<void> pauseRecorder() async {
-    await _mRecorder!.pauseRecorder();
-    mRecordingIsRecording = false;
-  }
-
-  Future<void> resumeRecorder() async {
-    await _mRecorder!.resumeRecorder();
-    mRecordingIsRecording = true;
-  }
-
-  Future<void> startOrResumeRecorder() async {
-    (mRecorderStarted && _mRecorder!.isPaused)
-        ? await resumeRecorder()
-        : await record();
-  }
-
-  _Fn? getRecorderFn() {
-    if (!_mRecorderIsInited) {
-      return null;
-    }
-    return _mRecorder!.isStopped
-        ? record
-        : () {
-          stopRecorder().then((value) => (() {}));
-        };
+    await _recorder.pauseRecorder();
   }
 
   Future<void> stopRecorder() async {
-    await _mRecorder!.stopRecorder();
+    await _recorder.stopRecorder();
+    await _fileSink?.close();
+  }
 
-    if (_mRecordingDataSubscription != null) {
-      await _mRecordingDataSubscription!.cancel();
-      _mRecordingDataSubscription = null;
-    }
+  Future<void> dispose() async {
+    await stopRecorder();
+    await _recorder.closeRecorder();
+    await _pitchStreamController?.close();
+  }
 
-    mRecordingIsRecording = false;
+  Future<IOSink> _createFileSink() async {
+    final tempDir = await getTemporaryDirectory();
+    final file = File(
+      '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.pcm',
+    );
+    if (file.existsSync()) await file.delete();
+    return file.openWrite();
   }
 }

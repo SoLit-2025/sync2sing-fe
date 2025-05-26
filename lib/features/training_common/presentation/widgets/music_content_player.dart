@@ -10,7 +10,7 @@ import 'package:sync2sing/features/training_common/presentation/widgets/song_inf
 import 'package:sync2sing/features/training_common/presentation/widgets/vocal_pitch_indicator.dart';
 import 'package:sync2sing/shared/providers/mic_permission_provider.dart';
 
-import '../../data/services/audio_recorder_util.dart';
+import '../../../../shared/providers/audio_recorder_provider.dart';
 
 class MusicContentPlayer extends ConsumerStatefulWidget {
   const MusicContentPlayer({super.key});
@@ -20,20 +20,10 @@ class MusicContentPlayer extends ConsumerStatefulWidget {
 }
 
 class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
-  bool _mRecordingIsRecording = false;
-  AudioRecorderUtil? audioRecorder = AudioRecorderUtil();
-
   @override
   void initState() {
     super.initState();
     _checkPermission();
-    audioRecorder!.init();
-  }
-
-  @override
-  void dispose() {
-    audioRecorder!.closeAll();
-    super.dispose();
   }
 
   Future<void> _checkPermission() async {
@@ -46,35 +36,26 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
     }
   }
 
-  Future<void> startOrResumeRecorder() async {
-    await audioRecorder!.startOrResumeRecorder();
-    setState(() {
-      _mRecordingIsRecording = true;
-    });
-  }
-
-  Future<void> pauseRecorder() async {
-    audioRecorder!.pauseRecorder();
-    setState(() {
-      _mRecordingIsRecording = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final isRecording = ref.watch(audioRecorderProvider);
+    final recorderController = ref.read(audioRecorderProvider.notifier);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SongInformationWidget(),
+        // SizedBox(height: 10.h),
         LyricsSection(),
+        // SizedBox(height: 15.h),
         Container(
           height: 155.h,
           decoration: BoxDecoration(
             borderRadius: BorderRadiusDirectional.circular(10.r),
             color: AppColors.grayscale7,
           ),
-          child: VocalPitchIndicator(), // 음정을 실시간으로 보여주는 부분
+          child: VocalPitchIndicator(),
         ),
         SizedBox(height: 20.h),
         SizedBox(
@@ -84,15 +65,17 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _KeyMinusButton(textContent: "Key -"),
-              (_mRecordingIsRecording)
+              (isRecording)
                   ? _PauseButton(
                     onPressed: () async {
-                      await pauseRecorder();
+                      // await pauseRecorder();
+                      await recorderController.pause();
                     },
                   )
                   : _PlayButton(
                     onPressed: () async {
-                      await startOrResumeRecorder();
+                      // await startOrResumeRecorder();
+                      recorderController.startOrResume();
                     },
                   ),
               _KeyPlusButton(textContent: "Key +"),
@@ -100,6 +83,7 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
           ),
         ),
       ],
+      // ),
     );
   }
 }
