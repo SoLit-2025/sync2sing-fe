@@ -25,7 +25,7 @@ class VoiceSamplePage extends ConsumerStatefulWidget {
 class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
   // 기능별 인스턴스
   late final VoiceRecorder voiceRecorder;          // 녹음
-  late final M4aToWavConverter m4aToWavConverter; // 파일 변환
+  // late final M4aToWavConverter m4aToWavConverter; // 파일 변환
   late final VoicePitchFinder voicePitchFinder;   // 음정 분석
 
   // 버튼 및 타이머 상태 변수
@@ -41,7 +41,7 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
   void initState() {
     super.initState();
     voiceRecorder = VoiceRecorder();
-    m4aToWavConverter = M4aToWavConverter();
+    // m4aToWavConverter = M4aToWavConverter();
     voicePitchFinder = VoicePitchFinder();
 
     // 마이크 권한 요청
@@ -99,10 +99,10 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
     if (recordedFilePath != null) {
       try {
         // STEP3. 녹음 파일 확장자 변환 (메서드명 및 변수명 통일)
-        final convertedFilePath = await m4aToWavConverter.convert(recordedFilePath);
+        // final convertedFilePath = await m4aToWavConverter.convert(recordedFilePath);
 
         // STEP4. 변환된 파일에서 평균 노트명 분석
-        final averageNote = await voicePitchFinder.findAverageNote(convertedFilePath);
+        final averageNote = await voicePitchFinder.findAverageNote(recordedFilePath);
 
         // STEP5. 분석된 평균 노트명 텍스트 임시저장
         ref.read(voiceRangeProvider.notifier).setAverageNote(averageNote);

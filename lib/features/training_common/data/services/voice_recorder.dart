@@ -15,11 +15,11 @@ class VoiceRecorder {
       throw Exception('마이크 권한이 필요합니다.');
     }
     final dir = await getApplicationDocumentsDirectory();
-    // 유니크 파일명 생성
-    _recordedFilePath = '${dir.path}/origin_voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    // 고유 파일명 생성, 확장자 .wav로 지정
+    _recordedFilePath = '${dir.path}/origin_voice_${DateTime.now().millisecondsSinceEpoch}.wav';
     await _recorder.start(
       const RecordConfig(
-        encoder: AudioEncoder.aacLc,
+        encoder: AudioEncoder.wav, // wav 포맷으로 저장
         bitRate: 128000,
         sampleRate: 44100,
       ),
