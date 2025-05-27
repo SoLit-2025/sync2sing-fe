@@ -48,7 +48,7 @@ class OnboardingRecordingSongPage extends StatelessWidget {
 
               Spacer(), // 중간과 버튼 사이 간격
               // 하단 버튼
-              Container(
+              SizedBox(
                 // margin: EdgeInsets.only(bottom: 10.h),
                 width: 327.w,
                 height: 50.w,

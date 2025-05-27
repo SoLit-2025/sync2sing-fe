@@ -14,7 +14,7 @@ class MaximumPitchPage extends StatefulWidget {
 }
 
 class _MaximumPitchPageState extends State<MaximumPitchPage> {
-  bool _isVoiceDetected = true;
+  final bool _isVoiceDetected = true;
   bool get _isMicOn => _isVoiceDetected;
   bool get _isButtonActive => _isVoiceDetected;
 

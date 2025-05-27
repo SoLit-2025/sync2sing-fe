@@ -1,81 +1,153 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sync2sing/shared/providers/voice_range_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/shared/utils/mic_permission_helper.dart';
-import 'package:sync2sing/features/onboarding/voice_analysis/data/voice_recorder_service.dart';
+import '../../../../../config/theme/app_text_styles.dart';
 
-
-// VoiceRecorderService를 Provider로 등록 (이름 마음에 안 들어서 나중에 직관적인 걸로 다시 지을 예정)
-final voiceRecorderProvider = Provider((ref) => VoiceRecorderService());
+import 'package:sync2sing/features/training_common/data/services/voice_recorder.dart';
+import 'package:sync2sing/features/training_common/data/services/m4a_to_wav_converter.dart';
+import 'package:sync2sing/features/training_common/data/services/voice_pitch_finder.dart';
 
 class VoiceSamplePage extends ConsumerStatefulWidget {
   const VoiceSamplePage({super.key});
 
   @override
-  ConsumerState<VoiceSamplePage> createState() => _VoiceSamplePageState();
+  ConsumerState createState() => _VoiceSamplePageState();
 }
 
 class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
-  // 실제 구현에서는 음성 인식으로 읽기 완료 상태를 판단할 예정
-  // 여기서는 임시로 버튼을 항상 활성화로 두고, 실제 구현시 읽기 완료 로직으로 변경
-  bool _isSentenceRead = true;
+  // 기능별 인스턴스
+  late final VoiceRecorder voiceRecorder;          // 녹음
+  late final M4aToWavConverter m4aToWavConverter; // 파일 변환
+  late final VoicePitchFinder voicePitchFinder;   // 음정 분석
 
-  // 예시: 버튼 활성화 조건(실제 구현시 음성 인식 결과에 따라 변경)
-  bool get _isButtonActive => _isSentenceRead;
+  // 버튼 및 타이머 상태 변수
+  bool isRecording = false;
+  bool canFinish = false;
+  int remainingSeconds = 5;
+  Timer? finishEnableTimer;
 
-  // 예시: 문장 텍스트
+  // 낭독할 문장
   final String sampleSentence = '물에 떠내려간\n초록색 입술들을 모아\n한 겹 아름다운\n귀를 만들고';
-
-  // 마이크 on/off 상태 (이미지 전환용)
-  bool _isMicOn = false;
-
-  // 녹음 중 여부
-  bool _isRecording = false;
-
-  // 녹음된 오디오 파일 경로 (내부 로직에서만 사용)
-  String? _audioPath;
-
-  // 감지된 평균 음역대
-  String? _centerPitch;
-
-  late final VoiceRecorderService _recorder;
-
-  void _onReadSentence() {
-    setState(() {
-      _isSentenceRead = true;
-    });
-  }
-
-  void _navigateToMinimumPitchPage() {
-    if (_isButtonActive) {
-      context.go('/onboarding/min_pitch');
-    }
-  }
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() async {
-      final granted = await ensureMicPermission(ref); // 공통 함수 재사용
+    voiceRecorder = VoiceRecorder();
+    m4aToWavConverter = M4aToWavConverter();
+    voicePitchFinder = VoicePitchFinder();
 
-      if (granted) {
-        // startRecording(); // 녹음 시작 로직 실행
-      } else {
-        // showPermissionDialog(); // 또는 설정 안내 등
-        // 권한이 없으면 안내하고 return
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
+    // 마이크 권한 요청
+    Future.microtask(() async {
+      final granted = await ensureMicPermission(ref);
+      if (!granted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("마이크 권한이 필요합니다")),
+        );
       }
     });
   }
 
+  // '읽기 시작' 버튼 클릭 시 호출: 녹음 시작 및 5초 타이머 시작
+  Future<void> onStartReading() async {
+    setState(() {
+      isRecording = true;
+      canFinish = false;
+      remainingSeconds = 5;
+    });
+    // 녹음 시작
+    await voiceRecorder.startRecording();
+
+    // 타이머: 5초 후 '읽기 종료' 버튼 활성화
+    finishEnableTimer?.cancel();
+    finishEnableTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        remainingSeconds--;
+        if (remainingSeconds <= 0) {
+          canFinish = true;
+          finishEnableTimer?.cancel();
+        }
+      });
+    });
+  }
+
+  // '읽기 종료' 버튼 클릭 시 호출: 녹음 종료 후 변환/분석/전송
+  Future<void> onFinishReading() async {
+    setState(() {
+      isRecording = false;
+    });
+    await analyzeAndStoreAverageNote();
+    navigateToMinimumPitchPage();
+  }
+
+  // 평균 노트명 분석 후 임시 저장: 서버로 보내는 작업은 평균음, 최저음, 최고음 모두 분석한 뒤에 일괄 처리
+  Future<void> analyzeAndStoreAverageNote() async {
+    // STEP1. 녹음 종료
+    await voiceRecorder.stopRecording();
+
+    // STEP2. 녹음된 파일의 경로를 voiceRecorder로부터 가져오기
+    final recordedFilePath = voiceRecorder.getRecordedFilePath();
+
+    // 녹음 파일이 정상적으로 존재한다면 다음 작업 진행
+    if (recordedFilePath != null) {
+      try {
+        // STEP3. 녹음 파일 확장자 변환 (메서드명 및 변수명 통일)
+        final convertedFilePath = await m4aToWavConverter.convert(recordedFilePath);
+
+        // STEP4. 변환된 파일에서 평균 노트명 분석
+        final averageNote = await voicePitchFinder.findAverageNote(convertedFilePath);
+
+        // STEP5. 분석된 평균 노트명 텍스트 임시저장
+        ref.read(voiceRangeProvider.notifier).setAverageNote(averageNote);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("음성 분석 중 오류가 발생했습니다: $e")),
+        );
+      }
+    } else {
+      // 파일 경로가 없을 때
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("녹음 파일을 찾을 수 없습니다.")),
+      );
+    }
+  }
+
+  // 다음 페이지로 이동
+  void navigateToMinimumPitchPage() {
+    context.go('/onboarding/min_pitch');
+  }
+
+  @override
+  void dispose() {
+    finishEnableTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 버튼 텍스트 및 활성화 상태 결정:
+    String buttonText;
+    bool isButtonEnabled;
+    if (!isRecording) {
+      buttonText = '읽기 시작';
+      isButtonEnabled = true;
+    } else {
+      if (canFinish) {
+        buttonText = '읽기 종료';
+        isButtonEnabled = true;
+      } else {
+        buttonText = '읽기 종료 (${remainingSeconds}s)';
+        isButtonEnabled = false;
+      }
+    }
+
     return CupertinoPageScaffold(
       backgroundColor: AppColors.grayscale8,
       child: SafeArea(
@@ -85,38 +157,20 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 32.h),
-              // 페이지네이션 - 2번째 페이지
               Center(child: OnboardingPageIndicator(currentPage: 1)),
               SizedBox(height: 40.h),
-              // 메인 텍스트
               Text(
                 '아래 문장을 읽어주세요',
-                style: TextStyle(
-                  color: AppColors.grayscale1,
-                  fontSize: 22.sp,
-                  fontFamily: 'Pretendard Variable',
-                  fontWeight: FontWeight.w600,
-                  height: 1.4,
-                  decoration: TextDecoration.none,
-                ),
+                style: AppTextStyles.heading3Bold,
                 textAlign: TextAlign.left,
               ),
               SizedBox(height: 12.h),
-              // 서브 텍스트
               Text(
                 '평소처럼 자연스럽게 읽어주시면\n목소리를 더 정확히 분석할 수 있어요',
-                style: TextStyle(
-                  color: AppColors.grayscale1,
-                  fontSize: 20.sp,
-                  fontFamily: 'Pretendard Variable',
-                  fontWeight: FontWeight.w400,
-                  height: 1.4,
-                  decoration: TextDecoration.none,
-                ),
+                style: AppTextStyles.heading4,
                 textAlign: TextAlign.left,
               ),
               SizedBox(height: 32.h),
-              // 문장 컨테이너
               Center(
                 child: Container(
                   width: 327.w,
@@ -128,51 +182,39 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
                   alignment: Alignment.center,
                   child: Text(
                     sampleSentence,
-                    style: TextStyle(
-                      color: AppColors.grayscale3,
-                      fontSize: 34.sp,
-                      fontFamily: 'Pretendard Variable',
-                      fontWeight: FontWeight.w600,
-                      height: 1.4,
-                      decoration: TextDecoration.none,
-                    ),
+                    style: AppTextStyles.heading1Bold.copyWith(color: AppColors.grayscale3),
                     textAlign: TextAlign.left,
                   ),
                 ),
               ),
               SizedBox(height: 60.h),
-
-              // 확인 버튼
               Center(
                 child: CupertinoButton(
-                  onPressed:
-                      _isButtonActive ? _navigateToMinimumPitchPage : null,
+                  onPressed: !isButtonEnabled
+                      ? null
+                      : () async {
+                    if (!isRecording) {
+                      await onStartReading();
+                    } else if (canFinish) {
+                      await onFinishReading();
+                    }
+                  },
                   padding: EdgeInsets.zero,
                   child: Container(
                     width: 327.w,
                     height: 50.h,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color:
-                          _isButtonActive
-                              ? AppColors.primaryPink
-                              : const Color(0xFFF8D6DA),
+                      color: isButtonEnabled
+                          ? AppColors.primaryPink
+                          : const Color(0xFFF8D6DA),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(
-                      '확인',
-                      style: TextStyle(
-                        color:
-                            _isButtonActive
-                                ? AppColors.grayscale8
-                                : AppColors.grayscale8,
-                        fontSize: 17.sp,
-                        fontFamily: 'Pretendard Variable',
-                        fontWeight:
-                            _isButtonActive ? FontWeight.w600 : FontWeight.w400,
-                        height: 1.4,
-                        decoration: TextDecoration.none,
-                      ),
+                      buttonText,
+                      style: isButtonEnabled
+                          ? AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale8)
+                          : AppTextStyles.body1.copyWith(color: AppColors.grayscale8),
                     ),
                   ),
                 ),

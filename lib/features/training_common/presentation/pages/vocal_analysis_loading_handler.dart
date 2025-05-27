@@ -1,13 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/features/training_common/presentation/pages/vocal_analysis_loading_page.dart';
 import 'package:sync2sing/shared/providers/vocal_analysis_submit_provider.dart';
 
 class VocalAnalysisLoadingHandler extends ConsumerWidget {
-  const VocalAnalysisLoadingHandler({Key? key}) : super(key: key);
+  const VocalAnalysisLoadingHandler({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

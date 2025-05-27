@@ -67,19 +67,19 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
 class _PlayButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const _PlayButton({super.key, required this.onPressed});
+  const _PlayButton({required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return CupertinoButton(
       minSize: 0.0,
       padding: EdgeInsets.all(0),
+      onPressed: onPressed,
       child: ImageIcon(
         AssetImage("assets/images/play.png"),
         color: AppColors.grayscale3,
         size: 20.w,
       ),
-      onPressed: onPressed,
     );
   }
 }
@@ -87,19 +87,19 @@ class _PlayButton extends StatelessWidget {
 class _PauseButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const _PauseButton({super.key, required this.onPressed});
+  const _PauseButton({required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return CupertinoButton(
       minSize: 0.0,
       padding: EdgeInsets.all(0),
+      onPressed: onPressed,
       child: ImageIcon(
         AssetImage("assets/images/pause.png"),
         color: AppColors.grayscale3,
         size: 20.w,
       ),
-      onPressed: onPressed,
     );
   }
 }
@@ -107,7 +107,7 @@ class _PauseButton extends StatelessWidget {
 class _KeyControlButton extends StatelessWidget {
   final String textContent;
 
-  const _KeyControlButton({super.key, required this.textContent});
+  const _KeyControlButton({required this.textContent});
 
   bool isEnabled() {
     // TODO 버튼 활성화 조건
@@ -143,7 +143,7 @@ class _KeyControlButton extends StatelessWidget {
 }
 
 class _KeyMinusButton extends _KeyControlButton {
-  _KeyMinusButton({required super.textContent});
+  const _KeyMinusButton({required super.textContent});
 
   @override
   void performAction() {
@@ -153,7 +153,7 @@ class _KeyMinusButton extends _KeyControlButton {
 }
 
 class _KeyPlusButton extends _KeyControlButton {
-  _KeyPlusButton({required super.textContent});
+  const _KeyPlusButton({required super.textContent});
 
   @override
   void performAction() {
