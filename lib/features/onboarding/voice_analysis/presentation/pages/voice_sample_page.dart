@@ -2,9 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
 import 'package:sync2sing/shared/utils/mic_permission_helper.dart';
 
 class VoiceSamplePage extends ConsumerStatefulWidget {
@@ -33,7 +35,7 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
 
   void _navigateToMinimumPitchPage() {
     if (_isButtonActive) {
-      context.go('/onboarding/min_pitch');
+      context.go(AppRoutePaths.minimumPitch);
     }
   }
 
@@ -43,10 +45,7 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
     Future.microtask(() async {
       final granted = await ensureMicPermission(ref); // 공통 함수 재사용
 
-      if (granted) {
-        // startRecording(); // 녹음 시작 로직 실행
-      } else {
-        // showPermissionDialog(); // 또는 설정 안내 등
+      if (!granted) {
         // 권한이 없으면 안내하고 return
         ScaffoldMessenger.of(
           context,
@@ -57,6 +56,22 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isRecording = ref.watch(audioPitchNoSaveProvider);
+    final recorderController = ref.read(audioPitchNoSaveProvider.notifier);
+    final pitchAsync = ref.watch(autoStartPitchStreamProvider);
+
+    pitchAsync.when(
+      data: (pitchData) {
+        // print("flutter: Widget 수신 pitch: ${pitchData.pitch} Hz");
+        return SizedBox();
+      },
+      loading: () => SizedBox(),
+      error: (e, _) {
+        print("flutter: pitchStream 에러: $e");
+        return SizedBox();
+      },
+    );
+
     return CupertinoPageScaffold(
       backgroundColor: AppColors.grayscale8,
       child: SafeArea(

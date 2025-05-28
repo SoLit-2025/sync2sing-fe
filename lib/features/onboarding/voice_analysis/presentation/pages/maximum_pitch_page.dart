@@ -1,19 +1,24 @@
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
 
-class MaximumPitchPage extends StatefulWidget {
+import '../../../../../shared/utils/mic_permission_helper.dart';
+
+class MaximumPitchPage extends ConsumerStatefulWidget {
   const MaximumPitchPage({super.key});
 
   @override
-  State<MaximumPitchPage> createState() => _MaximumPitchPageState();
+  ConsumerState<MaximumPitchPage> createState() => _MaximumPitchPageState();
 }
 
-class _MaximumPitchPageState extends State<MaximumPitchPage> {
+class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
   bool _isVoiceDetected = true;
   bool get _isMicOn => _isVoiceDetected;
   bool get _isButtonActive => _isVoiceDetected;
@@ -24,6 +29,20 @@ class _MaximumPitchPageState extends State<MaximumPitchPage> {
     if (_isButtonActive) {
       context.go(AppRoutePaths.onboardingRecordingGuide);
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async {
+      final granted = await ensureMicPermission(ref); // 공통 함수 재사용
+
+      if (!granted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
+      }
+    });
   }
 
   @override
@@ -42,6 +61,21 @@ class _MaximumPitchPageState extends State<MaximumPitchPage> {
     final double endAngle = 2 * pi;
     final double sweepAngle = endAngle - startAngle;
     final int noteCount = _notes.length;
+
+    // 음성 분석
+    final isRecording = ref.watch(audioPitchNoSaveProvider);
+    final recorderController = ref.read(audioPitchNoSaveProvider.notifier);
+    ref
+        .watch(autoStartPitchStreamProvider)
+        .when(
+          data: (pitchData) {
+            // 여기에서 pitchData.pitch 를 사용해서 화면 또는 로직 처리
+            // print("flutter: now pitch: ${pitchData.pitch}");
+            return Text('Pitch: ${pitchData.pitch.toStringAsFixed(2)} Hz');
+          },
+          loading: () => CircularProgressIndicator(),
+          error: (e, _) => Text('Error: $e'),
+        );
 
     return CupertinoPageScaffold(
       backgroundColor: AppColors.grayscale8,
