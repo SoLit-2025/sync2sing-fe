@@ -62,7 +62,7 @@ class OnboardingRecordingSongPage extends StatelessWidget {
                           isVocalAnalysisButtonEnabled()
                               ? () {
                                 ref.refresh(vocalAnalysisSubmitProvider);
-                                context.pushNamed(
+                                context.goNamed(
                                   AppRouteNames.analysisLoading,
                                 );
                               }

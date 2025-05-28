@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:record/record.dart';
 
 // 사용자 음성 녹음
@@ -16,7 +18,17 @@ class VoiceRecorder {
     }
     final dir = await getApplicationDocumentsDirectory();
     // 고유 파일명 생성, 확장자 .wav로 지정
-    _recordedFilePath = '${dir.path}/origin_voice_${DateTime.now().millisecondsSinceEpoch}.wav';
+    _recordedFilePath =
+        '${dir.path}/origin_voice_${DateTime.now().millisecondsSinceEpoch}.wav';
+    _recorder.startStream(
+      const RecordConfig(
+        encoder: AudioEncoder.pcm16bits,
+        numChannels: 1,
+        bitRate: 128000,
+        sampleRate: PitchDetector.DEFAULT_SAMPLE_RATE,
+      ),
+    );
+
     await _recorder.start(
       const RecordConfig(
         encoder: AudioEncoder.wav, // wav 포맷으로 저장

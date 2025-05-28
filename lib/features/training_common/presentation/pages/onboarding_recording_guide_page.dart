@@ -95,7 +95,7 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
                     onPressed:
                         isButtonEnabled
                             ? () {
-                              context.pushNamed(
+                              context.goNamed(
                                 AppRouteNames.onboardingRecordingSong,
                               );
                             }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/shared/providers/voice_range_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
@@ -24,9 +25,9 @@ class VoiceSamplePage extends ConsumerStatefulWidget {
 
 class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
   // 기능별 인스턴스
-  late final VoiceRecorder voiceRecorder;          // 녹음
+  late final VoiceRecorder voiceRecorder; // 녹음
   // late final M4aToWavConverter m4aToWavConverter; // 파일 변환
-  late final VoicePitchFinder voicePitchFinder;   // 음정 분석
+  late final VoicePitchFinder voicePitchFinder; // 음정 분석
 
   // 버튼 및 타이머 상태 변수
   bool isRecording = false;
@@ -48,9 +49,9 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
     Future.microtask(() async {
       final granted = await ensureMicPermission(ref);
       if (!granted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("마이크 권한이 필요합니다")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("마이크 권한이 필요합니다")));
       }
     });
   }
@@ -102,26 +103,28 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
         // final convertedFilePath = await m4aToWavConverter.convert(recordedFilePath);
 
         // STEP4. 변환된 파일에서 평균 노트명 분석
-        final averageNote = await voicePitchFinder.findAverageNote(recordedFilePath);
+        final averageNote = await voicePitchFinder.findAverageNote(
+          recordedFilePath,
+        );
 
         // STEP5. 분석된 평균 노트명 텍스트 임시저장
         ref.read(voiceRangeProvider.notifier).setAverageNote(averageNote);
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("음성 분석 중 오류가 발생했습니다: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("음성 분석 중 오류가 발생했습니다: $e")));
       }
     } else {
       // 파일 경로가 없을 때
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("녹음 파일을 찾을 수 없습니다.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("녹음 파일을 찾을 수 없습니다.")));
     }
   }
 
   // 다음 페이지로 이동
   void navigateToMinimumPitchPage() {
-    context.go('/onboarding/min_pitch');
+    context.go(AppRoutePaths.minimumPitch);
   }
 
   @override
@@ -148,9 +151,9 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
       }
     }
 
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppColors.grayscale8,
-      child: SafeArea(
+      body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
@@ -182,7 +185,9 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
                   alignment: Alignment.center,
                   child: Text(
                     sampleSentence,
-                    style: AppTextStyles.heading1Bold.copyWith(color: AppColors.grayscale3),
+                    style: AppTextStyles.heading1Bold.copyWith(
+                      color: AppColors.grayscale3,
+                    ),
                     textAlign: TextAlign.left,
                   ),
                 ),
@@ -190,31 +195,38 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
               SizedBox(height: 60.h),
               Center(
                 child: CupertinoButton(
-                  onPressed: !isButtonEnabled
-                      ? null
-                      : () async {
-                    if (!isRecording) {
-                      await onStartReading();
-                    } else if (canFinish) {
-                      await onFinishReading();
-                    }
-                  },
+                  onPressed:
+                      !isButtonEnabled
+                          ? null
+                          : () async {
+                            if (!isRecording) {
+                              await onStartReading();
+                            } else if (canFinish) {
+                              await onFinishReading();
+                            }
+                          },
                   padding: EdgeInsets.zero,
                   child: Container(
                     width: 327.w,
                     height: 50.h,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: isButtonEnabled
-                          ? AppColors.primaryPink
-                          : const Color(0xFFF8D6DA),
+                      color:
+                          isButtonEnabled
+                              ? AppColors.primaryPink
+                              : const Color(0xFFF8D6DA),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(
                       buttonText,
-                      style: isButtonEnabled
-                          ? AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale8)
-                          : AppTextStyles.body1.copyWith(color: AppColors.grayscale8),
+                      style:
+                          isButtonEnabled
+                              ? AppTextStyles.body1Bold.copyWith(
+                                color: AppColors.grayscale8,
+                              )
+                              : AppTextStyles.body1.copyWith(
+                                color: AppColors.grayscale8,
+                              ),
                     ),
                   ),
                 ),
