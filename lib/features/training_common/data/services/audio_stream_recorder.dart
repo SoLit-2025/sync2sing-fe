@@ -6,6 +6,8 @@ import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'save_wav_file.dart';
+
 class PitchData {
   final double pitch;
   final double probability;
@@ -18,12 +20,18 @@ class AudioStreamRecorder {
   final bool isPitchDetection;
   final bool isRhythmDetection;
   final void Function(double pitch)? onPitchDetected;
-  static const int _bufferSize = 2048;
 
+  static const int _bufferSize = 2048;
+  static const int _sampleRate = 44100;
+  static const int _numberOfChannel = 1;
   late final FlutterSoundRecorder _recorder;
-  IOSink? _fileSink;
+
   StreamController<PitchData>? _pitchStreamController;
   late final PitchDetector _pitchDetector;
+
+  String? _recordingFilePath; // 파일 경로
+  RandomAccessFile? _wavFile; // file 저장
+  int _totalDataSize = 0; // 누적 PCM 데이터 크기 추적
 
   AudioStreamRecorder({
     this.isFileSave = false,
@@ -39,7 +47,7 @@ class AudioStreamRecorder {
 
     if (isPitchDetection) {
       _pitchDetector = PitchDetector(
-        audioSampleRate: 44100,
+        audioSampleRate: _sampleRate.toDouble(),
         bufferSize: _bufferSize,
       );
       _pitchStreamController = StreamController<PitchData>.broadcast();
@@ -60,14 +68,16 @@ class AudioStreamRecorder {
   // 녹음 시작
   Future<void> startRecorder() async {
     if (isFileSave) {
-      _fileSink = await _createFileSink();
+      await _createWavFile();
+      _totalDataSize = 0;
     }
 
     final controller = StreamController<Uint8List>();
     controller.stream.listen((buffer) async {
       if (isFileSave) {
         // 파일에 저장해야 하는 경우
-        _fileSink?.add(buffer);
+        await _wavFile!.writeFrom(buffer);
+        _totalDataSize += buffer.length; // 데이터 크기 누적
       }
 
       if (isPitchDetection) {
@@ -84,8 +94,8 @@ class AudioStreamRecorder {
     await _recorder.startRecorder(
       toStream: controller.sink,
       codec: Codec.pcm16,
-      sampleRate: 44100,
-      numChannels: 1,
+      sampleRate: _sampleRate,
+      numChannels: _numberOfChannel,
       bufferSize: _bufferSize,
     );
   }
@@ -96,7 +106,21 @@ class AudioStreamRecorder {
 
   Future<void> stopRecorder() async {
     await _recorder.stopRecorder();
-    await _fileSink?.close();
+
+    // 헤더 덮어쓰기
+    if (isFileSave && _recordingFilePath != null) {
+      // 헤더 업데이트
+      await _wavFile!.setPosition(0);
+      final updatedHeader = SaveWavFile.buildHeader(
+        sampleRate: 44100,
+        channels: 1,
+        bitsPerSample: 16,
+        pcmDataSize: _totalDataSize, // 실제 데이터 크기 반영
+      );
+      await _wavFile!.writeFrom(updatedHeader);
+      await _wavFile!.close();
+      _wavFile = null;
+    }
   }
 
   Future<void> dispose() async {
@@ -105,14 +129,24 @@ class AudioStreamRecorder {
     await _pitchStreamController?.close();
   }
 
-  // 파일 형태로 저장
-  Future<IOSink> _createFileSink() async {
+  // 파일 생성 및 헤더 초기화
+  Future<void> _createWavFile() async {
     final tempDir = await getTemporaryDirectory();
-    final file = File(
-      '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.pcm',
+    _recordingFilePath =
+        '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
+
+    final header = SaveWavFile.buildHeader(
+      sampleRate: _sampleRate,
+      channels: _numberOfChannel,
+      bitsPerSample: 16,
+      pcmDataSize: 0,
     );
-    if (file.existsSync()) await file.delete();
-    return file.openWrite();
+
+    _wavFile = await SaveWavFile.createFile(
+      path:
+          '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav',
+      header: header,
+    );
   }
 
   // 실시간 음정탐지 로직

@@ -19,6 +19,14 @@ final audioRecorderProvider =
       return controller; // controller 리턴 -> 위젯에서 controller 사용 가능
     });
 
-final pitchStreamProvider = StreamProvider.autoDispose<PitchData>((ref) {
-  return ref.watch(audioRecorderProvider.notifier).pitchStream!;
+// 실시간 음정 탐지한 것을 보냄
+final pitchStreamProvider = StreamProvider.autoDispose<PitchData>((ref) async* {
+  final controller = ref.watch(audioRecorderProvider.notifier);
+
+  // pitchStream이 null이 아니게 될 때까지 기다림
+  while (controller.pitchStream == null) {
+    await Future.delayed(Duration(milliseconds: 50));
+  }
+
+  yield* controller.pitchStream!;
 });
