@@ -40,6 +40,19 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   Widget build(BuildContext context) {
     final isRecording = ref.watch(audioRecorderProvider);
     final recorderController = ref.read(audioRecorderProvider.notifier);
+    final pitchAsync = ref.watch(pitchStreamProvider);
+
+    pitchAsync.when(
+      data: (pitchData) {
+        print("flutter: Widget 수신 pitch: ${pitchData.pitch} Hz");
+        return SizedBox();
+      },
+      loading: () => SizedBox(),
+      error: (e, _) {
+        print("flutter: pitchStream 에러: $e");
+        return SizedBox();
+      },
+    );
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
