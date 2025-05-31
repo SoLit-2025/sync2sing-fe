@@ -70,7 +70,7 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
         .when(
           data: (pitchData) {
             // 여기에서 pitchData.pitch 를 사용해서 화면 또는 로직 처리
-            // print("flutter: now pitch: ${pitchData.pitch}");
+            // debugPrint("flutter: now pitch: ${pitchData.pitch}");
             return Text('Pitch: ${pitchData.pitch.toStringAsFixed(2)} Hz');
           },
           loading: () => CircularProgressIndicator(),

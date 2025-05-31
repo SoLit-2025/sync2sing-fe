@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
@@ -211,6 +210,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                           ),
                           CupertinoButton(
                             padding: EdgeInsets.symmetric(vertical: 8.h),
+                            onPressed: _confirmYear,
                             child: Text(
                               '확인',
                               style: TextStyle(
@@ -220,7 +220,6 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            onPressed: _confirmYear,
                           ),
                         ],
                       ),

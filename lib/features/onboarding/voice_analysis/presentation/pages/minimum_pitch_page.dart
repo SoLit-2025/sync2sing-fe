@@ -19,7 +19,7 @@ class MinimumPitchPage extends ConsumerStatefulWidget {
 }
 
 class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
-  bool _isVoiceDetected = true;
+  final bool _isVoiceDetected = true;
   bool get _isMicOn => _isVoiceDetected;
   bool get _isButtonActive => _isVoiceDetected;
 
@@ -27,6 +27,8 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
 
   void _navigateToMaximumPitchPage() {
     if (_isButtonActive) {
+      // provider 제거 -> 이동한 페이지에서 같은 프로바이더를 호출해도 새 인스턴스 생성
+      // ref.invalidate(audioPitchNoSaveProvider); // 현재는 불필요함
       context.go(AppRoutePaths.maximumPitch);
     }
   }
@@ -62,6 +64,8 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
     final double endAngle = 2 * pi;
     final double sweepAngle = endAngle - startAngle;
     final int noteCount = _notes.length;
+
+    // 실시간 음정 탐지 관련 코드 (저장 x) / 진입과 동시에 녹음 시작.
     final isRecording = ref.watch(audioPitchNoSaveProvider);
     final recorderController = ref.read(audioPitchNoSaveProvider.notifier);
     ref
@@ -69,8 +73,10 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
         .when(
           data: (pitchData) {
             // 여기에서 pitchData.pitch 를 사용해서 화면 또는 로직 처리
-            // print("flutter: now pitch: ${pitchData.pitch}");
-            return Text('Pitch: ${pitchData.pitch.toStringAsFixed(2)} Hz');
+            // debugPrint(
+            //   "flutter: pitch - ${pitchData.pitch}",
+            // ); // pitch 접근: pitchData.pitch / 정확도: pitchData.probability
+            return SizedBox();
           },
           loading: () => CircularProgressIndicator(),
           error: (e, _) => Text('Error: $e'),

@@ -17,10 +17,26 @@ class VocalPitchIndicator extends ConsumerStatefulWidget {
 class _VocalPitchIndicatorState extends ConsumerState<VocalPitchIndicator> {
   @override
   Widget build(BuildContext context) {
-    final pitchAsyncValue = ref.watch(pitchStreamProvider);
+    double _currentPitch = 0;
+    final pitchAsync = ref.watch(pitchStreamProvider);
+    pitchAsync.when(
+      data: (pitchData) {
+        setState(() {
+          _currentPitch = pitchData.pitch;
+        });
+        return SizedBox();
+      },
+      loading: () => SizedBox(),
+      error: (e, _) {
+        print("flutter: pitchStream 에러: $e");
+        return SizedBox();
+      },
+    );
 
     return Container(
-      child: Center(child: Text("pitch", style: AppTextStyles.body1)),
+      child: Center(
+        child: Text(_currentPitch.toString(), style: AppTextStyles.body1),
+      ),
     );
   }
 }

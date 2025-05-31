@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/training_common/presentation/widgets/music_content_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/shared/providers/vocal_analysis_submit_provider.dart';
@@ -47,7 +48,7 @@ class OnboardingRecordingSongPage extends StatelessWidget {
 
               Spacer(), // 중간과 버튼 사이 간격
               // 하단 버튼
-              Container(
+              SizedBox(
                 // margin: EdgeInsets.only(bottom: 10.h),
                 width: 327.w,
                 height: 50.w,
@@ -60,7 +61,6 @@ class OnboardingRecordingSongPage extends StatelessWidget {
                       onPressed:
                           isVocalAnalysisButtonEnabled()
                               ? () {
-                                // context.goNamed(AppRouteNames.analysisLoading);
                                 ref.refresh(vocalAnalysisSubmitProvider);
                                 context.goNamed(AppRouteNames.analysisLoading);
                               }

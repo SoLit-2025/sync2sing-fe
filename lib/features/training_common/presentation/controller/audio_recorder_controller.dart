@@ -1,34 +1,34 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/services/audio_recorder_util.dart';
+import '../../data/services/audio_stream_recorder.dart';
 
 class AudioRecorderController extends StateNotifier<bool> {
-  final AudioRecorderUtil recorderUtil;
+  final AudioStreamRecorder streamRecorder;
 
-  AudioRecorderController({required this.recorderUtil}) : super(false);
+  AudioRecorderController({required this.streamRecorder}) : super(false);
 
   Future<void> init() async {
-    await recorderUtil.init();
+    await streamRecorder.init();
   }
 
   Future<void> startOrResume() async {
-    await recorderUtil.startOrResumeRecorder();
+    await streamRecorder.startOrResumeRecorder();
     state = true;
   }
 
   Future<void> pause() async {
-    await recorderUtil.pauseRecorder();
+    await streamRecorder.pauseRecorder();
     state = false;
   }
 
   Future<void> stop() async {
-    await recorderUtil.stopRecorder();
+    await streamRecorder.stopRecorder();
     state = false;
   }
 
   Future<void> disposeRecorder() async {
-    await recorderUtil.dispose();
+    await streamRecorder.dispose();
   }
 
-  Stream<PitchData>? get pitchStream => recorderUtil.pitchStream;
+  Stream<PitchData>? get pitchStream => streamRecorder.pitchStream;
 }

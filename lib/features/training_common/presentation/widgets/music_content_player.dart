@@ -9,7 +9,6 @@ import 'package:sync2sing/features/training_common/presentation/widgets/lyrics_d
 import 'package:sync2sing/features/training_common/presentation/widgets/song_information_widget.dart';
 import 'package:sync2sing/features/training_common/presentation/widgets/vocal_pitch_indicator.dart';
 import 'package:sync2sing/shared/providers/mic_permission_provider.dart';
-
 import '../../../../shared/providers/audio_recorder_provider.dart';
 
 class MusicContentPlayer extends ConsumerStatefulWidget {
@@ -40,11 +39,12 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   Widget build(BuildContext context) {
     final isRecording = ref.watch(audioRecorderProvider);
     final recorderController = ref.read(audioRecorderProvider.notifier);
-    final pitchAsync = ref.watch(pitchStreamProvider);
 
+    // 실시간 음정 탐지 여부 확인용 코드
+    final pitchAsync = ref.watch(pitchStreamProvider);
     pitchAsync.when(
       data: (pitchData) {
-        print("flutter: Widget 수신 pitch: ${pitchData.pitch} Hz");
+        // print("flutter: Widget 수신 pitch: ${pitchData.pitch} Hz");
         return SizedBox();
       },
       loading: () => SizedBox(),

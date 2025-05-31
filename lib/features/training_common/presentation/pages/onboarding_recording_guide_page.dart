@@ -16,7 +16,7 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool _isButtonEnabled = ref.watch(
+    final bool isButtonEnabled = ref.watch(
       isOnboardingRecordingStartButtonEnabledProvider,
     );
 
@@ -93,7 +93,7 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
                     padding: EdgeInsets.all(0),
                     // 버튼 활성화 조건을 만족하면 onboardingRecordingSong 페이지로 이동 / 아니면 비활성화 상태
                     onPressed:
-                        _isButtonEnabled
+                        isButtonEnabled
                             ? () {
                               context.goNamed(
                                 AppRouteNames.onboardingRecordingSong,
@@ -104,7 +104,7 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
                       child: Text(
                         "시작하기",
                         style:
-                            _isButtonEnabled
+                            isButtonEnabled
                                 ? AppTextStyles.body1BoldWhite
                                 : AppTextStyles.body1White,
                       ),
