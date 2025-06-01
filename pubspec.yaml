@@ -20,6 +20,7 @@ dependencies:
   youtube_player_flutter: ^9.1.1
   pitch_detector_dart: ^0.0.7
   permission_handler: ^11.3.1
+  just_audio: ^0.9.36
 #  flutter_audio_capture: ^1.1.10
   pitchupdart: ^0.0.6
   flutter_sound: ^9.28.0
@@ -46,6 +47,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/songs/datas/do_re_mi_song.json
+    - assets/songs/audios/do_re_mi_song_mr_only_no_intro_104sec.wav
   fonts:
     - family: PretendardVariable
       fonts:

@@ -40,7 +40,7 @@ class VoicePitchFinder {
     return minNote;
   }
 
-  // wav 파일의 일정 구간마다 음정 분석
+  // audios 파일의 일정 구간마다 음정 분석
   Future<List<double>> _extractPitches(String wavFilePath) async {
     final file = File(wavFilePath);
     if (!file.existsSync()) throw Exception('파일 없음: $wavFilePath');
@@ -48,7 +48,7 @@ class VoicePitchFinder {
     // STEP1. 모든 데이터 불러오기
     final bytes = await file.readAsBytes();
 
-    // STEP2. wav 파일 헤더(=44byte) 이후의 PCM 데이터 추출
+    // STEP2. audios 파일 헤더(=44byte) 이후의 PCM 데이터 추출
     const headerSize = 44;
     if (bytes.length <= headerSize) throw Exception('PCM 데이터 없음');
     final pcmBytes = bytes.sublist(headerSize);

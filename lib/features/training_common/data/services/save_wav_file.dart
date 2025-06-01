@@ -39,8 +39,8 @@ class SaveWavFile {
     );
     byteData.setUint16(32, (channels * bitsPerSample) ~/ 8, Endian.little);
     byteData.setUint16(34, bitsPerSample, Endian.little);
-    // data 청크
-    byteData.setUint32(36, 0x61746164, Endian.little); // "data"
+    // datas 청크
+    byteData.setUint32(36, 0x61746164, Endian.little); // "datas"
     byteData.setUint32(40, pcmDataSize, Endian.little);
 
     return byteData.buffer.asUint8List();

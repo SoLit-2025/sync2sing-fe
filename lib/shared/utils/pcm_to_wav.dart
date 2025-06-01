@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -26,13 +27,13 @@ Future<File> convertPcmToWav(File pcmFile) async {
   header.add(_intToBytes(byteRate, 4)); // ByteRate
   header.add(_intToBytes(blockAlign, 2)); // BlockAlign
   header.add(_intToBytes(bitsPerSample, 2)); // BitsPerSample
-  header.add(ascii.encode('data'));
+  header.add(ascii.encode('datas'));
   header.add(_intToBytes(dataSize, 4)); // Subchunk2Size
   header.add(pcmBytes);
 
   final wavBytes = header.toBytes();
 
-  final wavFilePath = pcmFile.path.replaceAll('.pcm', '.wav');
+  final wavFilePath = pcmFile.path.replaceAll('.pcm', '.audios');
   final wavFile = File(wavFilePath);
   await wavFile.writeAsBytes(wavBytes, flush: true);
 

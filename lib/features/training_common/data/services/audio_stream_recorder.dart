@@ -133,7 +133,7 @@ class AudioStreamRecorder {
   Future<void> _createWavFile() async {
     final tempDir = await getTemporaryDirectory();
     _recordingFilePath =
-        '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
+        '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.audios';
 
     final header = SaveWavFile.buildHeader(
       sampleRate: _sampleRate,
@@ -144,7 +144,7 @@ class AudioStreamRecorder {
 
     _wavFile = await SaveWavFile.createFile(
       path:
-          '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav',
+          '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.audios',
       header: header,
     );
   }
