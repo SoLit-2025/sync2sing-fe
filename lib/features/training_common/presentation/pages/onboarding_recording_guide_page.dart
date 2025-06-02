@@ -98,7 +98,7 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
                                 AppRouteNames.onboardingRecordingSong,
                               );
                             }
-                            : null, minimumSize: Size(0.0, 0.0),
+                            : null, minSize: 0.0,
                     child: Center(
                       child: Text(
                         "시작하기",
