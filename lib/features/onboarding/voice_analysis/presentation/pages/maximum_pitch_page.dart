@@ -7,10 +7,13 @@ import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/features/training_common/data/services/pitch_to_note_converter.dart';
 import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_pitch_metrics_provider.dart';
+import 'package:sync2sing/shared/providers/voice_type_profile_provider.dart';
 
 import '../../../../../shared/utils/mic_permission_helper.dart';
+import '../../data/service/determine_voice_type.dart';
 
 class MaximumPitchPage extends ConsumerStatefulWidget {
   const MaximumPitchPage({super.key});
@@ -50,7 +53,25 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
   }
 
   Future<void> analyzeAndStorePitchNote() async {
-    ref.read(pitchStatsProvider.notifier).setMaxPitch(_maxPitch!);
+    // 최고음정 저장
+    ref.read(vocalPitchMetricsProvider.notifier).setMaxPitch(_maxPitch!);
+
+    final vocalPitchMetrics = ref.watch(vocalPitchMetricsProvider);
+
+    // 최저/최고 노트(String) 저장
+    final pitchStats = ref.read(vocalPitchMetricsProvider);
+    final PitchToNoteConverter noteConverter = PitchToNoteConverter();
+    final voiceTypeProfile = ref.read(voiceTypeProfileProvider.notifier);
+    voiceTypeProfile.setMaxNote(noteConverter.hzToNote(pitchStats.maxPitch!));
+    voiceTypeProfile.setMinNote(noteConverter.hzToNote(pitchStats.minPitch!));
+
+    // 사용자 음역대 변환, 저장.
+    String voiceType = determineVoiceType(
+      vocalPitchMetrics.minPitch!,
+      vocalPitchMetrics.maxPitch!,
+      vocalPitchMetrics.averagePitch!,
+    );
+    voiceTypeProfile.setVoiceType(voiceType);
   }
 
   @override
@@ -124,13 +145,19 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
                       Container(
                         width: donutSize,
                         height: donutSize,
-                        decoration: BoxDecoration(color: AppColors.grayscale7, shape: BoxShape.circle),
+                        decoration: BoxDecoration(
+                          color: AppColors.grayscale7,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                       // 도넛 내부 원
                       Container(
                         width: innerDonutSize,
                         height: innerDonutSize,
-                        decoration: BoxDecoration(color: AppColors.grayscale8, shape: BoxShape.circle),
+                        decoration: BoxDecoration(
+                          color: AppColors.grayscale8,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                       // 계이름
                       ...List.generate(noteCount, (i) {
@@ -166,7 +193,10 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
                         child: Container(
                           width: 20.w,
                           height: 20.w,
-                          decoration: BoxDecoration(color: AppColors.grayscale5, shape: BoxShape.circle),
+                          decoration: BoxDecoration(
+                            color: AppColors.grayscale5,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                       ),
                       // 마이크 아이콘
@@ -198,14 +228,16 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
               SizedBox(height: 60.h),
               Center(
                 child: CupertinoButton(
-                  onPressed: isRecording ? _navigateToOnboardingRecordingGuidePage : _startPitchDetect,
+                  onPressed:
+                      isRecording ? _navigateToOnboardingRecordingGuidePage : _startPitchDetect,
                   padding: EdgeInsets.zero,
                   child: Container(
                     width: 327.w,
                     height: 50.h,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: _isButtonActive ? AppColors.primaryPink : AppColors.primaryPinkDisabled,
+                      color:
+                          _isButtonActive ? AppColors.primaryPink : AppColors.primaryPinkDisabled,
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(

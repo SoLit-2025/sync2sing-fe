@@ -20,15 +20,10 @@ dependencies:
   youtube_player_flutter: ^9.1.1
   pitch_detector_dart: ^0.0.7
   permission_handler: ^11.3.1
-#  flutter_audio_capture: ^1.1.10
-  pitchupdart: ^0.0.6
   flutter_sound: ^9.28.0
-  record: ^6.0.0
   path_provider: ^2.0.15
- # ffmpeg_kit_flutter_audio: ^6.0.3-LTS
   http: ^1.2.1
   http_parser: ^4.0.2
-
 
 
 dev_dependencies:

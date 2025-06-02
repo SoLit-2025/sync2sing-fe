@@ -35,4 +35,6 @@ class VocalRangeNotifier extends StateNotifier<VocalPitchMetrics> {
 }
 
 // Provider 선언
-final pitchStatsProvider = StateNotifierProvider<VocalRangeNotifier, VocalPitchMetrics>((ref) => VocalRangeNotifier());
+final vocalPitchMetricsProvider = StateNotifierProvider<VocalRangeNotifier, VocalPitchMetrics>(
+  (ref) => VocalRangeNotifier(),
+);

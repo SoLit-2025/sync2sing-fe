@@ -52,7 +52,7 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
 
   Future<void> analyzeAndStorePitchNote() async {
     // 최저 음정값 저장
-    ref.read(pitchStatsProvider.notifier).setMinPitch(_minPitch!);
+    ref.read(vocalPitchMetricsProvider.notifier).setMinPitch(_minPitch!);
   }
 
   @override
@@ -87,7 +87,6 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
 
     // 실시간 음정 탐지 관련 코드 (저장 x) / 진입과 동시에 녹음 시작.
     final isRecording = ref.watch(audioPitchNoSaveProvider);
-    final recorderController = ref.read(audioPitchNoSaveProvider.notifier);
     ref
         .watch(autoStartPitchStreamProvider)
         .when(
@@ -97,10 +96,6 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
               setState(() => _minPitch = pitchData.pitch);
             }
             _isVoiceDetected = true;
-
-            // debugPrint(
-            //   "flutter: pitch - ${pitchData.pitch}",
-            // ); // pitch 접근: pitchData.pitch / 정확도: pitchData.probability
             return SizedBox();
           },
           loading: () => CircularProgressIndicator(),
@@ -128,13 +123,19 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
                       Container(
                         width: donutSize,
                         height: donutSize,
-                        decoration: BoxDecoration(color: AppColors.grayscale7, shape: BoxShape.circle),
+                        decoration: BoxDecoration(
+                          color: AppColors.grayscale7,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                       // 도넛 내부 원
                       Container(
                         width: innerDonutSize,
                         height: innerDonutSize,
-                        decoration: BoxDecoration(color: AppColors.grayscale8, shape: BoxShape.circle),
+                        decoration: BoxDecoration(
+                          color: AppColors.grayscale8,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                       // 계이름
                       ...List.generate(noteCount, (i) {
@@ -170,7 +171,10 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
                         child: Container(
                           width: 20.w,
                           height: 20.w,
-                          decoration: BoxDecoration(color: AppColors.grayscale5, shape: BoxShape.circle),
+                          decoration: BoxDecoration(
+                            color: AppColors.grayscale5,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                       ),
                       // 마이크 아이콘
@@ -209,7 +213,8 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
                     height: 50.h,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: _isButtonActive ? AppColors.primaryPink : AppColors.primaryPinkDisabled,
+                      color:
+                          _isButtonActive ? AppColors.primaryPink : AppColors.primaryPinkDisabled,
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(

@@ -86,8 +86,7 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
     if (_pitches.isNotEmpty) {
       final total = _pitches.reduce((a, b) => a + b);
       _averagePitch = total / _pitches.length;
-      ref.read(pitchStatsProvider.notifier).setAveragePitch(_averagePitch!);
-      // debugPrint('🎯 평균 음정 (dispose 시 계산): $_averagePitch Hz');
+      ref.read(vocalPitchMetricsProvider.notifier).setAveragePitch(_averagePitch!);
     }
   }
 
@@ -108,8 +107,7 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
     // 버튼 텍스트 및 활성화 상태 결정:
     String buttonText;
     bool isButtonEnabled;
-    final _isRecording = ref.watch(audioPitchNoSaveProvider);
-    final recorderController = ref.read(audioPitchNoSaveProvider.notifier);
+    ref.watch(audioPitchNoSaveProvider);
     final pitchAsync = ref.watch(autoStartPitchStreamProvider);
 
     pitchAsync.when(
@@ -150,13 +148,20 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
               SizedBox(height: 40.h),
               Text('아래 문장을 읽어주세요', style: AppTextStyles.heading3Bold, textAlign: TextAlign.left),
               SizedBox(height: 12.h),
-              Text('평소처럼 자연스럽게 읽어주시면\n목소리를 더 정확히 분석할 수 있어요', style: AppTextStyles.heading4, textAlign: TextAlign.left),
+              Text(
+                '평소처럼 자연스럽게 읽어주시면\n목소리를 더 정확히 분석할 수 있어요',
+                style: AppTextStyles.heading4,
+                textAlign: TextAlign.left,
+              ),
               SizedBox(height: 32.h),
               Center(
                 child: Container(
                   width: 327.w,
                   height: 329.h,
-                  decoration: BoxDecoration(color: const Color(0xFFECECEC), borderRadius: BorderRadius.circular(10.r)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFECECEC),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
                   alignment: Alignment.center,
                   child: Text(
                     sampleSentence,
