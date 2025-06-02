@@ -8,6 +8,7 @@ import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widget
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
+import 'package:sync2sing/shared/providers/vocal_pitch_metrics_provider.dart';
 
 import '../../../../../shared/utils/mic_permission_helper.dart';
 
@@ -19,18 +20,39 @@ class MinimumPitchPage extends ConsumerStatefulWidget {
 }
 
 class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
-  final bool _isVoiceDetected = true;
+  bool _isVoiceDetected = false;
+  // '시작' 버튼 클릭 여부 -> 페이지에 처음 들어왔을 땐 무조건'시작' 버튼을 클릭할 수 있어야 함
+  bool _isRecordingStarted = false;
   bool get _isMicOn => _isVoiceDetected;
-  bool get _isButtonActive => _isVoiceDetected;
+  // 시작 버튼 클릭 x or 클릭 후 피치가 감지됨
+  bool get _isButtonActive => !_isRecordingStarted || _isVoiceDetected;
+  double? _minPitch;
 
   static const List<String> _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
-  void _navigateToMaximumPitchPage() {
+  Future<void> _startPitchDetect() async {
+    await ref.read(audioPitchNoSaveProvider.notifier).startOrResume();
+    setState(() {
+      _isRecordingStarted = true;
+    });
+  }
+
+  Future<void> _navigateToMaximumPitchPage() async {
     if (_isButtonActive) {
-      // provider 제거 -> 이동한 페이지에서 같은 프로바이더를 호출해도 새 인스턴스 생성
-      // ref.invalidate(audioPitchNoSaveProvider); // 현재는 불필요함
+      if (_minPitch == null) {
+        debugPrint("피치가 감지되지 않았습니다");
+        return;
+      }
+      analyzeAndStorePitchNote();
+      ref.invalidate(audioPitchNoSaveProvider); // 프로바이더 삭제
+
       context.go(AppRoutePaths.maximumPitch);
     }
+  }
+
+  Future<void> analyzeAndStorePitchNote() async {
+    // 최저 음정값 저장
+    ref.read(pitchStatsProvider.notifier).setMinPitch(_minPitch!);
   }
 
   @override
@@ -41,9 +63,7 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
 
       if (!granted) {
         // 권한이 없으면 안내하고 return
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
       }
     });
   }
@@ -73,6 +93,11 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
         .when(
           data: (pitchData) {
             // 여기에서 pitchData.pitch 를 사용해서 화면 또는 로직 처리
+            if (_minPitch == null || pitchData.pitch < _minPitch!) {
+              setState(() => _minPitch = pitchData.pitch);
+            }
+            _isVoiceDetected = true;
+
             // debugPrint(
             //   "flutter: pitch - ${pitchData.pitch}",
             // ); // pitch 접근: pitchData.pitch / 정확도: pitchData.probability
@@ -103,24 +128,17 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
                       Container(
                         width: donutSize,
                         height: donutSize,
-                        decoration: BoxDecoration(
-                          color: AppColors.grayscale7,
-                          shape: BoxShape.circle,
-                        ),
+                        decoration: BoxDecoration(color: AppColors.grayscale7, shape: BoxShape.circle),
                       ),
                       // 도넛 내부 원
                       Container(
                         width: innerDonutSize,
                         height: innerDonutSize,
-                        decoration: BoxDecoration(
-                          color: AppColors.grayscale8,
-                          shape: BoxShape.circle,
-                        ),
+                        decoration: BoxDecoration(color: AppColors.grayscale8, shape: BoxShape.circle),
                       ),
                       // 계이름
                       ...List.generate(noteCount, (i) {
-                        final angle =
-                            startAngle + (sweepAngle / (noteCount - 1)) * i;
+                        final angle = startAngle + (sweepAngle / (noteCount - 1)) * i;
                         final x = center + noteRadius * cos(angle) - 15.w;
                         final y = center + noteRadius * sin(angle) - 15.h;
                         return Positioned(
@@ -147,29 +165,18 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
                       }),
                       // 음정 감지 동그라미 (C2 위치, 도넛 위에 배치)
                       Positioned(
-                        left:
-                            center +
-                            (donutRadius * 0.95) * cos(indicatorAngle) -
-                            indicatorRadius,
-                        top:
-                            center +
-                            (donutRadius * 0.95) * sin(indicatorAngle) -
-                            indicatorRadius,
+                        left: center + (donutRadius * 0.95) * cos(indicatorAngle) - indicatorRadius,
+                        top: center + (donutRadius * 0.95) * sin(indicatorAngle) - indicatorRadius,
                         child: Container(
                           width: 20.w,
                           height: 20.w,
-                          decoration: BoxDecoration(
-                            color: AppColors.grayscale5,
-                            shape: BoxShape.circle,
-                          ),
+                          decoration: BoxDecoration(color: AppColors.grayscale5, shape: BoxShape.circle),
                         ),
                       ),
                       // 마이크 아이콘
                       Center(
                         child: Image.asset(
-                          _isMicOn
-                              ? 'assets/images/mic-on.png'
-                              : 'assets/images/mic-off.png',
+                          _isMicOn ? 'assets/images/mic-on.png' : 'assets/images/mic-off.png',
                           width: 84.w,
                           height: 84.w,
                           fit: BoxFit.contain,
@@ -195,28 +202,23 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
               SizedBox(height: 60.h),
               Center(
                 child: CupertinoButton(
-                  onPressed:
-                      _isButtonActive ? _navigateToMaximumPitchPage : null,
+                  onPressed: isRecording ? _navigateToMaximumPitchPage : _startPitchDetect,
                   padding: EdgeInsets.zero,
                   child: Container(
                     width: 327.w,
                     height: 50.h,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color:
-                          _isButtonActive
-                              ? AppColors.primaryPink
-                              : AppColors.primaryPinkDisabled,
+                      color: _isButtonActive ? AppColors.primaryPink : AppColors.primaryPinkDisabled,
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(
-                      '확인',
+                      isRecording ? '확인' : '시작',
                       style: TextStyle(
                         color: AppColors.grayscale8,
                         fontSize: 17.sp,
                         fontFamily: 'Pretendard Variable',
-                        fontWeight:
-                            _isButtonActive ? FontWeight.w600 : FontWeight.w400,
+                        fontWeight: _isButtonActive ? FontWeight.w600 : FontWeight.w400,
                         height: 1.4,
                         decoration: TextDecoration.none,
                       ),

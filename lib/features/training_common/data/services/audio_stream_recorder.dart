@@ -11,15 +11,17 @@ import 'save_wav_file.dart';
 class PitchData {
   final double pitch;
   final double probability;
+  static const double minPitch = 50; // 사용자의 음정으로 수집할 최소 주파수
+  static const double maxPitch = 2000; // 사용자의 음정으로 수집할 최대 주파수
 
   PitchData({required this.pitch, required this.probability});
 }
 
 class AudioStreamRecorder {
-  final bool isFileSave;
-  final bool isPitchDetection;
-  final bool isRhythmDetection;
-  final void Function(double pitch)? onPitchDetected;
+  final bool isFileSave; // 파일로 저장할 것인가
+  final bool isPitchDetection; // 음정 탐지를 할 것인가
+  final bool isRhythmDetection; // 박자 분석을 할 것인가
+  final void Function(double pitch)? onPitchDetected; // 추후 삭제될 수도 있음
 
   static const int _bufferSize = 2048;
   static const int _sampleRate = 44100;
@@ -91,6 +93,7 @@ class AudioStreamRecorder {
       }
     });
 
+    // 녹음 시작 (다시 재생과 구분됨)
     await _recorder.startRecorder(
       toStream: controller.sink,
       codec: Codec.pcm16,
@@ -100,14 +103,16 @@ class AudioStreamRecorder {
     );
   }
 
+  // 녹음 일시 중지
   Future<void> pauseRecorder() async {
     await _recorder.pauseRecorder();
   }
 
+  // 녹음 종료 (다시 시작하려면 startRecorder() 호출)
   Future<void> stopRecorder() async {
     await _recorder.stopRecorder();
 
-    // 헤더 덮어쓰기
+    // 헤더 덮어쓰기: 파일 크기 업데이트 필요
     if (isFileSave && _recordingFilePath != null) {
       // 헤더 업데이트
       await _wavFile!.setPosition(0);
@@ -129,7 +134,7 @@ class AudioStreamRecorder {
     await _pitchStreamController?.close();
   }
 
-  // 파일 생성 및 헤더 초기화
+  // wav 파일 생성 및 헤더 초기화
   Future<void> _createWavFile() async {
     final tempDir = await getTemporaryDirectory();
     _recordingFilePath =
@@ -172,8 +177,10 @@ class AudioStreamRecorder {
       if (chunk.length / 2 < _pitchDetector.bufferSize) return;
 
       final result = await _pitchDetector.getPitchFromIntBuffer(chunk);
-      if (result.pitched) {
-        // print("flutter: detected pitch - ${result.pitch}");   // 실시간 음정 출력
+      // 음정이 추출되고 / 그 음정이 범위 이내면 pitchStreamController에 PitchData를 보냄
+      if (result.pitched &&
+          result.pitch >= PitchData.minPitch &&
+          result.pitch <= PitchData.maxPitch) {
         _pitchStreamController?.add(
           PitchData(pitch: result.pitch, probability: result.probability),
         );

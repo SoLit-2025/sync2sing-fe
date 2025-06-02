@@ -8,6 +8,7 @@ import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widget
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
+import 'package:sync2sing/shared/providers/vocal_pitch_metrics_provider.dart';
 
 import '../../../../../shared/utils/mic_permission_helper.dart';
 
@@ -19,16 +20,37 @@ class MaximumPitchPage extends ConsumerStatefulWidget {
 }
 
 class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
-  bool _isVoiceDetected = true;
+  bool _isVoiceDetected = false;
+  bool _isRecordingStarted = false; // '시작' 버튼을 눌러서 음성 녹음을 시작했는지 여부
   bool get _isMicOn => _isVoiceDetected;
-  bool get _isButtonActive => _isVoiceDetected;
+  // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 음정이 탐지된 이후
+  bool get _isButtonActive => !_isRecordingStarted || _isVoiceDetected;
+  double? _maxPitch;
 
   static const _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
-  void _navigateToOnboardingRecordingGuidePage() {
+  Future<void> _startPitchDetect() async {
+    await ref.read(audioPitchNoSaveProvider.notifier).startOrResume();
+    setState(() {
+      _isRecordingStarted = true;
+    });
+  }
+
+  void _navigateToOnboardingRecordingGuidePage() async {
     if (_isButtonActive) {
+      if (_maxPitch == null) {
+        debugPrint("피치가 감지되지 않았습니다");
+        return;
+      }
+
+      analyzeAndStorePitchNote();
+      ref.invalidate(audioPitchNoSaveProvider); // 음성 녹음 관련 프로바이더 삭제: soundRecorder를 아예 삭제하기 위함
       context.go(AppRoutePaths.onboardingRecordingGuide);
     }
+  }
+
+  Future<void> analyzeAndStorePitchNote() async {
+    ref.read(pitchStatsProvider.notifier).setMaxPitch(_maxPitch!);
   }
 
   @override
@@ -38,9 +60,7 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
       final granted = await ensureMicPermission(ref); // 공통 함수 재사용
 
       if (!granted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
       }
     });
   }
@@ -64,14 +84,20 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
 
     // 음성 분석
     final isRecording = ref.watch(audioPitchNoSaveProvider);
-    final recorderController = ref.read(audioPitchNoSaveProvider.notifier);
     ref
         .watch(autoStartPitchStreamProvider)
         .when(
           data: (pitchData) {
             // 여기에서 pitchData.pitch 를 사용해서 화면 또는 로직 처리
-            // debugPrint("flutter: now pitch: ${pitchData.pitch}");
-            return Text('Pitch: ${pitchData.pitch.toStringAsFixed(2)} Hz');
+            if (_maxPitch == null || pitchData.pitch > _maxPitch!) {
+              setState(() => _maxPitch = pitchData.pitch);
+            }
+
+            setState(() {
+              _isVoiceDetected = true; // 음정이 탐지됨 --> _isButtonActive = true
+            });
+
+            return SizedBox();
           },
           loading: () => CircularProgressIndicator(),
           error: (e, _) => Text('Error: $e'),
@@ -98,24 +124,17 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
                       Container(
                         width: donutSize,
                         height: donutSize,
-                        decoration: BoxDecoration(
-                          color: AppColors.grayscale7,
-                          shape: BoxShape.circle,
-                        ),
+                        decoration: BoxDecoration(color: AppColors.grayscale7, shape: BoxShape.circle),
                       ),
                       // 도넛 내부 원
                       Container(
                         width: innerDonutSize,
                         height: innerDonutSize,
-                        decoration: BoxDecoration(
-                          color: AppColors.grayscale8,
-                          shape: BoxShape.circle,
-                        ),
+                        decoration: BoxDecoration(color: AppColors.grayscale8, shape: BoxShape.circle),
                       ),
                       // 계이름
                       ...List.generate(noteCount, (i) {
-                        final angle =
-                            startAngle + (sweepAngle / (noteCount - 1)) * i;
+                        final angle = startAngle + (sweepAngle / (noteCount - 1)) * i;
                         final x = center + noteRadius * cos(angle) - 15.w;
                         final y = center + noteRadius * sin(angle) - 15.h;
                         return Positioned(
@@ -142,29 +161,18 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
                       }),
                       // 음정 감지 동그라미 (C2 위치, 도넛 위에 배치)
                       Positioned(
-                        left:
-                            center +
-                            (donutRadius * 0.95) * cos(indicatorAngle) -
-                            indicatorRadius,
-                        top:
-                            center +
-                            (donutRadius * 0.95) * sin(indicatorAngle) -
-                            indicatorRadius,
+                        left: center + (donutRadius * 0.95) * cos(indicatorAngle) - indicatorRadius,
+                        top: center + (donutRadius * 0.95) * sin(indicatorAngle) - indicatorRadius,
                         child: Container(
                           width: 20.w,
                           height: 20.w,
-                          decoration: BoxDecoration(
-                            color: AppColors.grayscale5,
-                            shape: BoxShape.circle,
-                          ),
+                          decoration: BoxDecoration(color: AppColors.grayscale5, shape: BoxShape.circle),
                         ),
                       ),
                       // 마이크 아이콘
                       Center(
                         child: Image.asset(
-                          _isMicOn
-                              ? 'assets/images/mic-on.png'
-                              : 'assets/images/mic-off.png',
+                          _isMicOn ? 'assets/images/mic-on.png' : 'assets/images/mic-off.png',
                           width: 84.w,
                           height: 84.w,
                           fit: BoxFit.contain,
@@ -190,30 +198,23 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
               SizedBox(height: 60.h),
               Center(
                 child: CupertinoButton(
-                  onPressed:
-                      _isButtonActive
-                          ? _navigateToOnboardingRecordingGuidePage
-                          : null,
+                  onPressed: isRecording ? _navigateToOnboardingRecordingGuidePage : _startPitchDetect,
                   padding: EdgeInsets.zero,
                   child: Container(
                     width: 327.w,
                     height: 50.h,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color:
-                          _isButtonActive
-                              ? AppColors.primaryPink
-                              : AppColors.primaryPinkDisabled,
+                      color: _isButtonActive ? AppColors.primaryPink : AppColors.primaryPinkDisabled,
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(
-                      '확인',
+                      isRecording ? '확인' : '시작',
                       style: TextStyle(
                         color: AppColors.grayscale8,
                         fontSize: 17.sp,
                         fontFamily: 'Pretendard Variable',
-                        fontWeight:
-                            _isButtonActive ? FontWeight.w600 : FontWeight.w400,
+                        fontWeight: _isButtonActive ? FontWeight.w600 : FontWeight.w400,
                         height: 1.4,
                         decoration: TextDecoration.none,
                       ),
