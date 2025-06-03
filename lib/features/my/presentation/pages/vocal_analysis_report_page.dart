@@ -8,49 +8,47 @@ import 'dart:math' as math;
 class VocalAnalysisReportPage extends StatelessWidget {
   const VocalAnalysisReportPage({super.key});
 
-  // Mock 데이터
+  // mock 데이터
   static const Map<String, dynamic> mockData = {
     "status": 201,
     "message": "보컬 분석 리포트 생성에 성공했습니다.",
     "data": {
-      "report_id": 789,
-      "recording_id": 456,
+      "report_id": 2,
       "analysis_type": "GUEST",
-      "title": "2025-04-01 Do-Re-Mi",
+      "title": "2025-06-03 Do-Re-Mi",
       "song": {
-        "song_id": 999,
+        "song_id": 1,
         "title": "Do-Re-Mi",
         "artist": "Richard Rodgers",
-        "voice_type": "BARITONE",
-        "voice_range": "C2~E4",
-        "album_art_url":
-            "https://your-s3-bucket.s3.amazonaws.com/album/aegukga.jpg",
+        "voice_type": "SOPRANO",
+        "pitch_note_min": "C4",
+        "pitch_note_max": "D5",
+        "album_cover_url":
+            "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
       },
       "pitch_score": 65,
       "beat_score": 90,
-      "pronunciation_score": 45,
+      "pronunciation_score": 83,
       "breath_score": 60,
-      "overall_review_title": "호흡이 큰 장점이지만, 박자에 안정이 필요해요",
+      "overall_review_title": "호흡이 큰 장점이지만, 음정과 박자에 안정이 필요해요",
       "overall_review_content":
           "전반적으로 음정과 박자 정확도가 우수하나, 발성과 호흡 조절에서 약간의 개선이 필요합니다.",
+      "created_at": "2025-06-03T17:07:21.229460269",
       "cause_content": "코드 변화를 정확히 인지하지 못해 화성 진행에 따른 음의 변화를 자연스럽게 표현하기 어려워요.",
       "proposal_content":
           "주요 코드(C, F, G)의 느낌을 익히고, 단순한 발성 연습부터 시작해 듣기 훈련을 병행하세요.",
-      "created_at": "2025-04-01T13:00:00Z",
     },
   };
 
   // 데이터 접근을 위한 헬퍼 메서드
   Map<String, dynamic> get reportData =>
       mockData['data'] as Map<String, dynamic>? ?? {};
-
   Map<String, dynamic> get songData =>
       reportData['song'] as Map<String, dynamic>? ?? {};
-
   String get voiceType =>
       _getVoiceTypeKorean(songData['voice_type'] as String? ?? '');
-  String get voiceRange => songData['voice_range'] as String? ?? '0~0';
-  List<String> get voiceRangeParts => voiceRange.split('~');
+  String get pitchNoteMin => songData['pitch_note_min'] as String? ?? '';
+  String get pitchNoteMax => songData['pitch_note_max'] as String? ?? '';
 
   String _getVoiceTypeKorean(String voiceType) {
     switch (voiceType) {
@@ -62,6 +60,8 @@ class VocalAnalysisReportPage extends StatelessWidget {
         return '바리톤';
       case 'SOPRANO':
         return '소프라노';
+      case 'MEZZO_SOPRANO':
+        return '메조 소프라노';
       case 'ALTO':
         return '알토';
       default:
@@ -79,6 +79,8 @@ class VocalAnalysisReportPage extends StatelessWidget {
         return '남성의 중간 음역대로, 안정적이고 따뜻한 음색이 매력적이에요';
       case 'SOPRANO':
         return '여성의 가장 높은 음역대로, 화려하고 밝은 고음이 아름다워요';
+      case 'MEZZO_SOPRANO':
+        return '여성의 소프라노와 알토 중간 음역대로, 풍부하고 따뜻하며 유연한 음색이 특징이에요';
       case 'ALTO':
         return '여성의 낮은 음역대로, 부드럽고 따뜻한 음색이 특징이에요';
       default:
@@ -106,13 +108,8 @@ class VocalAnalysisReportPage extends StatelessWidget {
 
   // 나의 음역대 계산
   double get voiceRangeProgress {
-    if (voiceRangeParts.length != 2) return 0.0;
-
-    final startNote = voiceRangeParts[0].trim();
-    final endNote = voiceRangeParts[1].trim();
-
-    final startValue = _noteToNumber(startNote);
-    final endValue = _noteToNumber(endNote);
+    final startValue = _noteToNumber(pitchNoteMin);
+    final endValue = _noteToNumber(pitchNoteMax);
 
     if (startValue == -1 || endValue == -1) return 0.0;
 
@@ -258,21 +255,13 @@ class VocalAnalysisReportPage extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    // 음역대 레이블 (진행 바 위에 위치)
                     Stack(
                       children: [
                         Container(width: double.infinity, height: 20.h),
-                        // 시작점 (ex: C2)
                         Positioned(
                           left: 0,
-                          child: Text(
-                            voiceRangeParts.isNotEmpty
-                                ? voiceRangeParts[0]
-                                : '',
-                            style: AppTextStyles.body3,
-                          ),
+                          child: Text(pitchNoteMin, style: AppTextStyles.body3),
                         ),
-                        // 채워진 끝 지점 (ex: E4)
                         Positioned(
                           left:
                               (MediaQuery.of(context).size.width -
@@ -281,17 +270,11 @@ class VocalAnalysisReportPage extends StatelessWidget {
                                       16.w) *
                                   voiceRangeProgress -
                               10.w,
-                          child: Text(
-                            voiceRangeParts.length > 1
-                                ? voiceRangeParts[1]
-                                : '',
-                            style: AppTextStyles.body3,
-                          ),
+                          child: Text(pitchNoteMax, style: AppTextStyles.body3),
                         ),
                       ],
                     ),
                     SizedBox(height: 8.h),
-                    // 진행 바
                     Container(
                       height: 8.h,
                       decoration: BoxDecoration(
@@ -300,7 +283,6 @@ class VocalAnalysisReportPage extends StatelessWidget {
                       ),
                       child: Stack(
                         children: [
-                          // 전체 배경 (회색)
                           Container(
                             width: double.infinity,
                             decoration: BoxDecoration(
@@ -308,7 +290,6 @@ class VocalAnalysisReportPage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(4.r),
                             ),
                           ),
-                          // 채워진 부분 (색깔)
                           FractionallySizedBox(
                             alignment: Alignment.centerLeft,
                             widthFactor: voiceRangeProgress,
@@ -557,7 +538,6 @@ class RadarChartPainter extends CustomPainter {
     // 레이블 그리기
     final labels = ["음정", "박자", "발음", "호흡", "완성도"];
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
-
     for (int i = 0; i < 5; i++) {
       final angle = (i * 2 * math.pi / 5) - math.pi / 2;
       final labelRadius = radius + 25;
