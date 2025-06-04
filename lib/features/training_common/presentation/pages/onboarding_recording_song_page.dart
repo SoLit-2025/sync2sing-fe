@@ -7,6 +7,7 @@ import 'package:sync2sing/features/training_common/presentation/widgets/music_co
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/shared/providers/audio_recorder_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_analysis_submit_provider.dart';
 import 'package:sync2sing/shared/widgets/page_indicator.dart';
 
@@ -66,6 +67,7 @@ class OnboardingRecordingSongPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10.r),
                   color: const Color(0xFFECECEC), // 연한 회색 배경
                 ),
+
                 /// MusicContentPlayer: 음악 재생, 녹음, 시각화를 담당하는 핵심 위젯
                 /// 이 위젯에서 모든 음악 관련 기능이 처리됩니다
                 child: MusicContentPlayer(),
@@ -90,25 +92,27 @@ class OnboardingRecordingSongPage extends StatelessWidget {
 
                       /// 버튼 클릭 시 동작
                       /// 활성화 조건을 만족하면 분석 로딩 페이지로 이동
-                      onPressed: isVocalAnalysisButtonEnabled()
-                          ? () {
-                        /// vocalAnalysisSubmitProvider 새로고침
-                        /// 이전 분석 결과를 초기화하고 새로운 분석 시작
-                        ref.refresh(vocalAnalysisSubmitProvider);
+                      onPressed:
+                          isVocalAnalysisButtonEnabled()
+                              ? () async {
+                                /// vocalAnalysisSubmitProvider 새로고침
+                                /// 이전 분석 결과를 초기화하고 새로운 분석 시작
+                                ref.refresh(vocalAnalysisSubmitProvider);
 
-                        /// 분석 로딩 페이지로 이동
-                        /// 여기서 실제 AI 보컬 분석이 수행됩니다
-                        context.goNamed(AppRouteNames.analysisLoading);
-                      }
-                          : null, // 비활성화 시 null (클릭 불가)
-
+                                /// 분석 로딩 페이지로 이동
+                                /// 여기서 실제 AI 보컬 분석이 수행됩니다
+                                context.goNamed(AppRouteNames.analysisLoading);
+                              }
+                              : null, // 비활성화 시 null (클릭 불가)
                       /// 버튼 텍스트
                       /// 활성화 상태에 따라 텍스트 스타일이 달라집니다
                       child: Text(
                         "보컬 분석 리포트 생성하기",
-                        style: isVocalAnalysisButtonEnabled()
-                            ? AppTextStyles.body1BoldWhite  // 활성화: 굵은 흰색
-                            : AppTextStyles.body1White,     // 비활성화: 일반 흰색
+                        style:
+                            isVocalAnalysisButtonEnabled()
+                                ? AppTextStyles
+                                    .body1BoldWhite // 활성화: 굵은 흰색
+                                : AppTextStyles.body1White, // 비활성화: 일반 흰색
                       ),
                     );
                   },

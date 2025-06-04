@@ -43,12 +43,12 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   StreamSubscription<Duration>? _positionSubscription;
 
   // MR 길이: 104초
-  Duration _totalDuration = const Duration(seconds: 104);
+  Duration _totalDuration = const Duration(seconds: 104); // 104
 
   // JSON에서 불러온 음정/박자 데이터를 저장하는 리스트
   List<PitchNoteBar> _notes = [];
 
-  final double _songBPM = 140.0; // 도레미송 BPM(=Beats Per Minute, 분당 박자수, 노래 속도): 임시값 140 설정
+  final double _songBPM = 88.0; // 도레미송 BPM(=Beats Per Minute, 분당 박자수, 노래 속도): 임시값 140 설정
   int? _userCurrentPitch; // 사용자 현재 음정
   PitchDetector? _pitchDetector; // 마이크로부터 음정을 감지하는 도구
   Timer? _pitchDetectionTimer; // 일정한 간격을 두고 음정을 감지하는 도구
@@ -58,8 +58,7 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   void initState() {
     super.initState();
     _setupAudioPlayer(); // 오디오 플레이어 초기 설정
-    _loadPitchBars();    // JSON에서 음정/박자 데이터 불러오기
-    _setupPitchDetection(); // 실시간 음정 감지 설정
+    _loadPitchBars(); // JSON에서 음정/박자 데이터 불러오기
   }
 
   // 오디오 플레이어 초기 설정 함수
@@ -99,64 +98,6 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
     });
   }
 
-  // 실시간 음정 감지 함수 설정
-  Future<void> _setupPitchDetection() async {
-    try {
-      // PitchDetector 초기화
-      _pitchDetector = PitchDetector();
-
-      debugPrint('PitchDetector 초기화 완료');
-
-      // 음정 감지 함수 호출
-      _startPitchDetection();
-
-    } catch (e) {
-      debugPrint('PitchDetertor 초기화 실패: $e');
-      // 음정 감지 실패 시에도 앱은 정상 동작 (막대 색상 변경 X)
-    }
-  }
-
-  // 실시간 음정 감지 함수
-  void _startPitchDetection() {
-    _pitchDetectionTimer = Timer.periodic(Duration(milliseconds: 500), (timer) async {
-      try {
-        // 더미 오디오 데이터 생성 (440Hz A4 사인파), 실제로는 마이크에서 받은 PCM16 데이터를 사용해야 함
-        List<int> pcm16Data = [];
-        for (int i = 0; i < 4000; i++) { // 약 0.1초 분량 (44100Hz 기준)
-          // 440Hz 사인파를 PCM16 형태로 생성 (-32768 ~ 32767 범위)
-          double sample = sin(2 * pi * 440 * i / 44100) * 32767;
-          pcm16Data.add(sample.toInt());
-        }
-
-        // List<int>를 Uint8List로 변환 (PitchDetector 입력 형태)
-        Uint8List audioSample = Uint8List.fromList(pcm16Data);
-
-        // 음정 감지가 완료될 때까지 기다린 후 결과 저장
-        final result = await _pitchDetector!.getPitchFromIntBuffer(audioSample);
-
-        // 음성 감지 결과 처리
-        if (result.pitched && result.pitch > 0) {
-          // 주파수를 MIDI 넘버로 변환
-          int midiNote = _frequencyToMidi(result.pitch);
-
-          // 막대 색상 변경을 위한 UI 업데이트
-          setState(() {
-            _userCurrentPitch = midiNote;
-          });
-
-          debugPrint('감지된 음정: ${result.pitch.toStringAsFixed(1)}Hz → MIDI $midiNote');
-        } else {
-          // 음성이 감지되지 않은 상태
-          setState(() {
-            _userCurrentPitch = null;
-          });
-        }
-      } catch (e) {
-        debugPrint('음정 감지 오류: $e');
-      }
-    });
-  }
-
   // 주파수를 MIDI 넘버로 변환하는 함수
   int _frequencyToMidi(double frequency) {
     // A4 = 440Hz = MIDI 69를 기준으로 계산
@@ -170,31 +111,44 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   Future<void> _loadPitchBars() async {
     try {
       // JSON 파일에서 음정/박자 데이터 불러오기
-      final String jsonString = await rootBundle.loadString('assets/songs/datas/do_re_mi_song.json');
+      final String jsonString = await rootBundle.loadString(
+        'assets/songs/datas/do_re_mi_song.json',
+      );
       final List<dynamic> jsonData = json.decode(jsonString);
 
       // JSON 데이터를 PitchNoteBar 객체 리스트로 변환
-      List<PitchNoteBar> rawNotes = jsonData.map((item) => PitchNoteBar(
-        start: (item['start'] as num).toDouble(),
-        end: (item['end'] as num).toDouble(),
-        pitch: item['pitch'] as int,
-        rhythm: item['rhythm'] as String,
-      )).toList();
+      List<PitchNoteBar> rawNotes =
+          jsonData
+              .map(
+                (item) => PitchNoteBar(
+                  start: (item['start'] as num).toDouble(),
+                  end: (item['end'] as num).toDouble(),
+                  pitch: item['pitch'] as int,
+                  rhythm: item['rhythm'] as String,
+                ),
+              )
+              .toList();
 
       // 비슷한 음정을 가진 막대를 하나의 긴 막대로 병합
       List<PitchNoteBar> mergedNotes = _mergeSimilarNotes(rawNotes);
+
+      // debugPrint("$")
 
       setState(() {
         _notes = mergedNotes;
       });
 
-      debugPrint('음정 데이터 불러오기 완료: 원본 ${rawNotes.length}개 → 병합 후 ${mergedNotes.length}개');
+      // 🔽 추가할 디버그 출력
+      debugPrint('병합된 음정 데이터 (${mergedNotes.length}개):');
+      for (int i = 0; i < mergedNotes.length; i++) {
+        debugPrint('[$i] ${mergedNotes[i]}');
+      }
     } catch (e) {
       debugPrint('음정 데이터 불러오기 실패: $e');
     }
   }
 
- // 비슷한 음정의 연속된 막대들을 하나의 긴 막대로 합치는 함수
+  // 비슷한 음정의 연속된 막대들을 하나의 긴 막대로 합치는 함수
   List<PitchNoteBar> _mergeSimilarNotes(List<PitchNoteBar> originalNotes) {
     if (originalNotes.isEmpty) return [];
 
@@ -206,8 +160,12 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
 
       // 음정 차이 20: 약 2옥타브 차이까지 하나의 막대로 취급
       // 시간 간격 5.0초: 5초 이내의 간격이면 하나의 막대로 취급
-      bool shouldMerge = (nextNote.pitch - currentNote.pitch).abs() <= 20 &&
-          nextNote.start - currentNote.end <= 5.0;
+      bool shouldMerge =
+          (nextNote.pitch - currentNote.pitch).abs() <= 3 &&
+          nextNote.start - currentNote.end <= 0.7;
+
+      /// *** 음정차이 / 시간 간격 조금 줄여도 잘 나오는 것 같습니다. ( 7 / 1.0 해봤는데 괜찮았음 / ㅣ시연용으로는 지금 수치도 괜찮은 듯 )
+      // 시간 간격을 줄이면 처음 음정 바가 조금 뒤로 가는 것 같습니다 (노래 시작 부분에 가까워짐)
 
       if (shouldMerge) {
         // 현재 막대를 연장 (끝 시간을 다음 막대의 끝 시간으로 업데이트)
@@ -228,22 +186,23 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
     mergedNotes.add(currentNote);
 
     // 너무 짧은 막대들은 시각적으로 의미가 없으므로 제거: 2.0초 미만
-    return mergedNotes.where((note) => note.end - note.start >= 2.0).toList();
+    return mergedNotes.where((note) => note.end - note.start >= 0.5).toList();
   }
 
   // MR 재생과 녹음을 동시에 시작/정지하는 함수
   Future<void> _togglePlayAndRecord() async {
     if (_isPlaying) {
       // 현재 재생 중이면 일시정지
-      await _audioPlayer.pause();
-      ref.read(audioRecorderProvider.notifier).pause();
+
+      _audioPlayer.pause();
+      await ref.read(audioRecorderProvider.notifier).pause();
       setState(() => _isPlaying = false);
       debugPrint('MR 일시정지 + 녹음 정지');
     } else {
       // 현재 일시정지 상태면 재생 + 녹음 시작
       try {
-        await _audioPlayer.play();
-        ref.read(audioRecorderProvider.notifier).startOrResume();
+        _audioPlayer.play();
+        await ref.read(audioRecorderProvider.notifier).startOrResume();
         setState(() => _isPlaying = true);
         debugPrint('MR 재생 + 녹음 시작');
       } catch (e) {
@@ -262,8 +221,8 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   @override
   void dispose() {
     _positionSubscription?.cancel(); // 재생 위치 스트림 구독 해제
-    _pitchDetectionTimer?.cancel();  // 음정 감지 타이머 해제
-    _audioPlayer.dispose();          // 오디오 플레이어 해제
+    _pitchDetectionTimer?.cancel(); // 음정 감지 타이머 해제
+    _audioPlayer.dispose(); // 오디오 플레이어 해제
     super.dispose();
     debugPrint('MusicContentPlayer 리소스 정리 완료');
   }
@@ -273,6 +232,28 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   Widget build(BuildContext context) {
     final isRecording = ref.watch(audioRecorderProvider);
     final currentPosition = ref.watch(audioPositionProvider);
+    final pitchAsync = ref.watch(pitchStreamProvider);
+    pitchAsync.when(
+      data: (pitchData) {
+        if (isRecording) {
+          setState(() {
+            if (pitchData.probability < 0.1) {
+              // 음정이 탐지되지 않은 경우로, 가짜 데이터 넘겨받음 --> 현재 음정: null
+              _userCurrentPitch = null;
+            } else {
+              // 음정이 탐지된 경우, 현재 음정 업데이트
+              _userCurrentPitch = _frequencyToMidi(pitchData.pitch);
+            }
+          });
+          return SizedBox();
+        }
+      },
+      loading: () => SizedBox(),
+      error: (e, _) {
+        print("flutter: pitchStream 에러: $e");
+        return SizedBox();
+      },
+    );
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -291,15 +272,16 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
             borderRadius: BorderRadiusDirectional.circular(10.r),
             color: AppColors.grayscale7,
           ),
-          child: _notes.isEmpty
-              ? Center(child: CircularProgressIndicator())
-              : PitchAndRhythmBar(
-            notes: _notes,                // 병합된 음정 데이터
-            totalDuration: _totalDuration, // MR 전체 길이
-            currentPosition: currentPosition, // 현재 재생 위치
-            bpm: _songBPM,               // 도레미송의 BPM (임시 설정값: 140)
-            userCurrentPitch: _userCurrentPitch, // 사용자 현재 음정 (실시간 매칭용)
-          ),
+          child:
+              _notes.isEmpty
+                  ? Center(child: CircularProgressIndicator())
+                  : PitchAndRhythmBar(
+                    notes: _notes, // 병합된 음정 데이터
+                    totalDuration: _totalDuration * 0.1, // MR 전체 길이  * 0.1
+                    currentPosition: currentPosition, // 현재 재생 위치
+                    bpm: _songBPM, // 도레미송의 BPM (임시 설정값: 140)
+                    userCurrentPitch: _userCurrentPitch, // 사용자 현재 음정 (실시간 매칭용)
+                  ),
         ),
 
         SizedBox(height: 20.h),

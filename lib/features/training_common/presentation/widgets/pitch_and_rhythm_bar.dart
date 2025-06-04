@@ -18,16 +18,10 @@ class PitchNoteBar {
   final int pitch;
   final String rhythm;
 
-  PitchNoteBar({
-    required this.start,
-    required this.end,
-    required this.pitch,
-    required this.rhythm,
-  });
+  PitchNoteBar({required this.start, required this.end, required this.pitch, required this.rhythm});
 
   @override
-  String toString() =>
-      'PitchNoteBar(start: $start, end: $end, pitch: $pitch, rhythm: $rhythm)';
+  String toString() => 'PitchNoteBar(start: $start, end: $end, pitch: $pitch, rhythm: $rhythm)';
 }
 
 /// 🎵 음정/박자 막대 시각화 위젯 (파라미터화)
@@ -57,7 +51,7 @@ class PitchAndRhythmBar extends StatelessWidget {
     required this.notes,
     required this.totalDuration,
     required this.currentPosition,
-    this.bpm = 120.0, // 기본값: 120 BPM
+    this.bpm = 88.0, // 기본값: 120 BPM
     this.userCurrentPitch, // 사용자 음정 (null이면 음성 없음)
   });
 
@@ -123,7 +117,7 @@ class PitchAndRhythmBarPainter extends CustomPainter {
     ///
     /// 1. 기본 이동: 재생 위치에 정확히 동기화
     /// 2. BPM 효과: 시각적 속도감만 조정
-    final baseBPM = 120.0; // 기준 BPM
+    final baseBPM = 88.0; // 기준 BPM
     final bpmSpeedMultiplier = bpm / baseBPM; // 🔧 수정: bmp → bpm
 
     // 기본 이동 거리 (재생 위치와 정확히 동기화)
@@ -131,7 +125,10 @@ class PitchAndRhythmBarPainter extends CustomPainter {
 
     // BPM에 따른 추가 시각적 효과 (막대가 더 빠르게 흘러가는 느낌)
     // 효과 강도 100: 이 값을 조정하여 BPM 효과의 강도를 변경 가능
-    final bpmEffect = progressSeconds * (bpmSpeedMultiplier - 1.0) * 100; // 🔧 수정: bmpSpeedMultiplier → bpmSpeedMultiplier
+    final bpmEffect =
+        progressSeconds *
+        (bpmSpeedMultiplier - 1.0) *
+        100; // 🔧 수정: bmpSpeedMultiplier → bpmSpeedMultiplier
 
     /// 최종 이동 거리 = 기본 동기화 + BPM 시각 효과
     final shiftX = baseShiftX + bpmEffect;
@@ -196,7 +193,7 @@ class PitchAndRhythmBarPainter extends CustomPainter {
 
       /// ⚡ 화면 밖에 있는 막대는 그리지 않음 (성능 최적화)
       /// 보이지 않는 막대를 그리는 것은 자원 낭비이므로 건너뜁니다
-      if (endX < 0 || startX > size.width) continue;
+      // if (endX < 0 || startX > size.width) continue;
 
       /// 🎯 핵심 기능: 왼쪽 가장자리에 닿는 막대 감지
       ///
@@ -237,8 +234,11 @@ class PitchAndRhythmBarPainter extends CustomPainter {
       /// - 일반인도 쉽게 성공할 수 있는 적당한 난이도
       bool isPitchMatched = false;
       if (isAtLeftEdge && userCurrentPitch != null) {
+        // debugPrint("pitch bar: ${bar.pitch} | $userCurrentPitch}");
         int pitchDifference = (userCurrentPitch! - bar.pitch).abs();
-        isPitchMatched = pitchDifference <= 2; // ±2 semitone 허용 오차
+        isPitchMatched = pitchDifference <= 10; // ±2 semitone 허용 오차
+        // *** 허용 오차 부분 _mergeSimilarNotes 메서드에서 하나의 막대로 허용하는 음정 차이 수치와 동일한 수치로 맞추는 게 좋을 것 같아요!
+        // 허용 오차보다 하나의 막대로 취급하는 음정 차이값이 더 크면 실제 노래의 음정과 같은 음정이어도 음정바와의 옹차가 허용 오차보다 클 수 있을 것 같습니다
       }
 
       /// 🎨 색상 결정 로직
@@ -253,12 +253,16 @@ class PitchAndRhythmBarPainter extends CustomPainter {
       /// - 평소: 회색 막대들이 흘러감
       /// - 정확한 음정으로 노래할 때: 해당 막대만 밝은 회색으로 변함
       /// - 즉시 피드백으로 사용자가 자신의 음정 정확도를 실시간으로 확인 가능
-      final paint = Paint()
-        ..color = (isAtLeftEdge && isPitchMatched)
-            ? AppColors.grayscale1  // 매칭 성공 시 밝은 색
-            : AppColors.grayscale3  // 기본 색
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = 2.0;
+      final paint =
+          Paint()
+            ..color =
+                (isAtLeftEdge && isPitchMatched)
+                    ? AppColors
+                        .primaryPink // 매칭 성공 시 밝은 색
+                    : AppColors
+                        .grayscale3 // 기본 색
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = 2.0;
 
       /// 📐 음정에 따른 Y좌표 계산 (정규화된 값)
       /// 높은 음정은 위쪽, 낮은 음정은 아래쪽에 배치됩니다
@@ -281,10 +285,10 @@ class PitchAndRhythmBarPainter extends CustomPainter {
       /// - 모바일 환경에서도 충분히 보이는 크기
       final rect = RRect.fromRectAndRadius(
         Rect.fromLTRB(
-          startX.clamp(0, size.width),           // 왼쪽 끝
-          (y - 8).clamp(0, size.height),         // 위쪽 (중앙에서 8px 위)
-          endX.clamp(0, size.width),             // 오른쪽 끝
-          (y + 8).clamp(0, size.height),         // 아래쪽 (중앙에서 8px 아래)
+          startX.clamp(0, size.width), // 왼쪽 끝
+          (y - 8).clamp(0, size.height), // 위쪽 (중앙에서 8px 위)
+          endX.clamp(0, size.width), // 오른쪽 끝
+          (y + 8).clamp(0, size.height), // 아래쪽 (중앙에서 8px 아래)
         ),
         const Radius.circular(4), // 모서리 둥글기 (4px 반지름)
       );
