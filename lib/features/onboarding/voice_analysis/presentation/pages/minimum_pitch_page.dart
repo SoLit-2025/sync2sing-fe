@@ -43,7 +43,7 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
         debugPrint("피치가 감지되지 않았습니다");
         return;
       }
-      analyzeAndStorePitchNote();
+      await analyzeAndStorePitchNote();
       ref.invalidate(audioPitchNoSaveProvider); // 프로바이더 삭제
 
       context.go(AppRoutePaths.maximumPitch);
@@ -92,11 +92,17 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
         .when(
           data: (pitchData) {
             // 여기에서 pitchData.pitch 를 사용해서 화면 또는 로직 처리
-            if (_minPitch == null || pitchData.pitch < _minPitch!) {
-              setState(() => _minPitch = pitchData.pitch);
+
+            // pitched == false 일 때 가짜 데이터 수신: pitch=0, probability=0
+            if (pitchData.pitch > 30) {
+              _isVoiceDetected = true;
+              if (_minPitch == null || pitchData.pitch < _minPitch!) {
+                // 최저 음정 로컬 변수에 저장
+                debugPrint("음정 탐지: minPitch ${pitchData.pitch}");
+                setState(() => _minPitch = pitchData.pitch);
+              }
+              return SizedBox();
             }
-            _isVoiceDetected = true;
-            return SizedBox();
           },
           loading: () => CircularProgressIndicator(),
           error: (e, _) => Text('Error: $e'),

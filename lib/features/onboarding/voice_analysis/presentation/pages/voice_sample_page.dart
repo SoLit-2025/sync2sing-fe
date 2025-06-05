@@ -112,8 +112,10 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
 
     pitchAsync.when(
       data: (pitchData) {
-        _pitches.add(pitchData.pitch);
-        return const SizedBox();
+        if (pitchData.pitch > 30) {
+          _pitches.add(pitchData.pitch);
+          return const SizedBox();
+        }
       },
       loading: () => const CircularProgressIndicator(),
       error: (e, _) {

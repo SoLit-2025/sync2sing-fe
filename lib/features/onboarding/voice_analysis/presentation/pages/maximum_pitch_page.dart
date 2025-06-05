@@ -46,7 +46,7 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
         return;
       }
 
-      analyzeAndStorePitchNote();
+      await analyzeAndStorePitchNote();
       ref.invalidate(audioPitchNoSaveProvider); // 음성 녹음 관련 프로바이더 삭제: soundRecorder를 아예 삭제하기 위함
       context.go(AppRoutePaths.onboardingRecordingGuide);
     }
@@ -56,6 +56,11 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
     // 최고음정 저장
     ref.read(vocalPitchMetricsProvider.notifier).setMaxPitch(_maxPitch!);
     final vocalPitchMetrics = ref.watch(vocalPitchMetricsProvider);
+
+    // final vocalPitchData = ref.watch(vocalPitchMetricsProvider);
+    // debugPrint(
+    //   "음역대 저장: ${vocalPitchData.averagePitch} | ${vocalPitchData.minPitch} | ${vocalPitchData.maxPitch}",
+    // );
 
     // 최저/최고 노트(String) 저장
     final pitchStats = ref.read(vocalPitchMetricsProvider);
@@ -72,6 +77,7 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
     );
     voiceTypeProfile.setVoiceType(voiceType);
 
+    /// *** voiceType + 최고/최저 음정 노트  조회하기
     final voiceTypeData = ref.watch(voiceTypeProfileProvider);
     debugPrint(
       "음역대 저장: ${voiceTypeData.voiceType} | ${voiceTypeData.minNote} | ${voiceTypeData.maxNote}",
@@ -114,15 +120,21 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
         .when(
           data: (pitchData) {
             // 여기에서 pitchData.pitch 를 사용해서 화면 또는 로직 처리
-            if (_maxPitch == null || pitchData.pitch > _maxPitch!) {
-              setState(() => _maxPitch = pitchData.pitch);
+
+            // controller에서 pitched == false 이면 가짜 데이터: pitch=0, probabily=0 인 데이터를 줌 -> 거르기
+            if (pitchData.pitch > 30) {
+              if ((_maxPitch == null || pitchData.pitch > _maxPitch!)) {
+                debugPrint("음정 탐지: maxPitch ${pitchData.pitch}");
+
+                setState(() => _maxPitch = pitchData.pitch);
+              }
+
+              setState(() {
+                _isVoiceDetected = true; // 음정이 탐지됨 --> _isButtonActive = true
+              });
+
+              return SizedBox();
             }
-
-            setState(() {
-              _isVoiceDetected = true; // 음정이 탐지됨 --> _isButtonActive = true
-            });
-
-            return SizedBox();
           },
           loading: () => CircularProgressIndicator(),
           error: (e, _) => Text('Error: $e'),
