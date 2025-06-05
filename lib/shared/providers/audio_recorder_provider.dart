@@ -4,9 +4,7 @@ import '../../features/training_common/presentation/controller/audio_recorder_co
 
 // recordindg_song_page / music_content_widget 에 사용될 Provider -> 이름 바뀔 수도 있음
 // 파일 저장 / 음정 탐지 / 박자 분석(아마) 수행
-final audioRecorderProvider = StateNotifierProvider.autoDispose<AudioRecorderController, bool>((
-  ref,
-) {
+final audioRecorderProvider = StateNotifierProvider<AudioRecorderController, bool>((ref) {
   final streamRecorder = AudioStreamRecorder(
     isFileSave: true,
     isPitchDetection: true,

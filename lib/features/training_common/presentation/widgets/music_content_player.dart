@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +14,6 @@ import 'package:sync2sing/features/training_common/presentation/widgets/pitch_an
 import 'package:sync2sing/shared/providers/audio_position_provider.dart';
 import '../../../../shared/providers/audio_recorder_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:pitch_detector_dart/pitch_detector.dart';
 
 // 음악 재생 및 녹음 기능을 담당하는 위젯
 // 기능
@@ -50,7 +48,6 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
 
   final double _songBPM = 88.0; // 도레미송 BPM(=Beats Per Minute, 분당 박자수, 노래 속도): 임시값 140 설정
   int? _userCurrentPitch; // 사용자 현재 음정
-  PitchDetector? _pitchDetector; // 마이크로부터 음정을 감지하는 도구
   Timer? _pitchDetectionTimer; // 일정한 간격을 두고 음정을 감지하는 도구
 
   // 위젯이 처음 실행될 때 실행되는 초기화 함수
@@ -158,14 +155,11 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
     for (int i = 1; i < originalNotes.length; i++) {
       final nextNote = originalNotes[i];
 
-      // 음정 차이 20: 약 2옥타브 차이까지 하나의 막대로 취급
-      // 시간 간격 5.0초: 5초 이내의 간격이면 하나의 막대로 취급
+      // 음정 차이 3: 약 2옥타브 차이까지 하나의 막대로 취급
+      // 시간 간격 0.5초: 5초 이내의 간격이면 하나의 막대로 취급
       bool shouldMerge =
           (nextNote.pitch - currentNote.pitch).abs() <= 3 &&
-          nextNote.start - currentNote.end <= 0.7;
-
-      /// *** 음정차이 / 시간 간격 조금 줄여도 잘 나오는 것 같습니다. ( 7 / 1.0 해봤는데 괜찮았음 / ㅣ시연용으로는 지금 수치도 괜찮은 듯 )
-      // 시간 간격을 줄이면 처음 음정 바가 조금 뒤로 가는 것 같습니다 (노래 시작 부분에 가까워짐)
+          nextNote.start - currentNote.end <= 0.5;
 
       if (shouldMerge) {
         // 현재 막대를 연장 (끝 시간을 다음 막대의 끝 시간으로 업데이트)
@@ -250,7 +244,7 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
       },
       loading: () => SizedBox(),
       error: (e, _) {
-        print("flutter: pitchStream 에러: $e");
+        debugPrint("flutter: pitchStream 에러: $e");
         return SizedBox();
       },
     );
@@ -277,7 +271,8 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
                   ? Center(child: CircularProgressIndicator())
                   : PitchAndRhythmBar(
                     notes: _notes, // 병합된 음정 데이터
-                    totalDuration: _totalDuration * 0.1, // MR 전체 길이  * 0.1
+                    totalDuration: _totalDuration * 0.1, // MR 전체 길이
+                    //  *0.1: 막대 길이 늘어남, 음정 막대가 움직이는 속도 높아짐
                     currentPosition: currentPosition, // 현재 재생 위치
                     bpm: _songBPM, // 도레미송의 BPM (임시 설정값: 140)
                     userCurrentPitch: _userCurrentPitch, // 사용자 현재 음정 (실시간 매칭용)

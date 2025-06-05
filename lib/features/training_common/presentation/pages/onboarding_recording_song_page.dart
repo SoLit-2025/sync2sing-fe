@@ -9,6 +9,7 @@ import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/shared/providers/audio_recorder_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_analysis_submit_provider.dart';
+import 'package:sync2sing/shared/providers/vocal_result_provider.dart';
 import 'package:sync2sing/shared/widgets/page_indicator.dart';
 
 /// 온보딩 과정의 녹음 페이지
@@ -98,6 +99,28 @@ class OnboardingRecordingSongPage extends StatelessWidget {
                                 /// vocalAnalysisSubmitProvider 새로고침
                                 /// 이전 분석 결과를 초기화하고 새로운 분석 시작
                                 ref.refresh(vocalAnalysisSubmitProvider);
+
+                                /// 파일 경로 및 정확도 저장
+                                /// *** ref 를 dispose() 에서 사용할 수 없어서 여기서 저장하게 로직을 작성하였습니다. -> 나중에 리팩토링될 수 있음.
+                                ref
+                                    .read(vocalResultProvider.notifier)
+                                    .setWavFilePath(
+                                      ref.read(audioRecorderProvider.notifier).getWavFilePath(),
+                                    ); // 음성 파일 경로
+                                ref
+                                    .read(vocalResultProvider.notifier)
+                                    .setPitchAccuracy(50); // 음정 정확도 저장
+                                ref
+                                    .read(vocalResultProvider.notifier)
+                                    .setRhythmAccuracy(60); // 박자 정확도 저장
+
+                                /// *** 저장한 것: 파일 경로 및 정확도 조회하기
+                                final vocalPitchData = ref.watch(vocalResultProvider);
+                                debugPrint(
+                                  "파일 경로 및 정확도 저장: ${vocalPitchData.wavFilePath} | ${vocalPitchData.pitchAccuracy} | ${vocalPitchData.rhythmAccuracy}",
+                                );
+
+                                ref.invalidate(audioRecorderProvider);
 
                                 /// 분석 로딩 페이지로 이동
                                 /// 여기서 실제 AI 보컬 분석이 수행됩니다

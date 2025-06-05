@@ -241,6 +241,11 @@ class PitchAndRhythmBarPainter extends CustomPainter {
         // 허용 오차보다 하나의 막대로 취급하는 음정 차이값이 더 크면 실제 노래의 음정과 같은 음정이어도 음정바와의 옹차가 허용 오차보다 클 수 있을 것 같습니다
       }
 
+      /// 박자가 false 되는 조건 -> 실험 용도
+      // if (isAtLeftEdge && userCurrentPitch == null || !isAtLeftEdge && userCurrentPitch != null) {
+      //   false;
+      // }
+
       /// 🎨 색상 결정 로직
       ///
       /// 조건별 색상:
