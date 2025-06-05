@@ -4,20 +4,19 @@ import '../../features/training_common/presentation/controller/audio_recorder_co
 
 // recordindg_song_page / music_content_widget 에 사용될 Provider -> 이름 바뀔 수도 있음
 // 파일 저장 / 음정 탐지 / 박자 분석(아마) 수행
-final audioRecorderProvider =
-    StateNotifierProvider.autoDispose<AudioRecorderController, bool>((ref) {
-      final streamRecorder = AudioStreamRecorder(
-        isFileSave: true,
-        isPitchDetection: true,
-        isRhythmDetection: false, // 추후 확장 가능
-      );
-      final controller = AudioRecorderController(
-        streamRecorder: streamRecorder,
-      );
-      controller.init(); // Provider 생성 시 초기화
-      ref.onDispose(() => controller.disposeRecorder());
-      return controller; // controller 리턴 -> 위젯에서 controller 사용 가능
-    });
+final audioRecorderProvider = StateNotifierProvider.autoDispose<AudioRecorderController, bool>((
+  ref,
+) {
+  final streamRecorder = AudioStreamRecorder(
+    isFileSave: true,
+    isPitchDetection: true,
+    isRhythmDetection: false, // 추후 확장 가능
+  );
+  final controller = AudioRecorderController(streamRecorder: streamRecorder);
+  controller.init(); // Provider 생성 시 초기화
+  ref.onDispose(() => controller.disposeRecorder());
+  return controller; // controller 리턴 -> 위젯에서 controller 사용 가능
+});
 
 // 실시간 음정 탐지한 것을 보냄
 final pitchStreamProvider = StreamProvider.autoDispose<PitchData>((ref) async* {

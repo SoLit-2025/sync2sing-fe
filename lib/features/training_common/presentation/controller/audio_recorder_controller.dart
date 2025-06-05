@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/services/audio_stream_recorder.dart';
@@ -28,6 +29,13 @@ class AudioRecorderController extends StateNotifier<bool> {
 
   Future<void> disposeRecorder() async {
     await streamRecorder.dispose();
+  }
+
+  String getWavFilePath() {
+    if (streamRecorder.recordingFilePath == null) {
+      debugPrint("오류: 파일 경로가 없습니다.");
+    }
+    return streamRecorder.recordingFilePath!;
   }
 
   Stream<PitchData>? get pitchStream => streamRecorder.pitchStream;

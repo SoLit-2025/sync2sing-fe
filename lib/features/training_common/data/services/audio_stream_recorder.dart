@@ -31,7 +31,7 @@ class AudioStreamRecorder {
   StreamController<PitchData>? _pitchStreamController;
   late final PitchDetector _pitchDetector;
 
-  String? _recordingFilePath; // 파일 경로
+  String? recordingFilePath; // 파일 경로
   RandomAccessFile? _wavFile; // file 저장
   int _totalDataSize = 0; // 누적 PCM 데이터 크기 추적
 
@@ -113,7 +113,8 @@ class AudioStreamRecorder {
     await _recorder.stopRecorder();
 
     // 헤더 덮어쓰기: 파일 크기 업데이트 필요
-    if (isFileSave && _recordingFilePath != null) {
+    // 헤더 덮어쓰기
+    if (isFileSave && recordingFilePath != null) {
       // 헤더 업데이트
       await _wavFile!.setPosition(0);
       final updatedHeader = SaveWavFile.buildHeader(
@@ -126,6 +127,8 @@ class AudioStreamRecorder {
       await _wavFile!.close();
       _wavFile = null;
     }
+
+    debugPrint("recorder dispose");
   }
 
   Future<void> dispose() async {
@@ -137,8 +140,7 @@ class AudioStreamRecorder {
   // wav 파일 생성 및 헤더 초기화
   Future<void> _createWavFile() async {
     final tempDir = await getTemporaryDirectory();
-    _recordingFilePath =
-        '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
+    recordingFilePath = '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
 
     final header = SaveWavFile.buildHeader(
       sampleRate: _sampleRate,
@@ -147,11 +149,7 @@ class AudioStreamRecorder {
       pcmDataSize: 0,
     );
 
-    _wavFile = await SaveWavFile.createFile(
-      path:
-          '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav',
-      header: header,
-    );
+    _wavFile = await SaveWavFile.createFile(path: recordingFilePath!, header: header);
   }
 
   // 실시간 음정탐지 로직
@@ -166,9 +164,7 @@ class AudioStreamRecorder {
     // 2. 충분한 데이터가 모일 때까지 반복 처리
     while (_accumulatedBuffer.length >= requiredBytes) {
       // 3. 필요한 만큼 데이터 추출 (4096 bytes)
-      final chunk = Uint8List.fromList(
-        _accumulatedBuffer.sublist(0, requiredBytes),
-      );
+      final chunk = Uint8List.fromList(_accumulatedBuffer.sublist(0, requiredBytes));
 
       // 4. 남은 데이터 유지
       _accumulatedBuffer = _accumulatedBuffer.sublist(requiredBytes);
@@ -184,6 +180,9 @@ class AudioStreamRecorder {
         _pitchStreamController?.add(
           PitchData(pitch: result.pitch, probability: result.probability),
         );
+      } else {
+        // *** 음정이 감지되지 않으면 가짜 데이터 (pitch: 0, probability: 0) 을 보냄
+        _pitchStreamController?.add(PitchData(pitch: 0, probability: 0));
       }
     }
   }

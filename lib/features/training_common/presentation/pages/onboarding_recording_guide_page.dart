@@ -89,7 +89,6 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
                     color: AppColors.primaryPink,
                     disabledColor: AppColors.primaryPinkDisabled, // 비활성화 색
                     borderRadius: BorderRadius.circular(10.r),
-                    minSize: 0.0,
                     padding: EdgeInsets.all(0),
                     // 버튼 활성화 조건을 만족하면 onboardingRecordingSong 페이지로 이동 / 아니면 비활성화 상태
                     onPressed:
@@ -99,7 +98,7 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
                                 AppRouteNames.onboardingRecordingSong,
                               );
                             }
-                            : null,
+                            : null, minSize: 0.0,
                     child: Center(
                       child: Text(
                         "시작하기",

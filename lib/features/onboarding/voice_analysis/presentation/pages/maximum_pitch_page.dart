@@ -55,7 +55,6 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
   Future<void> analyzeAndStorePitchNote() async {
     // 최고음정 저장
     ref.read(vocalPitchMetricsProvider.notifier).setMaxPitch(_maxPitch!);
-
     final vocalPitchMetrics = ref.watch(vocalPitchMetricsProvider);
 
     // 최저/최고 노트(String) 저장
@@ -72,6 +71,11 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
       vocalPitchMetrics.averagePitch!,
     );
     voiceTypeProfile.setVoiceType(voiceType);
+
+    final voiceTypeData = ref.watch(voiceTypeProfileProvider);
+    debugPrint(
+      "음역대 저장: ${voiceTypeData.voiceType} | ${voiceTypeData.minNote} | ${voiceTypeData.maxNote}",
+    );
   }
 
   @override
