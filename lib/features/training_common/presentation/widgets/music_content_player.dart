@@ -15,6 +15,8 @@ import 'package:sync2sing/shared/providers/audio_position_provider.dart';
 import '../../../../shared/providers/audio_recorder_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import '../../domain/evaluated_pitch.dart';
+
 // 음악 재생 및 녹음 기능을 담당하는 위젯
 // 기능
 // 1. 도레미송 MR 재생/일시정지
@@ -49,6 +51,8 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   final double _songBPM = 88.0; // 도레미송 BPM(=Beats Per Minute, 분당 박자수, 노래 속도): 임시값 140 설정
   int? _userCurrentPitch; // 사용자 현재 음정
   Timer? _pitchDetectionTimer; // 일정한 간격을 두고 음정을 감지하는 도구
+
+  bool _hasListened = false;
 
   // 위젯이 처음 실행될 때 실행되는 초기화 함수
   @override
@@ -224,14 +228,25 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   // UI 구성 함수
   @override
   Widget build(BuildContext context) {
+    if (!_hasListened) {
+      _hasListened = true; // 단 한 번만 실행
+      ref.listen<AsyncValue<EvaluatedPitch>>(evaluatedPitchStreamProvider, (prev, next) {
+        next.whenData((evaluatedPitch) {
+          final controller = ref.read(audioRecorderProvider.notifier);
+          controller.onPitchEvaluated(evaluatedPitch); //  실시간으로 음정 비교 -> bool list에 더함
+        });
+      });
+    }
+
     final isRecording = ref.watch(audioRecorderProvider);
     final currentPosition = ref.watch(audioPositionProvider);
-    final pitchAsync = ref.watch(pitchStreamProvider);
+    // final pitchAsync = ref.watch(pitchStreamProvider);
+    final pitchAsync = ref.watch(evaluatedPitchStreamProvider);
     pitchAsync.when(
       data: (pitchData) {
         if (isRecording) {
           setState(() {
-            if (pitchData.probability < 0.1) {
+            if (pitchData.pitch < 30) {
               // 음정이 탐지되지 않은 경우로, 가짜 데이터 넘겨받음 --> 현재 음정: null
               _userCurrentPitch = null;
             } else {
@@ -244,8 +259,8 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
       },
       loading: () => SizedBox(),
       error: (e, _) {
-        debugPrint("flutter: pitchStream 에러: $e");
-        return SizedBox();
+        // debugPrint("flutter: pitchStream 에러: $e");
+        // return SizedBox();
       },
     );
 

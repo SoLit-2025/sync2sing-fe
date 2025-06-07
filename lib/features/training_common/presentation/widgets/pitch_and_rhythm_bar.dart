@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/shared/providers/target_pitch_provider.dart';
 
 /// 🎼 하나의 막대가 언제 시작하고 끝나는지, 음정과 박자 정보를 저장하는 데이터 클래스
 ///
@@ -39,24 +41,45 @@ class PitchNoteBar {
 /// - currentPosition: 현재 재생 위치 (실시간으로 변화)
 /// - bpm: 노래의 템포(분당 박자 수) (막대 이동 속도 조정용)
 /// - userCurrentPitch: 사용자가 현재 부르고 있는 음정 (실시간 매칭용)
-class PitchAndRhythmBar extends StatelessWidget {
+class PitchAndRhythmBar extends ConsumerWidget {
   final List<PitchNoteBar> notes;
   final Duration totalDuration;
   final Duration currentPosition;
   final double bpm;
   final int? userCurrentPitch; // 사용자 현재 음정 파라미터 (새로 추가!)
 
+  // final void Function(double pitch, double rhythm) onAccuracyCalculated;
+
   const PitchAndRhythmBar({
     super.key,
     required this.notes,
     required this.totalDuration,
     required this.currentPosition,
+    // required this.onAccuracyCalculated,
     this.bpm = 88.0, // 기본값: 120 BPM
     this.userCurrentPitch, // 사용자 음정 (null이면 음성 없음)
   });
 
+  int calculateCurrentIndex(Duration currentPosition, double bpm) {
+    final barDurationInMs = (60 * 1000) / bpm; // 한 bar가 몇 밀리초인지
+    final currentTimeInMs = currentPosition.inMilliseconds;
+
+    return (currentTimeInMs / barDurationInMs).floor();
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // onAccuracyCalculated(pitchScore, rhythmScore);
+    final currentIndex = calculateCurrentIndex(currentPosition, bpm);
+
+    // 현재 기준 음 높이 설정
+    if (currentIndex >= 0 && currentIndex < notes.length) {
+      final currentPitch = notes[currentIndex].pitch;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(targetPitchProvider.notifier).state = currentPitch; // 현재 원곡의 음정 저장
+      });
+    }
+
     return Container(
       height: 155, // music_content_player.dart의 Container height와 일치
       alignment: Alignment.center,
@@ -237,10 +260,19 @@ class PitchAndRhythmBarPainter extends CustomPainter {
         // debugPrint("pitch bar: ${bar.pitch} | $userCurrentPitch}");
         int pitchDifference = (userCurrentPitch! - bar.pitch).abs();
         isPitchMatched = pitchDifference <= 10; // ±2 semitone 허용 오차
+        if (isPitchMatched) {
+          // 음정이 맞는 경우
+        } else {
+          // 음정이 틀린 경우
+        }
         // *** 허용 오차 부분 _mergeSimilarNotes 메서드에서 하나의 막대로 허용하는 음정 차이 수치와 동일한 수치로 맞추는 게 좋을 것 같아요!
         // 허용 오차보다 하나의 막대로 취급하는 음정 차이값이 더 크면 실제 노래의 음정과 같은 음정이어도 음정바와의 옹차가 허용 오차보다 클 수 있을 것 같습니다
       }
 
+      // /// 틀린 경우
+      // if (isAtLeftEdge) {
+      //   if (userCurrentPitch == null && userCurrentPitch)
+      // }
       /// 박자가 false 되는 조건 -> 실험 용도
       // if (isAtLeftEdge && userCurrentPitch == null || !isAtLeftEdge && userCurrentPitch != null) {
       //   false;
