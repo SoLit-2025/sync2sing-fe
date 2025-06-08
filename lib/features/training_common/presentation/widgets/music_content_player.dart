@@ -12,10 +12,9 @@ import 'package:sync2sing/features/training_common/presentation/widgets/lyrics_d
 import 'package:sync2sing/features/training_common/presentation/widgets/song_information_widget.dart';
 import 'package:sync2sing/features/training_common/presentation/widgets/pitch_and_rhythm_bar.dart';
 import 'package:sync2sing/shared/providers/audio_position_provider.dart';
+import 'package:sync2sing/shared/providers/evaluated_pitch_stream_provider.dart';
 import '../../../../shared/providers/audio_recorder_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
-
-import '../../domain/evaluated_pitch.dart';
 
 // 음악 재생 및 녹음 기능을 담당하는 위젯
 // 기능
@@ -228,19 +227,8 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   // UI 구성 함수
   @override
   Widget build(BuildContext context) {
-    if (!_hasListened) {
-      _hasListened = true; // 단 한 번만 실행
-      ref.listen<AsyncValue<EvaluatedPitch>>(evaluatedPitchStreamProvider, (prev, next) {
-        next.whenData((evaluatedPitch) {
-          final controller = ref.read(audioRecorderProvider.notifier);
-          controller.onPitchEvaluated(evaluatedPitch); //  실시간으로 음정 비교 -> bool list에 더함
-        });
-      });
-    }
-
     final isRecording = ref.watch(audioRecorderProvider);
     final currentPosition = ref.watch(audioPositionProvider);
-    // final pitchAsync = ref.watch(pitchStreamProvider);
     final pitchAsync = ref.watch(evaluatedPitchStreamProvider);
     pitchAsync.when(
       data: (pitchData) {

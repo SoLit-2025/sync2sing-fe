@@ -37,6 +37,37 @@ class OnboardingRecordingSongPage extends StatelessWidget {
     return true;
   }
 
+  void storeVocalAnalysisSubmit(ref) {
+    /// vocalAnalysisSubmitProvider 새로고침
+    /// 이전 분석 결과를 초기화하고 새로운 분석 시작
+    ref.refresh(vocalAnalysisSubmitProvider);
+
+    /// 파일 경로 및 정확도 저장
+    /// *** ref 를 dispose() 에서 사용할 수 없어서 여기서 저장하게 로직을 작성하였습니다. -> 나중에 리팩토링될 수 있음.
+    final controller = ref.read(audioRecorderProvider.notifier);
+    final pitchAccuracy = controller.pitchAccuracy;
+
+    debugPrint('🎯 pitch 정확도: $pitchAccuracy');
+
+    ref
+        .read(vocalResultProvider.notifier)
+        .setWavFilePath(ref.read(audioRecorderProvider.notifier).getWavFilePath()); // 음성 파일 경로
+    ref.read(vocalResultProvider.notifier).setPitchAccuracy(pitchAccuracy);
+
+    // ref
+    //     .read(vocalResultProvider.notifier)
+    //     .setPitchAccuracy(50); // 음정 정확도 저장
+    ref.read(vocalResultProvider.notifier).setRhythmAccuracy(60); // 박자 정확도 저장
+
+    /// *** 저장한 것: 파일 경로 및 정확도 조회하기
+    final vocalPitchData = ref.watch(vocalResultProvider);
+    debugPrint(
+      "파일 경로 및 정확도 저장: ${vocalPitchData.wavFilePath} | ${vocalPitchData.pitchAccuracy} | ${vocalPitchData.rhythmAccuracy}",
+    );
+
+    ref.invalidate(audioRecorderProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,40 +127,8 @@ class OnboardingRecordingSongPage extends StatelessWidget {
                       onPressed:
                           isVocalAnalysisButtonEnabled()
                               ? () async {
-                                /// vocalAnalysisSubmitProvider 새로고침
-                                /// 이전 분석 결과를 초기화하고 새로운 분석 시작
-                                ref.refresh(vocalAnalysisSubmitProvider);
-
-                                /// 파일 경로 및 정확도 저장
-                                /// *** ref 를 dispose() 에서 사용할 수 없어서 여기서 저장하게 로직을 작성하였습니다. -> 나중에 리팩토링될 수 있음.
-                                final controller = ref.read(audioRecorderProvider.notifier);
-                                final pitchAccuracy = controller.pitchAccuracy;
-
-                                debugPrint('🎯 pitch 정확도: $pitchAccuracy');
-
-                                ref
-                                    .read(vocalResultProvider.notifier)
-                                    .setWavFilePath(
-                                      ref.read(audioRecorderProvider.notifier).getWavFilePath(),
-                                    ); // 음성 파일 경로
-                                ref
-                                    .read(vocalResultProvider.notifier)
-                                    .setPitchAccuracy(pitchAccuracy);
-
-                                // ref
-                                //     .read(vocalResultProvider.notifier)
-                                //     .setPitchAccuracy(50); // 음정 정확도 저장
-                                ref
-                                    .read(vocalResultProvider.notifier)
-                                    .setRhythmAccuracy(60); // 박자 정확도 저장
-
-                                /// *** 저장한 것: 파일 경로 및 정확도 조회하기
-                                final vocalPitchData = ref.watch(vocalResultProvider);
-                                debugPrint(
-                                  "파일 경로 및 정확도 저장: ${vocalPitchData.wavFilePath} | ${vocalPitchData.pitchAccuracy} | ${vocalPitchData.rhythmAccuracy}",
-                                );
-
-                                ref.invalidate(audioRecorderProvider);
+                                /// 음정 및 박자 정확도 계산결과 저장
+                                storeVocalAnalysisSubmit(ref);
 
                                 /// 분석 로딩 페이지로 이동
                                 /// 여기서 실제 AI 보컬 분석이 수행됩니다
