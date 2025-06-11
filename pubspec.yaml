@@ -42,7 +42,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
-    - assets/songs/datas/do_re_mi_song.json
+    - assets/songs/datas/
     - assets/songs/audios/do_re_mi_song_mr_only_no_intro_104sec.wav
   fonts:
     - family: PretendardVariable

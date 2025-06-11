@@ -112,7 +112,9 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
     try {
       // JSON 파일에서 음정/박자 데이터 불러오기
       final String jsonString = await rootBundle.loadString(
-        'assets/songs/datas/do_re_mi_song.json',
+        // 'assets/songs/datas/do_re_mi_song.json',
+        // 'assets/songs/datas/do_re_mi_song_30s.json',
+        'assets/songs/datas/new_doremi_song_editted.json',
       );
       final List<dynamic> jsonData = json.decode(jsonString);
 
