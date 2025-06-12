@@ -13,6 +13,7 @@ import 'package:sync2sing/features/training_common/presentation/widgets/song_inf
 import 'package:sync2sing/features/training_common/presentation/widgets/pitch_and_rhythm_bar.dart';
 import 'package:sync2sing/shared/providers/audio_position_provider.dart';
 import 'package:sync2sing/shared/providers/evaluated_pitch_stream_provider.dart';
+import 'package:sync2sing/shared/providers/mic_permission_provider.dart';
 import '../../../../shared/providers/audio_recorder_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -59,6 +60,27 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
     super.initState();
     _setupAudioPlayer(); // 오디오 플레이어 초기 설정
     _loadPitchBars(); // JSON에서 음정/박자 데이터 불러오기
+
+    // permission 확인
+    // 마이크 권한 요청
+    Future.microtask(() async {
+      final granted = await ensureMicPermission(ref);
+      if (!granted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("마이크 권한이 필요합니다")));
+      }
+    });
+  }
+
+  Future<bool> ensureMicPermission(WidgetRef ref) async {
+    final notifier = ref.read(micPermissionProvider.notifier);
+
+    await notifier.checkPermission();
+
+    if (!notifier.isGranted) {
+      await notifier.requestPermission();
+    }
+
+    return notifier.isGranted;
   }
 
   // 오디오 플레이어 초기 설정 함수
@@ -112,9 +134,7 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
     try {
       // JSON 파일에서 음정/박자 데이터 불러오기
       final String jsonString = await rootBundle.loadString(
-        // 'assets/songs/datas/do_re_mi_song.json',
-        // 'assets/songs/datas/do_re_mi_song_30s.json',
-        'assets/songs/datas/new_doremi_song_editted.json',
+        'assets/songs/datas/new_doremi_song_edited.json',
       );
       final List<dynamic> jsonData = json.decode(jsonString);
 
@@ -134,13 +154,11 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
       // 비슷한 음정을 가진 막대를 하나의 긴 막대로 병합
       List<PitchNoteBar> mergedNotes = _mergeSimilarNotes(rawNotes);
 
-      // debugPrint("$")
-
       setState(() {
-        _notes = mergedNotes;
+        _notes = rawNotes; // mergedNotes or rawNotes : new_doremi_song_edited 기준 raw도 괜찮은 듯
       });
 
-      // 🔽 추가할 디버그 출력
+      // 병합 후 음정 데이터 출력
       debugPrint('병합된 음정 데이터 (${mergedNotes.length}개):');
       for (int i = 0; i < mergedNotes.length; i++) {
         debugPrint('[$i] ${mergedNotes[i]}');

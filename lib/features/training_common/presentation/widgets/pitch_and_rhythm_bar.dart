@@ -257,14 +257,14 @@ class PitchAndRhythmBarPainter extends CustomPainter {
       /// - 일반인도 쉽게 성공할 수 있는 적당한 난이도
       bool isPitchMatched = false;
       if (isAtLeftEdge && userCurrentPitch != null) {
-        // debugPrint("pitch bar: ${bar.pitch} | $userCurrentPitch}");
+        debugPrint("pitch bar - 바 미디: ${bar.pitch} | 사용자 미디: $userCurrentPitch");
         int pitchDifference = (userCurrentPitch! - bar.pitch).abs();
         isPitchMatched = pitchDifference <= 10; // ±2 semitone 허용 오차
-        if (isPitchMatched) {
-          // 음정이 맞는 경우
-        } else {
-          // 음정이 틀린 경우
-        }
+        // if (isPitchMatched) {
+        //   // 음정이 맞는 경우
+        // } else {
+        //   // 음정이 틀린 경우
+        // }
         // *** 허용 오차 부분 _mergeSimilarNotes 메서드에서 하나의 막대로 허용하는 음정 차이 수치와 동일한 수치로 맞추는 게 좋을 것 같아요!
         // 허용 오차보다 하나의 막대로 취급하는 음정 차이값이 더 크면 실제 노래의 음정과 같은 음정이어도 음정바와의 옹차가 허용 오차보다 클 수 있을 것 같습니다
       }

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:flutter_sound/flutter_sound.dart';

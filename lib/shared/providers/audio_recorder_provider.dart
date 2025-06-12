@@ -11,8 +11,8 @@ final audioRecorderProvider = StateNotifierProvider<AudioRecorderController, boo
     isRhythmDetection: false, // 추후 확장 가능
   );
   final controller = AudioRecorderController(streamRecorder: streamRecorder);
-  controller.init(); // Provider 생성 시 초기화
-  ref.onDispose(() => controller.disposeRecorder());
+  controller.init(); // Provider 생성 시 AudioStreamRecorder 초기화
+  ref.onDispose(() => controller.disposeRecorder()); // 프로바이더가 사라지면 AudioStreamRecorder 정리
   return controller; // controller 리턴 -> 위젯에서 controller 사용 가능
 });
 
