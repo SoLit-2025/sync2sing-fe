@@ -18,7 +18,7 @@ class VocalAnalysisLoadingHandler extends ConsumerWidget {
       data: (_) {
         // 응답(현재 기준 2초 후) 받으면 다음 페이지로 이동
         Future.microtask(() {
-          context.goNamed(AppRouteNames.onboardingQuestion); // 임의로 이동 페이지 설정
+          context.goNamed(AppRouteNames.vocalAnalysisReport); // 임의로 이동 페이지 설정
         });
         return const SizedBox.shrink();
       },
