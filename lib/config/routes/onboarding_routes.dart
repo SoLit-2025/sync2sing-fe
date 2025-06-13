@@ -8,7 +8,6 @@ import '../../features/onboarding/voice_analysis/presentation/pages/maximum_pitc
 import '../../features/onboarding/voice_analysis/presentation/pages/minimum_pitch_page.dart';
 import '../../features/training_common/presentation/pages/onboarding_recording_guide_page.dart';
 import '../../features/training_common/presentation/pages/onboarding_recording_song_page.dart';
-import '../../features/training_common/presentation/pages/vocal_analysis_loading_page.dart';
 import 'route_names.dart';
 
 final List<GoRoute> onboardingRoutes = [

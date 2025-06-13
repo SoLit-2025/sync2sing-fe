@@ -41,3 +41,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# dev 폴더 제외 (라우트 기본값 설정 폴더)
+lib/dev/dev_config.dart
