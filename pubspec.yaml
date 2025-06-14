@@ -43,7 +43,7 @@ flutter:
   assets:
     - assets/images/
     - assets/songs/datas/
-    - assets/songs/audios/do_re_mi_song_mr_only_no_intro_104sec.wav
+    - assets/songs/audios/
   fonts:
     - family: PretendardVariable
       fonts:
