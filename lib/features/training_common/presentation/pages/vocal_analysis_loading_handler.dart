@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/features/training_common/presentation/pages/vocal_analysis_loading_page.dart';
 import 'package:sync2sing/shared/providers/vocal_analysis_submit_provider.dart';
+import 'package:sync2sing/shared/providers/vocal_result_provider.dart';
 
 class VocalAnalysisLoadingHandler extends ConsumerWidget {
   const VocalAnalysisLoadingHandler({super.key});
@@ -18,7 +19,10 @@ class VocalAnalysisLoadingHandler extends ConsumerWidget {
       data: (_) {
         // 응답(현재 기준 2초 후) 받으면 다음 페이지로 이동
         Future.microtask(() {
-          context.goNamed(AppRouteNames.vocalAnalysisReport); // 임의로 이동 페이지 설정
+          context.goNamed(
+            AppRouteNames.vocalAnalysisReport,
+            extra: vocalResultProvider,
+          ); // 임의로 이동 페이지 설정
         });
         return const SizedBox.shrink();
       },

@@ -11,6 +11,7 @@ import 'package:sync2sing/shared/providers/audio_recorder_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_analysis_submit_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_result_provider.dart';
 import 'package:sync2sing/shared/widgets/page_indicator.dart';
+import 'dart:io';
 
 /// 온보딩 과정의 녹음 페이지
 ///
@@ -51,7 +52,9 @@ class OnboardingRecordingSongPage extends StatelessWidget {
 
     ref
         .read(vocalResultProvider.notifier)
-        .setWavFilePath(ref.read(audioRecorderProvider.notifier).getWavFilePath()); // 음성 파일 경로
+        .setWavFilePath(
+          ref.read(audioRecorderProvider.notifier).getWavFilePath(),
+        ); // 음성 파일 경로
     ref.read(vocalResultProvider.notifier).setPitchAccuracy(pitchAccuracy);
 
     // ref
@@ -64,6 +67,13 @@ class OnboardingRecordingSongPage extends StatelessWidget {
     debugPrint(
       "파일 경로 및 정확도 저장: ${vocalPitchData.wavFilePath} | ${vocalPitchData.pitchAccuracy} | ${vocalPitchData.rhythmAccuracy}",
     );
+
+    // ★ 실제 파일 존재 및 크기 확인
+    if (vocalPitchData.wavFilePath != null) {
+      final file = File(vocalPitchData.wavFilePath!);
+      debugPrint('→ 실제 파일 존재: ${file.existsSync()}');
+      debugPrint('→ 실제 파일 크기: ${file.lengthSync()}바이트');
+    }
 
     ref.invalidate(audioRecorderProvider);
   }
@@ -127,14 +137,47 @@ class OnboardingRecordingSongPage extends StatelessWidget {
                       onPressed:
                           isVocalAnalysisButtonEnabled()
                               ? () async {
-                                /// 음정 및 박자 정확도 계산결과 저장
-                                storeVocalAnalysisSubmit(ref);
+                                try {
+                                  // 1. 데이터 저장
+                                  storeVocalAnalysisSubmit(ref);
 
-                                /// 분석 로딩 페이지로 이동
-                                /// 여기서 실제 AI 보컬 분석이 수행됩니다
-                                context.goNamed(AppRouteNames.analysisLoading);
+                                  // 2. API 호출 트리거
+                                  await ref.read(
+                                    vocalAnalysisSubmitProvider.future,
+                                  );
+
+                                  // 3. 성공 시 페이지 이동
+                                  if (context.mounted) {
+                                    context.goNamed(
+                                      AppRouteNames.analysisLoading,
+                                    );
+                                  }
+                                } catch (e) {
+                                  // 4. 에러 핸들링
+                                  if (context.mounted) {
+                                    showCupertinoDialog(
+                                      context: context,
+                                      builder:
+                                          (context) => CupertinoAlertDialog(
+                                            title: Text('분석 실패'),
+                                            content: Text(
+                                              '보컬 분석에 실패했습니다: ${e.toString()}',
+                                            ),
+                                            actions: [
+                                              CupertinoDialogAction(
+                                                child: Text('확인'),
+                                                onPressed:
+                                                    () =>
+                                                        Navigator.pop(context),
+                                              ),
+                                            ],
+                                          ),
+                                    );
+                                  }
+                                }
                               }
-                              : null, // 비활성화 시 null (클릭 불가)
+                              : null,
+                      // 비활성화 시 null (클릭 불가)
                       /// 버튼 텍스트
                       /// 활성화 상태에 따라 텍스트 스타일이 달라집니다
                       child: Text(

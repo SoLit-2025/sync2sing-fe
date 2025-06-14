@@ -4,51 +4,36 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'dart:math' as math;
+import 'package:go_router/go_router.dart';
 
 class VocalAnalysisReportPage extends StatelessWidget {
   const VocalAnalysisReportPage({super.key});
 
-  // mock 데이터
-  static const Map<String, dynamic> mockData = {
-    "status": 201,
-    "message": "보컬 분석 리포트 생성에 성공했습니다.",
-    "data": {
-      "report_id": 2,
-      "analysis_type": "GUEST",
-      "title": "2025-06-03 Do-Re-Mi",
-      "song": {
-        "song_id": 1,
-        "title": "Do-Re-Mi",
-        "artist": "Richard Rodgers",
-        "voice_type": "SOPRANO",
-        "pitch_note_min": "C4",
-        "pitch_note_max": "D5",
-        "album_cover_url":
-            "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-      },
-      "pitch_score": 65,
-      "beat_score": 90,
-      "pronunciation_score": 83,
-      "breath_score": 60,
-      "overall_review_title": "호흡이 큰 장점이지만, 음정과 박자에 안정이 필요해요",
-      "overall_review_content":
-          "전반적으로 음정과 박자 정확도가 우수하나, 발성과 호흡 조절에서 약간의 개선이 필요합니다.",
-      "created_at": "2025-06-03T17:07:21.229460269",
-      "cause_content": "코드 변화를 정확히 인지하지 못해 화성 진행에 따른 음의 변화를 자연스럽게 표현하기 어려워요.",
-      "proposal_content":
-          "주요 코드(C, F, G)의 느낌을 익히고, 단순한 발성 연습부터 시작해 듣기 훈련을 병행하세요.",
-    },
-  };
+  // extra에서 데이터 받기
+  Map<String, dynamic> getReportData(BuildContext context) {
+    final state = GoRouterState.of(context);
+    final dynamic extra = state.extra;
+    if (extra is Map<String, dynamic>) {
+      return extra;
+    } else if (extra is! Map<String, dynamic> && extra != null) {
+      // 만약 모델 객체라면 toJson 등으로 변환해서 사용
+      try {
+        return extra.toJson();
+      } catch (_) {
+        return {};
+      }
+    }
+    return {};
+  }
 
-  // 데이터 접근을 위한 헬퍼 메서드
-  Map<String, dynamic> get reportData =>
-      mockData['data'] as Map<String, dynamic>? ?? {};
-  Map<String, dynamic> get songData =>
+  Map<String, dynamic> getSongData(Map<String, dynamic> reportData) =>
       reportData['song'] as Map<String, dynamic>? ?? {};
-  String get voiceType =>
+  String getVoiceType(Map<String, dynamic> songData) =>
       _getVoiceTypeKorean(songData['voice_type'] as String? ?? '');
-  String get pitchNoteMin => songData['pitch_note_min'] as String? ?? '';
-  String get pitchNoteMax => songData['pitch_note_max'] as String? ?? '';
+  String getPitchNoteMin(Map<String, dynamic> songData) =>
+      songData['pitch_note_min'] as String? ?? '';
+  String getPitchNoteMax(Map<String, dynamic> songData) =>
+      songData['pitch_note_max'] as String? ?? '';
 
   String _getVoiceTypeKorean(String voiceType) {
     switch (voiceType) {
@@ -69,7 +54,7 @@ class VocalAnalysisReportPage extends StatelessWidget {
     }
   }
 
-  String get voiceTypeDescription {
+  String getVoiceTypeDescription(Map<String, dynamic> songData) {
     switch (songData['voice_type'] as String? ?? '') {
       case 'TENOR':
         return '평균적인 남성의 높은 음역대로, 밝고 맑은 톤으로 아름다운 멜로디를 들려줘요';
@@ -88,8 +73,7 @@ class VocalAnalysisReportPage extends StatelessWidget {
     }
   }
 
-  // 레이더 차트 데이터 (점수를 0-1 범위로 변환)
-  List<double> get radarData {
+  List<double> getRadarData(Map<String, dynamic> reportData) {
     final pitchScore = (reportData['pitch_score'] as num? ?? 0).toDouble();
     final beatScore = (reportData['beat_score'] as num? ?? 0).toDouble();
     final pronunciationScore =
@@ -106,10 +90,9 @@ class VocalAnalysisReportPage extends StatelessWidget {
     ];
   }
 
-  // 나의 음역대 계산
-  double get voiceRangeProgress {
-    final startValue = _noteToNumber(pitchNoteMin);
-    final endValue = _noteToNumber(pitchNoteMax);
+  double getVoiceRangeProgress(Map<String, dynamic> songData) {
+    final startValue = _noteToNumber(getPitchNoteMin(songData));
+    final endValue = _noteToNumber(getPitchNoteMax(songData));
 
     if (startValue == -1 || endValue == -1) return 0.0;
 
@@ -122,7 +105,6 @@ class VocalAnalysisReportPage extends StatelessWidget {
     return (userRange / totalHumanRange).clamp(0.0, 1.0);
   }
 
-  // 음표를 숫자로 변환 (C0 = 12, C1 = 24, ...)
   int _noteToNumber(String note) {
     if (note.isEmpty) return -1;
 
@@ -163,6 +145,16 @@ class VocalAnalysisReportPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final reportData = getReportData(context);
+    if (reportData.isEmpty) {
+      return Scaffold(
+        body: Center(
+          child: Text("분석 결과 데이터가 없습니다.", style: AppTextStyles.body1Bold),
+        ),
+      );
+    }
+    final songData = getSongData(reportData);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -175,17 +167,17 @@ class VocalAnalysisReportPage extends StatelessWidget {
                 SizedBox(height: 20.h),
                 _buildHeader(),
                 SizedBox(height: 24.h),
-                _buildVoiceTypeSection(),
+                _buildVoiceTypeSection(songData),
                 SizedBox(height: 30.h),
-                _buildVoiceRangeSection(context),
+                _buildVoiceRangeSection(context, songData),
                 SizedBox(height: 30.h),
-                _buildMusicInfoSection(),
+                _buildMusicInfoSection(songData),
                 SizedBox(height: 30.h),
-                _buildRadarChart(),
+                _buildRadarChart(reportData),
                 SizedBox(height: 30.h),
-                _buildAnalysisDescription(),
+                _buildAnalysisDescription(reportData),
                 SizedBox(height: 30.h),
-                _buildRecommendationSection(),
+                _buildRecommendationSection(reportData),
                 SizedBox(height: 40.h),
                 _buildCurriculumButton(),
                 SizedBox(height: 40.h),
@@ -205,7 +197,7 @@ class VocalAnalysisReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildVoiceTypeSection() {
+  Widget _buildVoiceTypeSection(Map<String, dynamic> songData) {
     return Column(
       children: [
         Container(
@@ -217,14 +209,14 @@ class VocalAnalysisReportPage extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              voiceType,
+              getVoiceType(songData),
               style: AppTextStyles.body1Bold.copyWith(color: Colors.white),
             ),
           ),
         ),
         SizedBox(height: 20.h),
         Text(
-          voiceTypeDescription,
+          getVoiceTypeDescription(songData),
           style: AppTextStyles.body2,
           textAlign: TextAlign.center,
         ),
@@ -232,7 +224,10 @@ class VocalAnalysisReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildVoiceRangeSection(BuildContext context) {
+  Widget _buildVoiceRangeSection(
+    BuildContext context,
+    Map<String, dynamic> songData,
+  ) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -260,7 +255,10 @@ class VocalAnalysisReportPage extends StatelessWidget {
                         Container(width: double.infinity, height: 20.h),
                         Positioned(
                           left: 0,
-                          child: Text(pitchNoteMin, style: AppTextStyles.body3),
+                          child: Text(
+                            getPitchNoteMin(songData),
+                            style: AppTextStyles.body3,
+                          ),
                         ),
                         Positioned(
                           left:
@@ -268,9 +266,12 @@ class VocalAnalysisReportPage extends StatelessWidget {
                                       48.w -
                                       120.w -
                                       16.w) *
-                                  voiceRangeProgress -
+                                  getVoiceRangeProgress(songData) -
                               10.w,
-                          child: Text(pitchNoteMax, style: AppTextStyles.body3),
+                          child: Text(
+                            getPitchNoteMax(songData),
+                            style: AppTextStyles.body3,
+                          ),
                         ),
                       ],
                     ),
@@ -292,7 +293,7 @@ class VocalAnalysisReportPage extends StatelessWidget {
                           ),
                           FractionallySizedBox(
                             alignment: Alignment.centerLeft,
-                            widthFactor: voiceRangeProgress,
+                            widthFactor: getVoiceRangeProgress(songData),
                             child: Container(
                               decoration: BoxDecoration(
                                 color: AppColors.primaryPink,
@@ -313,7 +314,7 @@ class VocalAnalysisReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMusicInfoSection() {
+  Widget _buildMusicInfoSection(Map<String, dynamic> songData) {
     final title = songData['title'] as String? ?? '';
     final artist = songData['artist'] as String? ?? '';
 
@@ -332,15 +333,15 @@ class VocalAnalysisReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRadarChart() {
+  Widget _buildRadarChart(Map<String, dynamic> reportData) {
     return Container(
       width: 280.w,
       height: 280.h,
-      child: CustomPaint(painter: RadarChartPainter(radarData)),
+      child: CustomPaint(painter: RadarChartPainter(getRadarData(reportData))),
     );
   }
 
-  Widget _buildAnalysisDescription() {
+  Widget _buildAnalysisDescription(Map<String, dynamic> reportData) {
     final reviewTitle = reportData['overall_review_title'] as String? ?? '';
     final reviewContent = reportData['overall_review_content'] as String? ?? '';
 
@@ -370,7 +371,7 @@ class VocalAnalysisReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRecommendationSection() {
+  Widget _buildRecommendationSection(Map<String, dynamic> reportData) {
     final causeContent = reportData['cause_content'] as String? ?? '';
     final proposalContent = reportData['proposal_content'] as String? ?? '';
 

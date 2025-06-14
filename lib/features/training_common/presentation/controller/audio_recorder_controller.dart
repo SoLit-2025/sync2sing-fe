@@ -70,7 +70,10 @@ class AudioRecorderController extends StateNotifier<bool> {
   /// 음정 정확도 리스트(int) -> 100점 만점 정확도 환산
   /// maxAllowedDiff: 최대로 인정하는 음정 차이 (미디 기준)
   /// maxAllowedDiff 이하로 차이가 나더라도 음정이 정확히 일치하지 않으면 점수를 깎음
-  int calculateTotalPitchAccuracy(List<int> pitchDiffs, {int maxAllowedDiff = 5}) {
+  int calculateTotalPitchAccuracy(
+    List<int> pitchDiffs, {
+    int maxAllowedDiff = 5,
+  }) {
     if (pitchDiffs.isEmpty) return 0;
 
     final accuracies =
@@ -79,7 +82,8 @@ class AudioRecorderController extends StateNotifier<bool> {
           return a.clamp(0, 1); // 0 미만 또는 1 초과 방지
         }).toList();
 
-    final avgAccuracy = (accuracies.reduce((a, b) => a + b) / accuracies.length * 100).round();
+    final avgAccuracy =
+        (accuracies.reduce((a, b) => a + b) / accuracies.length * 100).round();
 
     return avgAccuracy;
   }

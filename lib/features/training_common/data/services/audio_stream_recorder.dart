@@ -80,6 +80,7 @@ class AudioStreamRecorder {
         await _wavFile!.writeFrom(buffer);
         _totalDataSize += buffer.length; // 데이터 크기 누적
       }
+      debugPrint('▷ 청크 저장: ${buffer.length}바이트 | 누적: $_totalDataSize바이트');
 
       if (isPitchDetection) {
         // 음정 탐지해야 하는 경우 버퍼에 추가
@@ -127,6 +128,16 @@ class AudioStreamRecorder {
       _wavFile = null;
     }
 
+    // 파일 최종 검증 로그 추가
+    final savedFile = File(recordingFilePath!);
+    debugPrint('''
+    ▤ 녹음 완료 파일 정보
+    → 경로: ${savedFile.path}
+    → 존재: ${await savedFile.exists()}
+    → 크기: ${(await savedFile.length()) / 1024} KB
+    → 수정 시간: ${await savedFile.lastModified()}
+    ''');
+
     debugPrint("recorder dispose");
   }
 
@@ -139,7 +150,9 @@ class AudioStreamRecorder {
   // wav 파일 생성 및 헤더 초기화
   Future<void> _createWavFile() async {
     final tempDir = await getTemporaryDirectory();
-    recordingFilePath = '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
+    recordingFilePath =
+        '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
+    debugPrint('▷ WAV 파일 생성 경로: $recordingFilePath');
 
     final header = SaveWavFile.buildHeader(
       sampleRate: _sampleRate,
@@ -148,7 +161,11 @@ class AudioStreamRecorder {
       pcmDataSize: 0,
     );
 
-    _wavFile = await SaveWavFile.createFile(path: recordingFilePath!, header: header);
+    _wavFile = await SaveWavFile.createFile(
+      path: recordingFilePath!,
+      header: header,
+    );
+    debugPrint('▷ WAV 파일 초기화 완료: ${_wavFile != null}');
   }
 
   // 실시간 음정탐지 로직
@@ -163,7 +180,9 @@ class AudioStreamRecorder {
     // 2. 충분한 데이터가 모일 때까지 반복 처리
     while (_accumulatedBuffer.length >= requiredBytes) {
       // 3. 필요한 만큼 데이터 추출 (4096 bytes)
-      final chunk = Uint8List.fromList(_accumulatedBuffer.sublist(0, requiredBytes));
+      final chunk = Uint8List.fromList(
+        _accumulatedBuffer.sublist(0, requiredBytes),
+      );
 
       // 4. 남은 데이터 유지
       _accumulatedBuffer = _accumulatedBuffer.sublist(requiredBytes);
