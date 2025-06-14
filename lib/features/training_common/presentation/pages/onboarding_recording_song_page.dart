@@ -137,44 +137,10 @@ class OnboardingRecordingSongPage extends StatelessWidget {
                       onPressed:
                           isVocalAnalysisButtonEnabled()
                               ? () async {
-                                try {
-                                  // 1. 데이터 저장
-                                  storeVocalAnalysisSubmit(ref);
+                                // 1. 데이터 저장
+                                storeVocalAnalysisSubmit(ref);
 
-                                  // 2. API 호출 트리거
-                                  await ref.read(
-                                    vocalAnalysisSubmitProvider.future,
-                                  );
-
-                                  // 3. 성공 시 페이지 이동
-                                  if (context.mounted) {
-                                    context.goNamed(
-                                      AppRouteNames.analysisLoading,
-                                    );
-                                  }
-                                } catch (e) {
-                                  // 4. 에러 핸들링
-                                  if (context.mounted) {
-                                    showCupertinoDialog(
-                                      context: context,
-                                      builder:
-                                          (context) => CupertinoAlertDialog(
-                                            title: Text('분석 실패'),
-                                            content: Text(
-                                              '보컬 분석에 실패했습니다: ${e.toString()}',
-                                            ),
-                                            actions: [
-                                              CupertinoDialogAction(
-                                                child: Text('확인'),
-                                                onPressed:
-                                                    () =>
-                                                        Navigator.pop(context),
-                                              ),
-                                            ],
-                                          ),
-                                    );
-                                  }
-                                }
+                                context.goNamed(AppRouteNames.analysisLoading);
                               }
                               : null,
                       // 비활성화 시 null (클릭 불가)
