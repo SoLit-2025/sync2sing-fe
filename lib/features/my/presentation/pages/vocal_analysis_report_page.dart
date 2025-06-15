@@ -5,6 +5,8 @@ import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'dart:math' as math;
 import 'package:go_router/go_router.dart';
+import 'dart:convert';
+import 'package:sync2sing/shared/providers/vocal_result_provider.dart';
 
 class VocalAnalysisReportPage extends StatelessWidget {
   const VocalAnalysisReportPage({super.key});
@@ -12,18 +14,30 @@ class VocalAnalysisReportPage extends StatelessWidget {
   // extra에서 데이터 받기
   Map<String, dynamic> getReportData(BuildContext context) {
     final state = GoRouterState.of(context);
-    final dynamic extra = state.extra;
-    if (extra is Map<String, dynamic>) {
-      return extra;
-    } else if (extra is! Map<String, dynamic> && extra != null) {
-      // 만약 모델 객체라면 toJson 등으로 변환해서 사용
-      try {
-        return extra.toJson();
-      } catch (_) {
+    try {
+      if (state.extra == null) {
+        debugPrint('⚠️ state.extra가 null입니다.');
         return {};
       }
+
+      // Null-safe 객체 처리
+      final dynamic extra = state.extra!;
+
+      if (extra is Map<String, dynamic>) {
+        return extra;
+      } else if (extra is String) {
+        final decoded = jsonDecode(extra);
+        return decoded is Map<String, dynamic> ? decoded : {};
+      } else if (extra is AnalysisResult || extra is Song) {
+        return extra.toJson(); // ✅ Null-safe 호출
+      } else {
+        debugPrint('⚠️ 알 수 없는 데이터 타입: ${extra.runtimeType}');
+        return {};
+      }
+    } catch (e) {
+      debugPrint('❌ 데이터 파싱 오류: $e');
+      return {};
     }
-    return {};
   }
 
   Map<String, dynamic> getSongData(Map<String, dynamic> reportData) =>
@@ -146,6 +160,10 @@ class VocalAnalysisReportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reportData = getReportData(context);
+
+    // 디버깅: 실제 전달된 데이터 로그
+    debugPrint('reportData: $reportData');
+
     if (reportData.isEmpty) {
       return Scaffold(
         body: Center(
