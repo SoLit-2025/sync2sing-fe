@@ -38,7 +38,9 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   late AudioPlayer _audioPlayer; // MR 재생
   bool _isPlaying = false; // MR 재생여부 확인 변수
   StreamSubscription? _positionSubscription; // 음악 재생 위치 실시간 업데이트
-  Duration _totalDuration = const Duration(seconds: 30); // MR 길이: 30초 (doremi_song_v3_mr.wav 기준으로 수정)
+  Duration _totalDuration = const Duration(
+    seconds: 30,
+  ); // MR 길이: 30초 (doremi_song_v3_mr.wav 기준으로 수정)
 
   List<PitchNoteBar> _notes = []; // JSON에서 불러온 음정/박자 데이터를 저장하는 리스트
   final double _songBPM = 88.0; // 도레미송 BPM(=Beats Per Minute, 분당 박자수, 노래 속도): 임시값 88 설정
@@ -137,21 +139,24 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
       const double TIME_OFFSET = 0.7;
 
       // JSON 데이터를 PitchNoteBar 객체 리스트로 변환 (시간 조정 포함)
-      List<PitchNoteBar> rawNotes = jsonData
-          .map(
-            (item) {
-          final adjustedStart = ((item['start'] as num).toDouble() - TIME_OFFSET).clamp(0.0, double.infinity);
-          final adjustedEnd = ((item['end'] as num).toDouble() - TIME_OFFSET).clamp(0.0, double.infinity);
+      List<PitchNoteBar> rawNotes =
+          jsonData.map((item) {
+            final adjustedStart = ((item['start'] as num).toDouble() - TIME_OFFSET).clamp(
+              0.0,
+              double.infinity,
+            );
+            final adjustedEnd = ((item['end'] as num).toDouble() - TIME_OFFSET).clamp(
+              0.0,
+              double.infinity,
+            );
 
-          return PitchNoteBar(
-            start: adjustedStart,
-            end: adjustedEnd,
-            pitch: item['pitch'] as int,
-            duration: (item['duration'] as num).toDouble(),
-          );
-        },
-      )
-          .toList();
+            return PitchNoteBar(
+              start: adjustedStart,
+              end: adjustedEnd,
+              pitch: item['pitch'] as int,
+              duration: (item['duration'] as num).toDouble(),
+            );
+          }).toList();
 
       // 병합 로직 주석 처리 (doremi_song_piano_v2.json은 정확한 raw data이므로 병합 불필요)
       // List<PitchNoteBar> mergedNotes = _mergeSimilarNotes(rawNotes);
@@ -226,53 +231,6 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
     });
   }
 
-  // 박자 정확도 평가 함수
-  void _evaluateRhythm(double expectedTime, double actualTime) {
-    final diff = (actualTime - expectedTime).abs();
-    _rhythmDiffs.add(diff);
-
-    // 🎯 박자 정확도 상세 로그
-    String accuracyLevel;
-    if (diff <= 0.1) {
-      accuracyLevel = "🎯 완벽";
-    } else if (diff <= 0.3) {
-      accuracyLevel = "✅ 좋음";
-    } else if (diff <= 0.5) {
-      accuracyLevel = "⚠️ 보통";
-    } else {
-      accuracyLevel = "❌ 부정확";
-    }
-
-    debugPrint("🎵 [박자 채점] $accuracyLevel");
-    debugPrint("   📍 예상: ${expectedTime.toStringAsFixed(3)}초");
-    debugPrint("   ⏰ 실제: ${actualTime.toStringAsFixed(3)}초");
-    debugPrint("   📊 차이: ${diff.toStringAsFixed(3)}초");
-    debugPrint("   📈 누적 데이터: ${_rhythmDiffs.length}개");
-    debugPrint("   ════════════════════════════════");
-  }
-
-  // 박자 정확도 계산 (100점 만점)
-  int get _rhythmAccuracy {
-    if (_rhythmDiffs.isEmpty) {
-      debugPrint("rhythm 정확도: rhythmDiffs is empty");
-      return 0;
-    }
-    return _calculateTotalRhythmAccuracy(_rhythmDiffs, maxAllowedDiff: 0.5); // 0.5초 허용
-  }
-
-  // 박자 정확도 리스트 -> 100점 만점 정확도 환산
-  int _calculateTotalRhythmAccuracy(List<double> rhythmDiffs, {double maxAllowedDiff = 0.5}) {
-    if (rhythmDiffs.isEmpty) return 0;
-
-    final accuracies = rhythmDiffs.map((diff) {
-      final accuracy = (1 - (diff / maxAllowedDiff));
-      return accuracy.clamp(0, 1); // 0 미만 또는 1 초과 방지
-    }).toList();
-
-    final avgAccuracy = (accuracies.reduce((a, b) => a + b) / accuracies.length * 100).round();
-    return avgAccuracy;
-  }
-
   // MR 재생과 녹음을 동시에 시작/정지하는 함수
   Future _togglePlayAndRecord() async {
     if (_isPlaying) {
@@ -306,39 +264,6 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
 
   @override
   void dispose() {
-    // 박자 채점 결과 상세 통계
-    final rhythmAccuracy = _rhythmAccuracy;
-
-    debugPrint("🎵 ════════ 최종 박자 채점 결과 ════════");
-    debugPrint("   🎯 최종 점수: $rhythmAccuracy점");
-    debugPrint("   📊 총 채점 횟수: ${_rhythmDiffs.length}회");
-
-    if (_rhythmDiffs.isNotEmpty) {
-      final avgDiff = _rhythmDiffs.reduce((a, b) => a + b) / _rhythmDiffs.length;
-      final minDiff = _rhythmDiffs.reduce((a, b) => a < b ? a : b);
-      final maxDiff = _rhythmDiffs.reduce((a, b) => a > b ? a : b);
-
-      debugPrint("   📈 평균 오차: ${avgDiff.toStringAsFixed(3)}초");
-      debugPrint("   🎯 최소 오차: ${minDiff.toStringAsFixed(3)}초");
-      debugPrint("   ⚠️ 최대 오차: ${maxDiff.toStringAsFixed(3)}초");
-
-      // 정확도 분포 계산
-      int perfect = _rhythmDiffs.where((diff) => diff <= 0.1).length;
-      int good = _rhythmDiffs.where((diff) => diff > 0.1 && diff <= 0.3).length;
-      int average = _rhythmDiffs.where((diff) => diff > 0.3 && diff <= 0.5).length;
-      int poor = _rhythmDiffs.where((diff) => diff > 0.5).length;
-
-      debugPrint("   🎯 완벽 (≤0.1초): $perfect회");
-      debugPrint("   ✅ 좋음 (0.1~0.3초): $good회");
-      debugPrint("   ⚠️ 보통 (0.3~0.5초): $average회");
-      debugPrint("   ❌ 부정확 (>0.5초): $poor회");
-    }
-
-    debugPrint("   ════════════════════════════════════");
-
-    // VocalResult Provider에 박자 정확도 저장
-    ref.read(vocalResultProvider.notifier).setRhythmAccuracy(rhythmAccuracy);
-
     _positionSubscription?.cancel(); // 재생 위치 스트림 구독 해제
     _pitchDetectionTimer?.cancel(); // 음정 감지 타이머 해제
     _audioPlayer.dispose(); // 오디오 플레이어 해제
@@ -349,6 +274,16 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   // UI 구성 함수
   @override
   Widget build(BuildContext context) {
+    // if (!_hasListened) {
+    //   _hasListened = true; // 단 한 번만 실행
+    //   ref.listen<AsyncValue<EvaluatedPitch>>(evaluatedPitchStreamProvider, (prev, next) {
+    //     next.whenData((evaluatedPitch) {
+    //       final controller = ref.read(audioRecorderProvider.notifier);
+    //       controller.onPitchEvaluated(evaluatedPitch); //  실시간으로 음정 비교 -> bool list에 더함
+    //     });
+    //   });
+    // }
+
     final isRecording = ref.watch(audioRecorderProvider);
     final currentPosition = ref.watch(audioPositionProvider);
     final pitchAsync = ref.watch(evaluatedPitchStreamProvider);
@@ -390,17 +325,19 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
             borderRadius: BorderRadiusDirectional.circular(10.r),
             color: AppColors.grayscale7,
           ),
-          child: _notes.isEmpty
-              ? Center(child: CircularProgressIndicator())
-              : PitchAndRhythmBar(
-            notes: _notes, // 병합 안 된 raw 음정 데이터
-            totalDuration: _totalDuration * 0.2, // MR 전체 길이
-            // *0.1: 막대 길이 늘어남, 음정 막대가 움직이는 속도 높아짐
-            currentPosition: currentPosition, // 현재 재생 위치
-            bpm: _songBPM, // 도레미송의 BPM (임시 설정값: 88)
-            userCurrentPitch: _userCurrentPitch, // 사용자 현재 음정 (실시간 매칭용)
-            onRhythmEvaluated: _evaluateRhythm, // 박자 채점 콜백
-          ),
+          child:
+              _notes.isEmpty
+                  ? Center(child: CircularProgressIndicator())
+                  : PitchAndRhythmBar(
+                    notes: _notes, // 병합 안 된 raw 음정 데이터
+                    totalDuration: _totalDuration * 0.2, // MR 전체 길이
+                    // *0.1: 막대 길이 늘어남, 음정 막대가 움직이는 속도 높아짐
+                    currentPosition: currentPosition, // 현재 재생 위치
+                    bpm: _songBPM, // 도레미송의 BPM (임시 설정값: 88)
+                    userCurrentPitch: _userCurrentPitch, // 사용자 현재 음정 (실시간 매칭용)
+                    onRhythmEvaluated:
+                        ref.read(audioRecorderProvider.notifier).evaluateRhythm, // 박자 채점 콜백
+                  ),
         ),
         SizedBox(height: 20.h),
         // 키 조절, 재생/일시정지 버튼 표시

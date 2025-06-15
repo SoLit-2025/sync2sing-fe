@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/shared/providers/target_pitch_provider.dart';
 
 // 음정 막대 데이터 클래스
 class PitchNoteBar {
@@ -40,8 +41,25 @@ class PitchAndRhythmBar extends ConsumerWidget {
     this.onRhythmEvaluated,
   });
 
+  int _calculateCurrentIndex(Duration currentPosition, double bpm) {
+    final barDurationInMs = (60 * 1000) / bpm; // 한 bar가 몇 밀리초인지
+    final currentTimeInMs = currentPosition.inMilliseconds;
+
+    return (currentTimeInMs / barDurationInMs).floor();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = _calculateCurrentIndex(currentPosition, bpm);
+
+    // 현재 기준 음 높이 설정
+    if (currentIndex >= 0 && currentIndex < notes.length) {
+      final currentPitch = notes[currentIndex].pitch;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(targetPitchProvider.notifier).state = currentPitch; // 현재 원곡의 음정 저장
+      });
+    }
+
     return CustomPaint(
       painter: PitchAndRhythmBarPainter(
         notes: notes,
@@ -134,7 +152,8 @@ class PitchAndRhythmBarPainter extends CustomPainter {
       }
 
       // 🔍 디버깅: 실시간 박자 로그 (중복 방지)
-      if (isAtLeftEdge && (_lastLoggedNoteIndex != i || (progressSeconds - _lastLoggedTime).abs() > 0.1)) {
+      if (isAtLeftEdge &&
+          (_lastLoggedNoteIndex != i || (progressSeconds - _lastLoggedTime).abs() > 0.1)) {
         debugPrint("🎵 [박자 디버깅] 막대 #$i가 왼쪽 가장자리에 도달!");
         debugPrint("   📍 예상 시간: ${bar.start.toStringAsFixed(3)}초");
         debugPrint("   ⏰ 현재 시간: ${progressSeconds.toStringAsFixed(3)}초");
@@ -160,12 +179,12 @@ class PitchAndRhythmBarPainter extends CustomPainter {
       }
 
       // 색상 결정
-      final paint = Paint()
-        ..color = (isAtLeftEdge && isPitchMatched)
-            ? AppColors.primaryPink
-            : AppColors.grayscale3
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = 2.0;
+      final paint =
+          Paint()
+            ..color =
+                (isAtLeftEdge && isPitchMatched) ? AppColors.primaryPink : AppColors.grayscale3
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = 2.0;
 
       // 막대 그리기
       final y = normalizeY(bar.pitch);
@@ -182,14 +201,11 @@ class PitchAndRhythmBarPainter extends CustomPainter {
     }
 
     // 왼쪽 가장자리 기준선 그리기 (디버깅용)
-    final linePaint = Paint()
-      ..color = AppColors.primaryPink
-      ..strokeWidth = 2.0;
-    canvas.drawLine(
-      const Offset(0, 0),
-      Offset(0, size.height),
-      linePaint,
-    );
+    final linePaint =
+        Paint()
+          ..color = AppColors.primaryPink
+          ..strokeWidth = 2.0;
+    canvas.drawLine(const Offset(0, 0), Offset(0, size.height), linePaint);
   }
 
   @override
