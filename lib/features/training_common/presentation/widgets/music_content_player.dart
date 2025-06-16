@@ -14,7 +14,8 @@ import 'package:sync2sing/features/training_common/presentation/widgets/pitch_an
 import 'package:sync2sing/shared/providers/audio_position_provider.dart';
 import 'package:sync2sing/shared/providers/evaluated_pitch_stream_provider.dart';
 import 'package:sync2sing/shared/providers/mic_permission_provider.dart';
-import '../../../../shared/providers/audio_recorder_provider.dart';
+import 'package:sync2sing/shared/providers/vocal_result_provider.dart';
+import 'package:sync2sing/shared/providers/audio_recorder_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 // 음악 재생 및 녹음 기능을 담당하는 위젯
@@ -25,34 +26,30 @@ import 'package:flutter/services.dart' show rootBundle;
 // 4. 사용자 음정 감지: 사용자가 정확한 음정으로 부르는지 확인
 // 5. MR 키 조절: 추후 구현 예정
 // 6. BPM 기반 막대 이동속도 조절
+
 class MusicContentPlayer extends ConsumerStatefulWidget {
   const MusicContentPlayer({super.key});
 
   @override
-  ConsumerState<MusicContentPlayer> createState() => _MusicContentPlayerState();
+  ConsumerState createState() => _MusicContentPlayerState();
 }
 
 class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
-  // MR 재생
-  late AudioPlayer _audioPlayer;
+  late AudioPlayer _audioPlayer; // MR 재생
+  bool _isPlaying = false; // MR 재생여부 확인 변수
+  StreamSubscription? _positionSubscription; // 음악 재생 위치 실시간 업데이트
+  Duration _totalDuration = const Duration(
+    seconds: 30,
+  ); // MR 길이: 30초 (doremi_song_v3_mr.wav 기준으로 수정)
 
-  // MR 재생여부 확인 변수
-  bool _isPlaying = false;
-
-  // 음악 재생 위치 실시간 업데이트
-  StreamSubscription<Duration>? _positionSubscription;
-
-  // MR 길이: 104초
-  Duration _totalDuration = const Duration(seconds: 104); // 104
-
-  // JSON에서 불러온 음정/박자 데이터를 저장하는 리스트
-  List<PitchNoteBar> _notes = [];
-
-  final double _songBPM = 88.0; // 도레미송 BPM(=Beats Per Minute, 분당 박자수, 노래 속도): 임시값 140 설정
+  List<PitchNoteBar> _notes = []; // JSON에서 불러온 음정/박자 데이터를 저장하는 리스트
+  final double _songBPM = 88.0; // 도레미송 BPM(=Beats Per Minute, 분당 박자수, 노래 속도): 임시값 88 설정
   int? _userCurrentPitch; // 사용자 현재 음정
   Timer? _pitchDetectionTimer; // 일정한 간격을 두고 음정을 감지하는 도구
+  Timer? _testTimer; // 테스트용 타이머 (오디오 없이 position 시뮬레이션)
 
-  bool _hasListened = false;
+  // 박자 채점을 위한 변수들
+  final List<double> _rhythmDiffs = [];
 
   // 위젯이 처음 실행될 때 실행되는 초기화 함수
   @override
@@ -60,7 +57,6 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
     super.initState();
     _setupAudioPlayer(); // 오디오 플레이어 초기 설정
     _loadPitchBars(); // JSON에서 음정/박자 데이터 불러오기
-
     // permission 확인
     // 마이크 권한 요청
     Future.microtask(() async {
@@ -73,26 +69,25 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
 
   Future<bool> ensureMicPermission(WidgetRef ref) async {
     final notifier = ref.read(micPermissionProvider.notifier);
-
     await notifier.checkPermission();
-
     if (!notifier.isGranted) {
       await notifier.requestPermission();
     }
-
     return notifier.isGranted;
   }
 
   // 오디오 플레이어 초기 설정 함수
-  Future<void> _setupAudioPlayer() async {
+  Future _setupAudioPlayer() async {
     _audioPlayer = AudioPlayer();
-
     try {
       // MR 불러오기
-      await _audioPlayer.setAsset('assets/songs/audios/do_re_mi_song_mr_only_no_intro_104sec.wav');
+      await _audioPlayer.setAsset('assets/songs/audios/doremi_song_v3_mr.wav');
       debugPrint('MR 불러오기 성공');
     } catch (e) {
       debugPrint('MR 불러오기 실패: $e');
+      // 더미 duration 설정
+      setState(() => _totalDuration = const Duration(seconds: 30));
+      debugPrint('더미 duration 설정 완료');
       return; // 파일 불러오기 실패 시 이후 코드 실행 X
     }
 
@@ -124,44 +119,56 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   int _frequencyToMidi(double frequency) {
     // A4 = 440Hz = MIDI 69를 기준으로 계산
     double midiDouble = 12 * (log(frequency / 440) / log(2)) + 69;
-
     // 반올림하여 정수로 변환 (MIDI는 정수값만 사용)
     return midiDouble.round();
   }
 
-  // JSON에서 음정/박자 데이터를 불러온 뒤 정규화(=비슷한 음정을 가진 데이터를 하나의 긴 막대로 병합)를 요청하는 함수
-  Future<void> _loadPitchBars() async {
+  // JSON에서 음정/박자 데이터를 불러오는 함수
+  Future _loadPitchBars() async {
     try {
       // JSON 파일에서 음정/박자 데이터 불러오기
       final String jsonString = await rootBundle.loadString(
-        'assets/songs/datas/new_doremi_song_edited.json',
+        'assets/songs/datas/doremi_song_piano_v2.json',
       );
-      final List<dynamic> jsonData = json.decode(jsonString);
+      debugPrint('JSON 파일 로딩 성공, 길이: ${jsonString.length}');
 
-      // JSON 데이터를 PitchNoteBar 객체 리스트로 변환
+      final List jsonData = json.decode(jsonString);
+      debugPrint('JSON 파싱 성공, 데이터 개수: ${jsonData.length}');
+
+      // MR과 음정 막대의 시간차 세부 조정을 위한 값
+      const double TIME_OFFSET = 0.7;
+
+      // JSON 데이터를 PitchNoteBar 객체 리스트로 변환 (시간 조정 포함)
       List<PitchNoteBar> rawNotes =
-          jsonData
-              .map(
-                (item) => PitchNoteBar(
-                  start: (item['start'] as num).toDouble(),
-                  end: (item['end'] as num).toDouble(),
-                  pitch: item['pitch'] as int,
-                  rhythm: item['rhythm'] as String,
-                ),
-              )
-              .toList();
+          jsonData.map((item) {
+            final adjustedStart = ((item['start'] as num).toDouble() - TIME_OFFSET).clamp(
+              0.0,
+              double.infinity,
+            );
+            final adjustedEnd = ((item['end'] as num).toDouble() - TIME_OFFSET).clamp(
+              0.0,
+              double.infinity,
+            );
 
-      // 비슷한 음정을 가진 막대를 하나의 긴 막대로 병합
-      List<PitchNoteBar> mergedNotes = _mergeSimilarNotes(rawNotes);
+            return PitchNoteBar(
+              start: adjustedStart,
+              end: adjustedEnd,
+              pitch: item['pitch'] as int,
+              duration: (item['duration'] as num).toDouble(),
+            );
+          }).toList();
+
+      // 병합 로직 주석 처리 (doremi_song_piano_v2.json은 정확한 raw data이므로 병합 불필요)
+      // List<PitchNoteBar> mergedNotes = _mergeSimilarNotes(rawNotes);
 
       setState(() {
-        _notes = rawNotes; // mergedNotes or rawNotes : new_doremi_song_edited 기준 raw도 괜찮은 듯
+        _notes = rawNotes; // 병합 없이 raw 데이터 사용
       });
 
-      // 병합 후 음정 데이터 출력
-      debugPrint('병합된 음정 데이터 (${mergedNotes.length}개):');
-      for (int i = 0; i < mergedNotes.length; i++) {
-        debugPrint('[$i] ${mergedNotes[i]}');
+      // 음정 데이터 출력
+      debugPrint('음정 데이터 로드 완료 (${rawNotes.length}개):');
+      for (int i = 0; i < rawNotes.length; i++) {
+        debugPrint('[$i] ${rawNotes[i]}');
       }
     } catch (e) {
       debugPrint('음정 데이터 불러오기 실패: $e');
@@ -169,6 +176,7 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   }
 
   // 비슷한 음정의 연속된 막대들을 하나의 긴 막대로 합치는 함수
+  /*
   List<PitchNoteBar> _mergeSimilarNotes(List<PitchNoteBar> originalNotes) {
     if (originalNotes.isEmpty) return [];
 
@@ -177,12 +185,11 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
 
     for (int i = 1; i < originalNotes.length; i++) {
       final nextNote = originalNotes[i];
-
       // 음정 차이 3: 약 2옥타브 차이까지 하나의 막대로 취급
       // 시간 간격 0.5초: 5초 이내의 간격이면 하나의 막대로 취급
       bool shouldMerge =
           (nextNote.pitch - currentNote.pitch).abs() <= 3 &&
-          nextNote.start - currentNote.end <= 0.5;
+              nextNote.start - currentNote.end <= 0.5;
 
       if (shouldMerge) {
         // 현재 막대를 연장 (끝 시간을 다음 막대의 끝 시간으로 업데이트)
@@ -190,7 +197,7 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
           start: currentNote.start,
           end: nextNote.end,
           pitch: currentNote.pitch, // 첫 번째 음정 유지
-          rhythm: currentNote.rhythm,
+          duration: nextNote.end - currentNote.start,
         );
       } else {
         // 현재 막대를 완성하고 새 막대 시작
@@ -201,16 +208,33 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
 
     // 마지막 막대 추가
     mergedNotes.add(currentNote);
-
     // 너무 짧은 막대들은 시각적으로 의미가 없으므로 제거: 2.0초 미만
     return mergedNotes.where((note) => note.end - note.start >= 0.5).toList();
   }
+  */
+
+  // 테스트용 타이머 시작 (오디오 없이 position 시뮬레이션)
+  void _startTestTimer() {
+    Duration currentPos = Duration.zero;
+    _testTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+      currentPos = currentPos + Duration(milliseconds: 100);
+      ref.read(audioPositionProvider.notifier).state = currentPos;
+
+      debugPrint('🎵 테스트 타이머 - 현재 위치: ${currentPos.inMilliseconds}ms');
+
+      // 30초 후 자동 정지
+      if (currentPos.inSeconds >= 30) {
+        timer.cancel();
+        setState(() => _isPlaying = false);
+        debugPrint('테스트 재생 완료');
+      }
+    });
+  }
 
   // MR 재생과 녹음을 동시에 시작/정지하는 함수
-  Future<void> _togglePlayAndRecord() async {
+  Future _togglePlayAndRecord() async {
     if (_isPlaying) {
       // 현재 재생 중이면 일시정지
-
       _audioPlayer.pause();
       await ref.read(audioRecorderProvider.notifier).pause();
       setState(() => _isPlaying = false);
@@ -224,14 +248,17 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
         debugPrint('MR 재생 + 녹음 시작');
       } catch (e) {
         debugPrint('MR 재생 실패: $e');
-        // play 실패 시 녹음 시작/상태 변경 X
+
+        // 오디오 재생 실패해도 테스트 타이머 시작
+        _startTestTimer();
+        setState(() => _isPlaying = true);
+        debugPrint('오디오 없이 테스트 모드 시작');
       }
     }
   }
 
   // 키 내리기 기능: 추후 구현 예정
   void _decreaseKey() => debugPrint('키 내리기 기능 실행');
-
   // 키 올리기 기능: 추후 구현 예정
   void _increaseKey() => debugPrint('키 올리기 기능 실행');
 
@@ -247,9 +274,20 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   // UI 구성 함수
   @override
   Widget build(BuildContext context) {
+    // if (!_hasListened) {
+    //   _hasListened = true; // 단 한 번만 실행
+    //   ref.listen<AsyncValue<EvaluatedPitch>>(evaluatedPitchStreamProvider, (prev, next) {
+    //     next.whenData((evaluatedPitch) {
+    //       final controller = ref.read(audioRecorderProvider.notifier);
+    //       controller.onPitchEvaluated(evaluatedPitch); //  실시간으로 음정 비교 -> bool list에 더함
+    //     });
+    //   });
+    // }
+
     final isRecording = ref.watch(audioRecorderProvider);
     final currentPosition = ref.watch(audioPositionProvider);
     final pitchAsync = ref.watch(evaluatedPitchStreamProvider);
+
     pitchAsync.when(
       data: (pitchData) {
         if (isRecording) {
@@ -262,8 +300,8 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
               _userCurrentPitch = _frequencyToMidi(pitchData.pitch);
             }
           });
-          return SizedBox();
         }
+        return SizedBox();
       },
       loading: () => SizedBox(),
       error: (e, _) {
@@ -278,10 +316,8 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
       children: [
         // 곡 정보 표시
         SongInformationWidget(),
-
         // 가사 표시
         LyricsSection(),
-
         // 음정/박자 막대 표시
         Container(
           height: 155.h,
@@ -293,17 +329,17 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
               _notes.isEmpty
                   ? Center(child: CircularProgressIndicator())
                   : PitchAndRhythmBar(
-                    notes: _notes, // 병합된 음정 데이터
-                    totalDuration: _totalDuration * 0.1, // MR 전체 길이
-                    //  *0.1: 막대 길이 늘어남, 음정 막대가 움직이는 속도 높아짐
+                    notes: _notes, // 병합 안 된 raw 음정 데이터
+                    totalDuration: _totalDuration * 0.2, // MR 전체 길이
+                    // *0.1: 막대 길이 늘어남, 음정 막대가 움직이는 속도 높아짐
                     currentPosition: currentPosition, // 현재 재생 위치
-                    bpm: _songBPM, // 도레미송의 BPM (임시 설정값: 140)
+                    bpm: _songBPM, // 도레미송의 BPM (임시 설정값: 88)
                     userCurrentPitch: _userCurrentPitch, // 사용자 현재 음정 (실시간 매칭용)
+                    onRhythmEvaluated:
+                        ref.read(audioRecorderProvider.notifier).evaluateRhythm, // 박자 채점 콜백
                   ),
         ),
-
         SizedBox(height: 20.h),
-
         // 키 조절, 재생/일시정지 버튼 표시
         SizedBox(
           width: double.infinity,

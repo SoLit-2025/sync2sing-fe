@@ -50,17 +50,16 @@ class OnboardingRecordingSongPage extends StatelessWidget {
 
     debugPrint('🎯 pitch 정확도: $pitchAccuracy');
 
+    // VocalResult Provider에 파일 경로 / 음정 및 박자 정확도 저장
     ref
         .read(vocalResultProvider.notifier)
         .setWavFilePath(
           ref.read(audioRecorderProvider.notifier).getWavFilePath(),
         ); // 음성 파일 경로
     ref.read(vocalResultProvider.notifier).setPitchAccuracy(pitchAccuracy);
+    ref.read(vocalResultProvider.notifier).setRhythmAccuracy(controller.rhythmAccuracy);
 
-    // ref
-    //     .read(vocalResultProvider.notifier)
-    //     .setPitchAccuracy(50); // 음정 정확도 저장
-    ref.read(vocalResultProvider.notifier).setRhythmAccuracy(60); // 박자 정확도 저장
+    controller.printRhythmAccuracyDetailStatistics();
 
     /// *** 저장한 것: 파일 경로 및 정확도 조회하기
     final vocalPitchData = ref.watch(vocalResultProvider);
