@@ -13,7 +13,7 @@ class _LyricsSectionState extends State<LyricsSection> {
   @override
   Widget build(BuildContext context) {
     return Text(
-      "(전주중) \nDO - a deer, \na female deer \nRE - a drop of golden sun",
+      "(전주중) \nDoe - a deer, \na female deer \nRay - a drop of golden sun",
       style: AppTextStyles.heading1Bold.copyWith(color: AppColors.grayscale3),
       textAlign: TextAlign.center,
     );
