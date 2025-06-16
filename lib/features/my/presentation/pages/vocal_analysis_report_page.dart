@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
@@ -7,8 +8,9 @@ import 'dart:math' as math;
 import 'package:go_router/go_router.dart';
 import 'dart:convert';
 import 'package:sync2sing/shared/providers/vocal_result_provider.dart';
+import 'package:sync2sing/shared/providers/voice_type_profile_provider.dart';
 
-class VocalAnalysisReportPage extends StatelessWidget {
+class VocalAnalysisReportPage extends ConsumerWidget {
   const VocalAnalysisReportPage({super.key});
 
   // extra에서 데이터 받기
@@ -42,8 +44,8 @@ class VocalAnalysisReportPage extends StatelessWidget {
 
   Map<String, dynamic> getSongData(Map<String, dynamic> reportData) =>
       reportData['song'] as Map<String, dynamic>? ?? {};
-  String getVoiceType(Map<String, dynamic> songData) =>
-      _getVoiceTypeKorean(songData['voice_type'] as String? ?? '');
+  String getVoiceType(String voiceType) =>
+      _getVoiceTypeKorean(voiceType.toUpperCase());
   String getPitchNoteMin(Map<String, dynamic> songData) =>
       songData['pitch_note_min'] as String? ?? '';
   String getPitchNoteMax(Map<String, dynamic> songData) =>
@@ -68,8 +70,8 @@ class VocalAnalysisReportPage extends StatelessWidget {
     }
   }
 
-  String getVoiceTypeDescription(Map<String, dynamic> songData) {
-    switch (songData['voice_type'] as String? ?? '') {
+  String getVoiceTypeDescription(String voiceType) {
+    switch (voiceType) {
       case 'TENOR':
         return '평균적인 남성의 높은 음역대로, 밝고 맑은 톤으로 아름다운 멜로디를 들려줘요';
       case 'BASS':
@@ -158,8 +160,13 @@ class VocalAnalysisReportPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final reportData = getReportData(context);
+
+    final voiceTypeData = ref.watch(voiceTypeProfileProvider);
+    debugPrint(
+      "음역대 저장: ${voiceTypeData.voiceType} | ${voiceTypeData.minNote} | ${voiceTypeData.maxNote}",
+    );
 
     // 디버깅: 실제 전달된 데이터 로그
     debugPrint('reportData: $reportData');
@@ -185,9 +192,14 @@ class VocalAnalysisReportPage extends StatelessWidget {
                 SizedBox(height: 20.h),
                 _buildHeader(),
                 SizedBox(height: 24.h),
-                _buildVoiceTypeSection(songData),
+                _buildVoiceTypeSection(songData, voiceTypeData.voiceType!),
                 SizedBox(height: 30.h),
-                _buildVoiceRangeSection(context, songData),
+                _buildVoiceRangeSection(
+                  context,
+                  songData,
+                  voiceTypeData.minNote!,
+                  voiceTypeData.maxNote!,
+                ),
                 SizedBox(height: 30.h),
                 _buildMusicInfoSection(songData),
                 SizedBox(height: 30.h),
@@ -215,7 +227,10 @@ class VocalAnalysisReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildVoiceTypeSection(Map<String, dynamic> songData) {
+  Widget _buildVoiceTypeSection(
+    Map<String, dynamic> songData,
+    String voiceType,
+  ) {
     return Column(
       children: [
         Container(
@@ -227,14 +242,14 @@ class VocalAnalysisReportPage extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              getVoiceType(songData),
+              getVoiceType(voiceType),
               style: AppTextStyles.body1Bold.copyWith(color: Colors.white),
             ),
           ),
         ),
         SizedBox(height: 20.h),
         Text(
-          getVoiceTypeDescription(songData),
+          getVoiceTypeDescription(voiceType.toUpperCase()),
           style: AppTextStyles.body2,
           textAlign: TextAlign.center,
         ),
@@ -245,6 +260,8 @@ class VocalAnalysisReportPage extends StatelessWidget {
   Widget _buildVoiceRangeSection(
     BuildContext context,
     Map<String, dynamic> songData,
+    String minNote,
+    String maxNote,
   ) {
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -274,7 +291,8 @@ class VocalAnalysisReportPage extends StatelessWidget {
                         Positioned(
                           left: 0,
                           child: Text(
-                            getPitchNoteMin(songData),
+                            // getPitchNoteMin(songData),
+                            minNote,
                             style: AppTextStyles.body3,
                           ),
                         ),
@@ -287,7 +305,8 @@ class VocalAnalysisReportPage extends StatelessWidget {
                                   getVoiceRangeProgress(songData) -
                               10.w,
                           child: Text(
-                            getPitchNoteMax(songData),
+                            // getPitchNoteMax(songData),
+                            maxNote,
                             style: AppTextStyles.body3,
                           ),
                         ),
