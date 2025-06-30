@@ -126,12 +126,7 @@ class VocalResult {
   final int? rhythmAccuracy;
   final AnalysisResult? analysisResult;
 
-  VocalResult({
-    this.wavFilePath,
-    this.pitchAccuracy,
-    this.rhythmAccuracy,
-    this.analysisResult,
-  });
+  VocalResult({this.wavFilePath, this.pitchAccuracy, this.rhythmAccuracy, this.analysisResult});
 
   VocalResult copyWith({
     String? wavFilePath,
@@ -183,14 +178,13 @@ class VocalResultNotifier extends StateNotifier<VocalResult> {
         );
       }
     } catch (e) {
-      // 에러 로깅(실서비스에서는 Sentry 등으로 연동 권장)
+      // 에러 로깅 (실서비스에서는 Sentry 등으로 연동 예정)
       print('⚠️ 분석 결과 업데이트 실패: $e');
     }
   }
 }
 
 // 5. Provider 정의
-final vocalResultProvider =
-    StateNotifierProvider<VocalResultNotifier, VocalResult>(
-      (ref) => VocalResultNotifier(),
-    );
+final vocalResultProvider = StateNotifierProvider<VocalResultNotifier, VocalResult>(
+  (ref) => VocalResultNotifier(),
+);

@@ -31,7 +31,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
         final decoded = jsonDecode(extra);
         return decoded is Map<String, dynamic> ? decoded : {};
       } else if (extra is AnalysisResult || extra is Song) {
-        return extra.toJson(); // ✅ Null-safe 호출
+        return extra.toJson();
       } else {
         debugPrint('⚠️ 알 수 없는 데이터 타입: ${extra.runtimeType}');
         return {};
@@ -44,8 +44,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
 
   Map<String, dynamic> getSongData(Map<String, dynamic> reportData) =>
       reportData['song'] as Map<String, dynamic>? ?? {};
-  String getVoiceType(String voiceType) =>
-      _getVoiceTypeKorean(voiceType.toUpperCase());
+  String getVoiceType(String voiceType) => _getVoiceTypeKorean(voiceType.toUpperCase());
   String getPitchNoteMin(Map<String, dynamic> songData) =>
       songData['pitch_note_min'] as String? ?? '';
   String getPitchNoteMax(Map<String, dynamic> songData) =>
@@ -92,8 +91,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
   List<double> getRadarData(Map<String, dynamic> reportData) {
     final pitchScore = (reportData['pitch_score'] as num? ?? 0).toDouble();
     final beatScore = (reportData['beat_score'] as num? ?? 0).toDouble();
-    final pronunciationScore =
-        (reportData['pronunciation_score'] as num? ?? 0).toDouble();
+    final pronunciationScore = (reportData['pronunciation_score'] as num? ?? 0).toDouble();
     final breathScore = (reportData['breath_score'] as num? ?? 0).toDouble();
 
     return [
@@ -101,8 +99,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
       beatScore / 100.0, // 박자
       pronunciationScore / 100.0, // 발음
       breathScore / 100.0, // 호흡
-      ((pitchScore + beatScore + pronunciationScore + breathScore) / 4) /
-          100.0, // 완성도
+      ((pitchScore + beatScore + pronunciationScore + breathScore) / 4) / 100.0, // 완성도
     ];
   }
 
@@ -173,9 +170,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
 
     if (reportData.isEmpty) {
       return Scaffold(
-        body: Center(
-          child: Text("분석 결과 데이터가 없습니다.", style: AppTextStyles.body1Bold),
-        ),
+        body: Center(child: Text("분석 결과 데이터가 없습니다.", style: AppTextStyles.body1Bold)),
       );
     }
     final songData = getSongData(reportData);
@@ -220,17 +215,10 @@ class VocalAnalysisReportPage extends ConsumerWidget {
   }
 
   Widget _buildHeader() {
-    return Text(
-      "최초 종합 분석 리포트",
-      style: AppTextStyles.heading3Bold,
-      textAlign: TextAlign.center,
-    );
+    return Text("최초 종합 분석 리포트", style: AppTextStyles.heading3Bold, textAlign: TextAlign.center);
   }
 
-  Widget _buildVoiceTypeSection(
-    Map<String, dynamic> songData,
-    String voiceType,
-  ) {
+  Widget _buildVoiceTypeSection(Map<String, dynamic> songData, String voiceType) {
     return Column(
       children: [
         Container(
@@ -269,11 +257,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -298,10 +282,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
                         ),
                         Positioned(
                           left:
-                              (MediaQuery.of(context).size.width -
-                                      48.w -
-                                      120.w -
-                                      16.w) *
+                              (MediaQuery.of(context).size.width - 48.w - 120.w - 16.w) *
                                   getVoiceRangeProgress(songData) -
                               10.w,
                           child: Text(
@@ -362,11 +343,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
         color: AppColors.grayscale6,
         borderRadius: BorderRadius.circular(8.r),
       ),
-      child: Text(
-        "$title - $artist",
-        style: AppTextStyles.body1Bold,
-        textAlign: TextAlign.center,
-      ),
+      child: Text("$title - $artist", style: AppTextStyles.body1Bold, textAlign: TextAlign.center),
     );
   }
 
@@ -392,17 +369,9 @@ class VocalAnalysisReportPage extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            reviewTitle,
-            style: AppTextStyles.body2Bold,
-            textAlign: TextAlign.center,
-          ),
+          Text(reviewTitle, style: AppTextStyles.body2Bold, textAlign: TextAlign.center),
           SizedBox(height: 12.h),
-          Text(
-            reviewContent,
-            style: AppTextStyles.body2,
-            textAlign: TextAlign.center,
-          ),
+          Text(reviewContent, style: AppTextStyles.body2, textAlign: TextAlign.center),
         ],
       ),
     );
@@ -425,17 +394,9 @@ class VocalAnalysisReportPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  "원인",
-                  style: AppTextStyles.body1Bold,
-                  textAlign: TextAlign.center,
-                ),
+                Text("원인", style: AppTextStyles.body1Bold, textAlign: TextAlign.center),
                 SizedBox(height: 12.h),
-                Text(
-                  causeContent,
-                  style: AppTextStyles.body3,
-                  textAlign: TextAlign.center,
-                ),
+                Text(causeContent, style: AppTextStyles.body3, textAlign: TextAlign.center),
               ],
             ),
           ),
@@ -451,17 +412,9 @@ class VocalAnalysisReportPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  "제안",
-                  style: AppTextStyles.body1Bold,
-                  textAlign: TextAlign.center,
-                ),
+                Text("제안", style: AppTextStyles.body1Bold, textAlign: TextAlign.center),
                 SizedBox(height: 12.h),
-                Text(
-                  proposalContent,
-                  style: AppTextStyles.body3,
-                  textAlign: TextAlign.center,
-                ),
+                Text(proposalContent, style: AppTextStyles.body3, textAlign: TextAlign.center),
               ],
             ),
           ),
@@ -584,19 +537,12 @@ class RadarChartPainter extends CustomPainter {
 
       textPainter.text = TextSpan(
         text: labels[i],
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w500,
-        ),
+        style: TextStyle(color: Colors.black, fontSize: 12.sp, fontWeight: FontWeight.w500),
       );
       textPainter.layout();
 
       // 텍스트 중앙 정렬
-      final offset = Offset(
-        x - textPainter.width / 2,
-        y - textPainter.height / 2,
-      );
+      final offset = Offset(x - textPainter.width / 2, y - textPainter.height / 2);
       textPainter.paint(canvas, offset);
     }
   }

@@ -53,9 +53,7 @@ class OnboardingRecordingSongPage extends StatelessWidget {
     // VocalResult Provider에 파일 경로 / 음정 및 박자 정확도 저장
     ref
         .read(vocalResultProvider.notifier)
-        .setWavFilePath(
-          ref.read(audioRecorderProvider.notifier).getWavFilePath(),
-        ); // 음성 파일 경로
+        .setWavFilePath(ref.read(audioRecorderProvider.notifier).getWavFilePath()); // 음성 파일 경로
     ref.read(vocalResultProvider.notifier).setPitchAccuracy(pitchAccuracy);
     ref.read(vocalResultProvider.notifier).setRhythmAccuracy(controller.rhythmAccuracy);
 
@@ -136,7 +134,7 @@ class OnboardingRecordingSongPage extends StatelessWidget {
                       onPressed:
                           isVocalAnalysisButtonEnabled()
                               ? () async {
-                                // 1. 데이터 저장
+                                // 데이터 저장
                                 storeVocalAnalysisSubmit(ref);
 
                                 context.goNamed(AppRouteNames.analysisLoading);

@@ -18,7 +18,7 @@ class VocalAnalysisLoadingHandler extends ConsumerWidget {
         loading: () => const VocalAnalysisLoadingPage(),
         error: (error, _) => _buildErrorUI(error),
         data: (responseData) {
-          // ✅ API 응답 데이터 직접 수신
+          // API 응답 데이터 직접 수신
           Future.microtask(() {
             if (context.mounted) {
               context.goNamed(

@@ -8,9 +8,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:sync2sing/shared/providers/vocal_result_provider.dart';
 
 // 1. 반환 타입을 Map<String, dynamic>으로 변경
-final vocalAnalysisSubmitProvider = FutureProvider.autoDispose<
-  Map<String, dynamic>
->((ref) async {
+final vocalAnalysisSubmitProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final stopwatch = Stopwatch()..start();
 
   try {
@@ -27,13 +25,9 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose<
     // 3. 요청 객체 생성
     debugPrint('[3/7] 📡 요청 생성');
     final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('http://13.125.152.131:8080/api/training/vocal-analysis'),
-      )
-      ..headers.addAll({
-        'User-Agent': 'Sync2Sing/1.0',
-        'Accept': 'application/json',
-      });
+      'POST',
+      Uri.parse('http://13.125.152.131:8080/api/training/vocal-analysis'),
+    )..headers.addAll({'User-Agent': 'Sync2Sing/1.0', 'Accept': 'application/json'});
 
     // 4. 오디오 파일 추가
     debugPrint('[4/7] 🔊 오디오 파일 추가');
@@ -83,9 +77,7 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose<
     }
     throw Exception('API 요청 실패: ${jsonResult['message']}');
   } on TimeoutException catch (e, stack) {
-    debugPrint(
-      '⏰ [타임아웃] ${e.message}\n${stack.toString().split('\n').take(3).join('\n')}',
-    );
+    debugPrint('⏰ [타임아웃] ${e.message}\n${stack.toString().split('\n').take(3).join('\n')}');
     rethrow;
   } on SocketException catch (e) {
     debugPrint('📡 [네트워크 오류] ${e.message}');
@@ -94,18 +86,14 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose<
     debugPrint('🔐 [HTTP 오류] ${e.message}');
     rethrow;
   } catch (e, stack) {
-    debugPrint(
-      '❗ [알 수 없는 오류] ${e.toString()}\n${stack.toString().split('\n').take(5).join('\n')}',
-    );
+    debugPrint('❗ [알 수 없는 오류] ${e.toString()}\n${stack.toString().split('\n').take(5).join('\n')}');
     rethrow;
   }
 });
 
-// 헬퍼 함수들 (변경 없음)
+// 헬퍼 함수들
 void _validateRequestData(dynamic data) {
-  if (data.wavFilePath == null ||
-      data.pitchAccuracy == null ||
-      data.rhythmAccuracy == null) {
+  if (data.wavFilePath == null || data.pitchAccuracy == null || data.rhythmAccuracy == null) {
     throw StateError('''
 ❌ 필수 데이터 누락:
 - 파일 경로: ${data.wavFilePath}
@@ -115,21 +103,17 @@ void _validateRequestData(dynamic data) {
 }
 
 void _logFileDetails(File file) {
-  debugPrint(
-    '''
+  debugPrint('''
 📂 파일 정보:
 ├─ 경로: ${file.path}
 ├─ 존재: ${file.existsSync()}
-└─ 크기: ${(file.existsSync() ? (file.lengthSync() / 1024).toStringAsFixed(2) : 'N/A')} KB''',
-  );
+└─ 크기: ${(file.existsSync() ? (file.lengthSync() / 1024).toStringAsFixed(2) : 'N/A')} KB''');
 }
 
 void _logRequestDetails(http.MultipartRequest request) {
-  debugPrint(
-    '''
+  debugPrint('''
 📨 요청 상세:
 ├─ URL: ${request.method} ${request.url}
 ├─ 헤더: ${request.headers}
-└─ 파일 파트: ${request.files.map((f) => '${f.field} (${f.filename})').join(', ')}''',
-  );
+└─ 파일 파트: ${request.files.map((f) => '${f.field} (${f.filename})').join(', ')}''');
 }
