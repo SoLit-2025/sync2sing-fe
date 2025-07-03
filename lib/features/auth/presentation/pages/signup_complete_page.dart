@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
@@ -22,6 +23,7 @@ class SignupCompletePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // 상단: 로고, 메인/서브 텍스트
               Column(
                 children: [
                   SizedBox(height: 120.h),
@@ -36,7 +38,6 @@ class SignupCompletePage extends StatelessWidget {
                   Text(
                     '회원가입 완료',
                     style: AppTextStyles.heading2Bold.copyWith(
-                      color: AppColors.grayscale1,
                       decoration: TextDecoration.none,
                     ),
                     textAlign: TextAlign.center,
@@ -45,13 +46,13 @@ class SignupCompletePage extends StatelessWidget {
                   Text(
                     '지금부터 보컬 분석 리포트를\n저장할 수 있어요.\n맞춤형 보컬 트레이닝을 시작해보세요',
                     style: AppTextStyles.body1.copyWith(
-                      color: AppColors.grayscale1,
                       decoration: TextDecoration.none,
                     ),
                     textAlign: TextAlign.center,
                   ),
                 ],
               ),
+              // 하단: 로그인 버튼 (CupertinoTheme으로 감싸서 색상 지정)
               Padding(
                 padding: EdgeInsets.only(bottom: 48.h),
                 child: SizedBox(
@@ -67,9 +68,7 @@ class SignupCompletePage extends StatelessWidget {
                       onPressed: () => _goToLogin(context),
                       child: Text(
                         '로그인 하러 가기',
-                        style: AppTextStyles.body1White.copyWith(
-                          color: AppColors.grayscale8,
-                        ),
+                        style: AppTextStyles.body1White,
                         textAlign: TextAlign.center,
                       ),
                     ),
