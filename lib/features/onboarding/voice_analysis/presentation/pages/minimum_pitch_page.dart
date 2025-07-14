@@ -11,6 +11,7 @@ import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_pitch_metrics_provider.dart';
 
 import '../../../../../shared/utils/mic_permission_helper.dart';
+import '../../../../training_common/data/services/pitch_to_note_converter.dart';
 
 class MinimumPitchPage extends ConsumerStatefulWidget {
   const MinimumPitchPage({super.key});
@@ -29,6 +30,8 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
   // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 음정이 탐지된 이후
   bool get _isButtonActive => !_isRecordingStarted || (_minPitch != null); //_isVoiceDetected;
   double? _minPitch;
+
+  double indicatorAngle = pi; // C2 위치
 
   static const List<String> _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
@@ -82,7 +85,6 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
     final double indicatorRadius = 10.w;
 
     final double startAngle = pi;
-    final double indicatorAngle = startAngle; // C2 위치
     final double endAngle = 2 * pi;
     final double sweepAngle = endAngle - startAngle;
     final int noteCount = _notes.length;
@@ -103,7 +105,12 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
                 debugPrint("음정 탐지: minPitch ${pitchData.pitch}");
                 setState(() => _minPitch = pitchData.pitch);
               }
+              final nowMidi = PitchToNoteConverter.frequencyToMidi(pitchData.pitch);
+
+              debugPrint("음정 탐지중: fre: ${pitchData.pitch} midi: $nowMidi");
+
               setState(() {
+                indicatorAngle = pi * ((nowMidi - 36) / 60 + 1);
                 _isVoiceDetecting = true; // 음정이 탐지됨 --> _isButtonActive = true
               });
               return SizedBox();

@@ -30,6 +30,7 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
   // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 음정이 탐지된 이후
   bool get _isButtonActive => !_isRecordingStarted || _isVoiceDetected;
   double? _maxPitch;
+  double indicatorAngle = pi; // C2 위치
 
   static const _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
@@ -109,7 +110,6 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
     final double indicatorRadius = 10.w;
 
     final double startAngle = pi;
-    final double indicatorAngle = startAngle; // C2 위치
     final double endAngle = 2 * pi;
     final double sweepAngle = endAngle - startAngle;
     final int noteCount = _notes.length;
@@ -131,7 +131,12 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
                 setState(() => _maxPitch = pitchData.pitch);
               }
 
+              final nowMidi = PitchToNoteConverter.frequencyToMidi(pitchData.pitch);
+
+              debugPrint("음정 탐지중: midi $nowMidi");
+
               setState(() {
+                indicatorAngle = pi * ((nowMidi - 36) / 60 + 1);
                 _isVoiceDetected = true; // 음정이 탐지됨 --> _isButtonActive = true
                 _isVoiceDetecting = true;
               });
