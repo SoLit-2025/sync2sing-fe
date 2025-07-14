@@ -25,6 +25,7 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
   // 버튼 및 타이머 상태 변수
   bool isRecording = false;
   bool canFinish = false;
+  bool isPitchDetected = false;
   int remainingSeconds = 5;
   Timer? finishEnableTimer;
 
@@ -57,18 +58,6 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
     });
     // 녹음 시작
     await ref.read(audioPitchNoSaveProvider.notifier).startOrResume();
-
-    // 타이머: 5초 후 '읽기 종료' 버튼 활성화
-    finishEnableTimer?.cancel();
-    finishEnableTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        remainingSeconds--;
-        if (remainingSeconds <= 0) {
-          canFinish = true;
-          finishEnableTimer?.cancel();
-        }
-      });
-    });
   }
 
   // '읽기 종료' 버튼 클릭 시 호출: 녹음 종료 후 변환/분석/전송
@@ -114,6 +103,21 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
       data: (pitchData) {
         if (pitchData.pitch > 30) {
           _pitches.add(pitchData.pitch);
+          if (!isPitchDetected) {
+            // 타이머: 5초 후 '읽기 종료' 버튼 활성화
+            finishEnableTimer?.cancel();
+            finishEnableTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+              setState(() {
+                remainingSeconds--;
+                if (remainingSeconds <= 0) {
+                  canFinish = true;
+                  finishEnableTimer?.cancel();
+                }
+              });
+            });
+            // onStartReading();
+            isPitchDetected = true;
+          }
           return const SizedBox();
         }
       },
