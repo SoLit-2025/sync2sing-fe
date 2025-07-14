@@ -24,8 +24,9 @@ class MaximumPitchPage extends ConsumerStatefulWidget {
 
 class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
   bool _isVoiceDetected = false;
+  bool _isVoiceDetecting = false;
   bool _isRecordingStarted = false; // '시작' 버튼을 눌러서 음성 녹음을 시작했는지 여부
-  bool get _isMicOn => _isVoiceDetected;
+  bool get _isMicOn => _isVoiceDetecting;
   // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 음정이 탐지된 이후
   bool get _isButtonActive => !_isRecordingStarted || _isVoiceDetected;
   double? _maxPitch;
@@ -123,6 +124,7 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
 
             // controller에서 pitched == false 이면 가짜 데이터: pitch=0, probabily=0 인 데이터를 줌 -> 거르기
             if (pitchData.pitch > 30) {
+              debugPrint("소리 받는 중 ${pitchData.pitch}");
               if ((_maxPitch == null || pitchData.pitch > _maxPitch!)) {
                 debugPrint("음정 탐지: maxPitch ${pitchData.pitch}");
 
@@ -131,9 +133,14 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
 
               setState(() {
                 _isVoiceDetected = true; // 음정이 탐지됨 --> _isButtonActive = true
+                _isVoiceDetecting = true;
               });
 
               return SizedBox();
+            } else {
+              setState(() {
+                _isVoiceDetecting = false; // 음정이 탐지됨 --> _isButtonActive = true
+              });
             }
           },
           loading: () => CircularProgressIndicator(),

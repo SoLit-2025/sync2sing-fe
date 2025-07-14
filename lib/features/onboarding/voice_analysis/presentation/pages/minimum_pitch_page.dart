@@ -20,12 +20,14 @@ class MinimumPitchPage extends ConsumerStatefulWidget {
 }
 
 class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
-  bool _isVoiceDetected = false;
+  // bool _isVoiceDetected = false;
+  bool _isVoiceDetecting = false;
+
   // '시작' 버튼 클릭 여부 -> 페이지에 처음 들어왔을 땐 무조건'시작' 버튼을 클릭할 수 있어야 함
   bool _isRecordingStarted = false;
-  bool get _isMicOn => _isVoiceDetected;
-  // 시작 버튼 클릭 x or 클릭 후 피치가 감지됨
-  bool get _isButtonActive => !_isRecordingStarted || _isVoiceDetected;
+  bool get _isMicOn => _isVoiceDetecting;
+  // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 음정이 탐지된 이후
+  bool get _isButtonActive => !_isRecordingStarted || (_minPitch != null); //_isVoiceDetected;
   double? _minPitch;
 
   static const List<String> _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
@@ -95,13 +97,20 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
 
             // pitched == false 일 때 가짜 데이터 수신: pitch=0, probability=0
             if (pitchData.pitch > 30) {
-              _isVoiceDetected = true;
+              // _isVoiceDetected = true;
               if (_minPitch == null || pitchData.pitch < _minPitch!) {
                 // 최저 음정 로컬 변수에 저장
                 debugPrint("음정 탐지: minPitch ${pitchData.pitch}");
                 setState(() => _minPitch = pitchData.pitch);
               }
+              setState(() {
+                _isVoiceDetecting = true; // 음정이 탐지됨 --> _isButtonActive = true
+              });
               return SizedBox();
+            } else {
+              setState(() {
+                _isVoiceDetecting = false;
+              });
             }
           },
           loading: () => CircularProgressIndicator(),
