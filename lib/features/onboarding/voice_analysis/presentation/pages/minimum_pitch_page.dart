@@ -21,7 +21,6 @@ class MinimumPitchPage extends ConsumerStatefulWidget {
 }
 
 class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
-  // bool _isVoiceDetected = false;
   bool _isVoiceDetecting = false;
 
   // '시작' 버튼 클릭 여부 -> 페이지에 처음 들어왔을 땐 무조건'시작' 버튼을 클릭할 수 있어야 함
@@ -32,6 +31,10 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
   double? _minPitch;
 
   double indicatorAngle = pi; // C2 위치
+
+  double? _candidateMinPitch;
+  DateTime? _candidateSince;
+  static const Duration _minPitchHoldDuration = Duration(seconds: 1); // 음정 최소 유지 시간
 
   static const List<String> _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
@@ -99,20 +102,57 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
 
             // pitched == false 일 때 가짜 데이터 수신: pitch=0, probability=0
             if (pitchData.pitch > 30) {
-              // _isVoiceDetected = true;
-              if (_minPitch == null || pitchData.pitch < _minPitch!) {
-                // 최저 음정 로컬 변수에 저장
-                debugPrint("음정 탐지: minPitch ${pitchData.pitch}");
-                setState(() => _minPitch = pitchData.pitch);
-              }
               final nowMidi = PitchToNoteConverter.frequencyToMidi(pitchData.pitch);
 
               debugPrint("음정 탐지중: fre: ${pitchData.pitch} midi: $nowMidi");
-
               setState(() {
-                indicatorAngle = pi * ((nowMidi - 36) / 60 + 1);
+                indicatorAngle =
+                    pi * ((nowMidi - 36) / 60 + 1); // 음정 탐지 동그리미 각도 -> 위치 c2: 36,c7 - c2: 60
                 _isVoiceDetecting = true; // 음정이 탐지됨 --> _isButtonActive = true
               });
+
+              if (_minPitch == null || nowMidi < _minPitch!) {
+                // if (_minPitch == null || pitchData.pitch < _minPitch!)
+                // 최저 음정 로컬 변수에 저장
+                debugPrint("음정 탐지: minPitch ${pitchData.pitch}");
+
+                double tolerance = 1; // midi 기준, 이정도 차이는 유지 x도 ok
+                if (_candidateMinPitch == null) {
+                  // 후보 최초 세팅
+                  _candidateMinPitch = nowMidi;
+                  _candidateSince = DateTime.now();
+                  debugPrint("후보 최초 세팅: $_candidateMinPitch");
+                } else {
+                  // 허용 오차 안에 들어오는지 검사
+                  if ((nowMidi - _candidateMinPitch!).abs() <= tolerance) {
+                    // 유지 시간 검사
+                    final elapsed = DateTime.now().difference(_candidateSince!);
+                    if (elapsed >= _minPitchHoldDuration) {
+                      // 최소 유지시간 충족!
+                      setState(() {
+                        _minPitch = _candidateMinPitch;
+                        debugPrint("minPitch 저장: $_minPitch");
+                      });
+                      _candidateMinPitch = null;
+                      _candidateSince = null;
+                    }
+                  } else if (nowMidi < _candidateMinPitch!) {
+                    // 더 낮은 후보면 갱신
+                    _candidateMinPitch = nowMidi;
+                    _candidateSince = DateTime.now();
+                    debugPrint("후보 갱신: $nowMidi");
+                  } else {
+                    // 너무 벗어나면 후보 초기화
+                    _candidateMinPitch = null;
+                    _candidateSince = null;
+                  }
+                }
+              } else {
+                // pitch가 기존 minPitch보다 높으면 후보 초기화
+                _candidateMinPitch = null;
+                _candidateSince = null;
+              }
+
               return SizedBox();
             } else {
               setState(() {

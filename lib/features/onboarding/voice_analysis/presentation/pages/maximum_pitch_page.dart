@@ -28,9 +28,13 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
   bool _isRecordingStarted = false; // '시작' 버튼을 눌러서 음성 녹음을 시작했는지 여부
   bool get _isMicOn => _isVoiceDetecting;
   // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 음정이 탐지된 이후
-  bool get _isButtonActive => !_isRecordingStarted || _isVoiceDetected;
+  bool get _isButtonActive => !_isRecordingStarted || (_maxPitch != null); // _isVoiceDetected;
   double? _maxPitch;
   double indicatorAngle = pi; // C2 위치
+
+  double? _candidateMaxPitch;
+  DateTime? _candidateSince;
+  static const Duration _maxPitchHoldDuration = Duration(seconds: 1); // 음정 최소 유지시간
 
   static const _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
@@ -59,17 +63,12 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
     ref.read(vocalPitchMetricsProvider.notifier).setMaxPitch(_maxPitch!);
     final vocalPitchMetrics = ref.watch(vocalPitchMetricsProvider);
 
-    // final vocalPitchData = ref.watch(vocalPitchMetricsProvider);
-    // debugPrint(
-    //   "음역대 저장: ${vocalPitchData.averagePitch} | ${vocalPitchData.minPitch} | ${vocalPitchData.maxPitch}",
-    // );
-
     // 최저/최고 노트(String) 저장
     final pitchStats = ref.read(vocalPitchMetricsProvider);
     final PitchToNoteConverter noteConverter = PitchToNoteConverter();
     final voiceTypeProfile = ref.read(voiceTypeProfileProvider.notifier);
-    voiceTypeProfile.setMaxNote(noteConverter.hzToNote(pitchStats.maxPitch!));
-    voiceTypeProfile.setMinNote(noteConverter.hzToNote(pitchStats.minPitch!));
+    voiceTypeProfile.setMaxNote(PitchToNoteConverter.midiToNote(pitchStats.maxPitch!));
+    voiceTypeProfile.setMinNote(PitchToNoteConverter.midiToNote(pitchStats.minPitch!));
 
     // 사용자 음역대 변환, 저장.
     String voiceType = determineVoiceType(
@@ -125,11 +124,6 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
             // controller에서 pitched == false 이면 가짜 데이터: pitch=0, probabily=0 인 데이터를 줌 -> 거르기
             if (pitchData.pitch > 30) {
               debugPrint("소리 받는 중 ${pitchData.pitch}");
-              if ((_maxPitch == null || pitchData.pitch > _maxPitch!)) {
-                debugPrint("음정 탐지: maxPitch ${pitchData.pitch}");
-
-                setState(() => _maxPitch = pitchData.pitch);
-              }
 
               final nowMidi = PitchToNoteConverter.frequencyToMidi(pitchData.pitch);
 
@@ -140,6 +134,46 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
                 _isVoiceDetected = true; // 음정이 탐지됨 --> _isButtonActive = true
                 _isVoiceDetecting = true;
               });
+              if (_maxPitch == null || nowMidi > _maxPitch!) {
+                // 최저 음정 로컬 변수에 저장
+                debugPrint("음정 탐지:  ${nowMidi}");
+
+                double tolerance = 1; // midi 기준, 이정도 차이는 유지 x도 ok
+                if (_candidateMaxPitch == null) {
+                  // 후보 최초 세팅
+                  _candidateMaxPitch = nowMidi;
+                  _candidateSince = DateTime.now();
+                  debugPrint("후보 최초 세팅: $_candidateMaxPitch");
+                } else {
+                  // 허용 오차 안에 들어오는지 검사
+                  if ((nowMidi - _candidateMaxPitch!).abs() <= tolerance) {
+                    // 유지 시간 검사
+                    final elapsed = DateTime.now().difference(_candidateSince!);
+                    if (elapsed >= _maxPitchHoldDuration) {
+                      // 최소 유지시간 충족!
+                      setState(() {
+                        _maxPitch = _candidateMaxPitch;
+                        debugPrint("maxPitch 저장: $_maxPitch");
+                      });
+                      _candidateMaxPitch = null;
+                      _candidateSince = null;
+                    }
+                  } else if (nowMidi > _candidateMaxPitch!) {
+                    // 더 높은 후보면 갱신
+                    _candidateMaxPitch = nowMidi;
+                    _candidateSince = DateTime.now();
+                    debugPrint("후보 갱신: $nowMidi");
+                  } else {
+                    // 너무 벗어나면 후보 초기화
+                    _candidateMaxPitch = null;
+                    _candidateSince = null;
+                  }
+                }
+              } else {
+                // pitch가 기존 maxPitch보다 낮으면 후보 초기화
+                _candidateMaxPitch = null;
+                _candidateSince = null;
+              }
 
               return SizedBox();
             } else {

@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/features/training_common/data/services/pitch_to_note_converter.dart';
 import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_pitch_metrics_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -75,7 +76,8 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
     if (_pitches.isNotEmpty) {
       final total = _pitches.reduce((a, b) => a + b);
       _averagePitch = total / _pitches.length;
-      ref.read(vocalPitchMetricsProvider.notifier).setAveragePitch(_averagePitch!);
+      final averageMidi = PitchToNoteConverter.frequencyToMidi(_averagePitch!);
+      ref.read(vocalPitchMetricsProvider.notifier).setAveragePitch(averageMidi);
     }
   }
 
