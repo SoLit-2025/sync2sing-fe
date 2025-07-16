@@ -22,7 +22,7 @@ class MaximumPitchPage extends ConsumerStatefulWidget {
   ConsumerState<MaximumPitchPage> createState() => _MaximumPitchPageState();
 }
 
-class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
+class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with WidgetsBindingObserver {
   bool _isVoiceDetected = false;
   bool _isVoiceDetecting = false;
   bool _isRecordingStarted = false; // '시작' 버튼을 눌러서 음성 녹음을 시작했는지 여부
@@ -90,11 +90,30 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
     super.initState();
     Future.microtask(() async {
       final granted = await ensureMicPermission(ref); // 공통 함수 재사용
-
       if (!granted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
       }
+
+      WidgetsBinding.instance.addObserver(this);
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 앱에서 나가면 recorder 일시정지 / 다시 들어오면 recorder 이어가기 (resume)
+    if (state == AppLifecycleState.paused) {
+      ref.read(audioPitchNoSaveProvider.notifier).pause();
+    } else if (state == AppLifecycleState.resumed) {
+      ref.read(audioPitchNoSaveProvider.notifier).startOrResume();
+    }
+    super.didChangeAppLifecycleState(state);
   }
 
   @override

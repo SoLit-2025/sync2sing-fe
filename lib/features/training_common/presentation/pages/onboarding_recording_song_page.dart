@@ -24,8 +24,38 @@ import 'dart:io';
 /// - 상단: 페이지 인디케이터 (현재 5/6 단계)
 /// - 중간: 음악 플레이어 및 시각화 영역
 /// - 하단: 보컬 분석 리포트 생성 버튼
-class OnboardingRecordingSongPage extends StatelessWidget {
+class OnboardingRecordingSongPage extends ConsumerStatefulWidget {
   const OnboardingRecordingSongPage({super.key});
+
+  @override
+  ConsumerState createState() => _OnboardingRecordingSongPageState();
+}
+
+class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordingSongPage>
+    with WidgetsBindingObserver {
+  Key _playerKey = UniqueKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 앱을 다시 들어왔고/ 만약 녹음기가 꺼져있다 (녹음 중지를 하지 않고 나간 경우)
+    if (state == AppLifecycleState.resumed && ref.read(audioRecorderProvider.notifier).isStopped) {
+      setState(() {
+        _playerKey = UniqueKey(); // MusicContentPlayer를 완전히 새로고침
+      });
+    }
+  }
 
   /// 보컬 분석 버튼 활성화 조건을 확인하는 함수
   ///
@@ -109,7 +139,7 @@ class OnboardingRecordingSongPage extends StatelessWidget {
 
                 /// MusicContentPlayer: 음악 재생, 녹음, 시각화를 담당하는 핵심 위젯
                 /// 이 위젯에서 모든 음악 관련 기능이 처리됩니다
-                child: MusicContentPlayer(),
+                child: MusicContentPlayer(key: _playerKey),
               ),
 
               /// 중간과 버튼 사이 간격

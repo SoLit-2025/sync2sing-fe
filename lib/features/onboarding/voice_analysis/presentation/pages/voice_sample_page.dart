@@ -22,7 +22,7 @@ class VoiceSamplePage extends ConsumerStatefulWidget {
   ConsumerState createState() => _VoiceSamplePageState();
 }
 
-class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
+class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> with WidgetsBindingObserver {
   // 버튼 및 타이머 상태 변수
   bool isRecording = false;
   bool canFinish = false;
@@ -48,6 +48,9 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("마이크 권한이 필요합니다")));
       }
     });
+
+    // 생명주기 관리 옵저버 등록
+    WidgetsBinding.instance.addObserver(this);
   }
 
   // '읽기 시작' 버튼 클릭 시 호출: 녹음 시작 및 5초 타이머 시작
@@ -89,8 +92,36 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
   @override
   void dispose() {
     finishEnableTimer?.cancel();
+    // 생명주기 관리 옵저버 해제
+    WidgetsBinding.instance.removeObserver(this);
 
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 앱에서 나가면 recorder 일시정지 / 다시 들어오면 recorder 이어가기 (resume)
+    if (state == AppLifecycleState.paused) {
+      ref.read(audioPitchNoSaveProvider.notifier).pause();
+      //  타이머 중지
+      finishEnableTimer?.cancel();
+      finishEnableTimer = null;
+    } else if (state == AppLifecycleState.resumed) {
+      ref.read(audioPitchNoSaveProvider.notifier).startOrResume();
+      // 타이머 재시작 조건
+      if (isRecording && !canFinish && finishEnableTimer == null) {
+        finishEnableTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          setState(() {
+            remainingSeconds--;
+            if (remainingSeconds <= 0) {
+              canFinish = true;
+              finishEnableTimer?.cancel();
+            }
+          });
+        });
+      }
+    }
+    super.didChangeAppLifecycleState(state);
   }
 
   @override

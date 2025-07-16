@@ -10,7 +10,7 @@ import 'save_wav_file.dart';
 class PitchData {
   final double pitch;
   final double probability;
-  static const double minPitch = 220; // 사용자의 음정으로 수집할 최소 주파수
+  static const double minPitch = 100; // 사용자의 음정으로 수집할 최소 주파수
   static const double maxPitch = 1046; // 사용자의 음정으로 수집할 최대 주파수
 
   PitchData({required this.pitch, required this.probability});
@@ -26,6 +26,9 @@ class AudioStreamRecorder {
   static const int _sampleRate = 44100;
   static const int _numberOfChannel = 1;
   late final FlutterSoundRecorder _recorder;
+  bool get isPaused => _recorder.isPaused; // _recorder의 상태변수들.
+  bool get isRecording => _recorder.isRecording;
+  bool get isStopped => _recorder.isStopped;
 
   StreamController<PitchData>? _pitchStreamController;
   late final PitchDetector _pitchDetector;
@@ -86,6 +89,9 @@ class AudioStreamRecorder {
         _accumulateBufferAndDetectPitch(buffer);
       }
     });
+    debugPrint(
+      "before startRecorder: isRecording - ${_recorder.isRecording}  isPaused - ${_recorder.isPaused}  isStopped - ${_recorder.isStopped} recorderState - ${_recorder.recorderState}",
+    );
 
     // 녹음 시작 (다시 재생과 구분됨)
     await _recorder.startRecorder(
@@ -122,15 +128,17 @@ class AudioStreamRecorder {
       _wavFile = null;
     }
 
-    // 파일 최종 검증 로그 추가
-    final savedFile = File(recordingFilePath!);
-    debugPrint('''
+    if (isFileSave) {
+      // 파일 최종 검증 로그 추가
+      final savedFile = File(recordingFilePath!);
+      debugPrint('''
     ▤ 녹음 완료 파일 정보
     → 경로: ${savedFile.path}
     → 존재: ${await savedFile.exists()}
     → 크기: ${(await savedFile.length()) / 1024} KB
     → 수정 시간: ${await savedFile.lastModified()}
     ''');
+    }
 
     debugPrint("recorder dispose");
   }

@@ -20,7 +20,7 @@ class MinimumPitchPage extends ConsumerStatefulWidget {
   ConsumerState<MinimumPitchPage> createState() => _MinimumPitchPageState();
 }
 
-class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
+class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> with WidgetsBindingObserver {
   bool _isVoiceDetecting = false;
 
   // '시작' 버튼 클릭 여부 -> 페이지에 처음 들어왔을 땐 무조건'시작' 버튼을 클릭할 수 있어야 함
@@ -68,12 +68,33 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
     super.initState();
     Future.microtask(() async {
       final granted = await ensureMicPermission(ref); // 공통 함수 재사용
-
       if (!granted) {
         // 권한이 없으면 안내하고 return
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
       }
+
+      // 옵저버 등록: 앱 생명주기
+      WidgetsBinding.instance.addObserver(this);
     });
+  }
+
+  @override
+  void dispose() {
+    // 옵저버 해제: 앱 생명주기
+    WidgetsBinding.instance.removeObserver(this);
+
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 앱에서 나가면 recorder 일시정지 / 다시 들어오면 recorder 이어가기 (resume)
+    if (state == AppLifecycleState.paused) {
+      ref.read(audioPitchNoSaveProvider.notifier).pause();
+    } else if (state == AppLifecycleState.resumed) {
+      ref.read(audioPitchNoSaveProvider.notifier).startOrResume();
+    }
+    super.didChangeAppLifecycleState(state);
   }
 
   @override
@@ -112,9 +133,8 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
               });
 
               if (_minPitch == null || nowMidi < _minPitch!) {
-                // if (_minPitch == null || pitchData.pitch < _minPitch!)
                 // 최저 음정 로컬 변수에 저장
-                debugPrint("음정 탐지: minPitch ${pitchData.pitch}");
+                // debugPrint("음정 탐지: minPitch ${pitchData.pitch}");
 
                 double tolerance = 1; // midi 기준, 이정도 차이는 유지 x도 ok
                 if (_candidateMinPitch == null) {
