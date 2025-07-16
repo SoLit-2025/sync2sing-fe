@@ -23,18 +23,17 @@ class MaximumPitchPage extends ConsumerStatefulWidget {
 }
 
 class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with WidgetsBindingObserver {
-  bool _isVoiceDetected = false;
   bool _isVoiceDetecting = false;
   bool _isRecordingStarted = false; // '시작' 버튼을 눌러서 음성 녹음을 시작했는지 여부
-  bool get _isMicOn => _isVoiceDetecting;
-  // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 음정이 탐지된 이후
-  bool get _isButtonActive => !_isRecordingStarted || (_maxPitch != null); // _isVoiceDetected;
+  bool get _isMicOn => _isVoiceDetecting; // 음성이 수집 중이면 -> micOn 이미지 보여주기
+  // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 최대음정이 저장된 이후
+  bool get _isButtonActive => !_isRecordingStarted || (_maxPitch != null);
   double? _maxPitch;
-  double indicatorAngle = pi; // C2 위치
+  double indicatorAngle = pi; // 음정 탐지 동그라미 위치: 최초 -> C2
 
   double? _candidateMaxPitch;
   DateTime? _candidateSince;
-  static const Duration _maxPitchHoldDuration = Duration(seconds: 1); // 음정 최소 유지시간
+  static const Duration _maxPitchHoldDuration = Duration(seconds: 2); // 음정 최소 유지시간
 
   static const _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
@@ -94,6 +93,7 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with Widget
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
       }
 
+      // 앱 생명주기 관찰 옵저버 등록
       WidgetsBinding.instance.addObserver(this);
     });
   }
@@ -142,22 +142,18 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with Widget
 
             // controller에서 pitched == false 이면 가짜 데이터: pitch=0, probabily=0 인 데이터를 줌 -> 거르기
             if (pitchData.pitch > 30) {
-              debugPrint("소리 받는 중 ${pitchData.pitch}");
-
+              // 사용자의 음정이 탐지됨 -> 사용자의 음성이 수집됨
               final nowMidi = PitchToNoteConverter.frequencyToMidi(pitchData.pitch);
-
-              debugPrint("음정 탐지중: midi $nowMidi");
+              debugPrint("음정 탐지중: fre - ${pitchData.pitch} midi $nowMidi");
 
               setState(() {
-                indicatorAngle = pi * ((nowMidi - 36) / 60 + 1);
-                _isVoiceDetected = true; // 음정이 탐지됨 --> _isButtonActive = true
-                _isVoiceDetecting = true;
+                indicatorAngle =
+                    pi * ((nowMidi - 36) / 60 + 1); // 음정탐지 동그라미 위치 바꾸기 36: C2, 60: C7-C2 (midi 기준)
+                _isVoiceDetecting = true; // 음정이 탐지됨 -> 사용자의 음성이 수집됨 -> minOn
               });
               if (_maxPitch == null || nowMidi > _maxPitch!) {
                 // 최저 음정 로컬 변수에 저장
-                debugPrint("음정 탐지:  ${nowMidi}");
-
-                double tolerance = 1; // midi 기준, 이정도 차이는 유지 x도 ok
+                double tolerance = 2; // midi 기준, 이정도 차이는 유지 x도 ok
                 if (_candidateMaxPitch == null) {
                   // 후보 최초 세팅
                   _candidateMaxPitch = nowMidi;
@@ -295,7 +291,7 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with Widget
               ),
               SizedBox(height: 20.h),
               Text(
-                '낼 수 있는 가장 높은 음을\n3초 이상 유지해주세요',
+                '낼 수 있는 가장 높은 음을\n2초 이상 유지해주세요',
                 style: TextStyle(
                   color: AppColors.grayscale1,
                   fontSize: 20.sp,

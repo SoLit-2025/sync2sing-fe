@@ -8,17 +8,8 @@ class _VocalRange {
   const _VocalRange({required this.name, required this.min, required this.max});
 }
 
-// 최대/최소/ 평균 음정 (주파수)을 토대로 VoiceType을 결정
+// 최대/최소/ 평균 음정 (Midi)을 토대로 VoiceType을 결정
 String determineVoiceType(double lowestMidi, double highestMidi, double avgMidi) {
-  // // 주파수를 MIDI 값으로 변환하는 함수
-  // double frequencyToMidi(double freq) {
-  //   if (freq <= 0) return 0; // 주파수 오류 방지
-  //   return 69 + 12 * (log(freq / 440) / ln2);
-  // }
-  //
-  // // MIDI 값 반올림 (소수점 음표 처리)
-  // int midiNote(double freq) => frequencyToMidi(freq).round();
-
   // 성부별 MIDI 범위
   const vocalRanges = [
     _VocalRange(name: 'Bass', min: 40, max: 64),

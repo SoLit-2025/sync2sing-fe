@@ -89,9 +89,6 @@ class AudioStreamRecorder {
         _accumulateBufferAndDetectPitch(buffer);
       }
     });
-    debugPrint(
-      "before startRecorder: isRecording - ${_recorder.isRecording}  isPaused - ${_recorder.isPaused}  isStopped - ${_recorder.isStopped} recorderState - ${_recorder.recorderState}",
-    );
 
     // 녹음 시작 (다시 재생과 구분됨)
     await _recorder.startRecorder(

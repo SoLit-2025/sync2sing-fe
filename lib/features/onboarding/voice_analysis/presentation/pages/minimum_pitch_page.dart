@@ -27,14 +27,14 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> with Widget
   bool _isRecordingStarted = false;
   bool get _isMicOn => _isVoiceDetecting;
   // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 음정이 탐지된 이후
-  bool get _isButtonActive => !_isRecordingStarted || (_minPitch != null); //_isVoiceDetected;
+  bool get _isButtonActive => !_isRecordingStarted || (_minPitch != null);
   double? _minPitch;
 
   double indicatorAngle = pi; // C2 위치
 
   double? _candidateMinPitch;
   DateTime? _candidateSince;
-  static const Duration _minPitchHoldDuration = Duration(seconds: 1); // 음정 최소 유지 시간
+  static const Duration _minPitchHoldDuration = Duration(seconds: 2); // 음정 최소 유지 시간
 
   static const List<String> _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
@@ -123,6 +123,7 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> with Widget
 
             // pitched == false 일 때 가짜 데이터 수신: pitch=0, probability=0
             if (pitchData.pitch > 30) {
+              // 사용자의 음정이 탐지됨 -> 사용자의 음성이 수집됨
               final nowMidi = PitchToNoteConverter.frequencyToMidi(pitchData.pitch);
 
               debugPrint("음정 탐지중: fre: ${pitchData.pitch} midi: $nowMidi");
@@ -134,9 +135,8 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> with Widget
 
               if (_minPitch == null || nowMidi < _minPitch!) {
                 // 최저 음정 로컬 변수에 저장
-                // debugPrint("음정 탐지: minPitch ${pitchData.pitch}");
 
-                double tolerance = 1; // midi 기준, 이정도 차이는 유지 x도 ok
+                double tolerance = 2; // midi 기준, 이정도 차이는 유지 x도 ok
                 if (_candidateMinPitch == null) {
                   // 후보 최초 세팅
                   _candidateMinPitch = nowMidi;
@@ -274,7 +274,7 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> with Widget
               ),
               SizedBox(height: 20.h),
               Text(
-                '낼 수 있는 가장 낮은 음을\n3초 이상 유지해주세요',
+                '낼 수 있는 가장 낮은 음을\n2초 이상 유지해주세요',
                 style: TextStyle(
                   color: AppColors.grayscale1,
                   fontSize: 20.sp,

@@ -135,8 +135,10 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> with WidgetsB
     pitchAsync.when(
       data: (pitchData) {
         if (pitchData.pitch > 30) {
+          // 사용자의 음정이 탐지됨 -> 사용자의 음성이 입력됨
           _pitches.add(pitchData.pitch);
           if (!isPitchDetected) {
+            // 처음으로 사용자의 음성이 입력됨 -> 타이머 시작
             // 타이머: 5초 후 '읽기 종료' 버튼 활성화
             finishEnableTimer?.cancel();
             finishEnableTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
