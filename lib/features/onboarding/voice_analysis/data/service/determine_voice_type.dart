@@ -1,5 +1,3 @@
-import 'dart:math';
-
 class _VocalRange {
   final String name;
   final int min;

@@ -64,7 +64,6 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with Widget
 
     // 최저/최고 노트(String) 저장
     final pitchStats = ref.read(vocalPitchMetricsProvider);
-    final PitchToNoteConverter noteConverter = PitchToNoteConverter();
     final voiceTypeProfile = ref.read(voiceTypeProfileProvider.notifier);
     voiceTypeProfile.setMaxNote(PitchToNoteConverter.midiToNote(pitchStats.maxPitch!));
     voiceTypeProfile.setMinNote(PitchToNoteConverter.midiToNote(pitchStats.minPitch!));
