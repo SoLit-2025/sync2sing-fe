@@ -34,6 +34,9 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with Widget
   double? _candidateMaxPitch;
   DateTime? _candidateSince;
   static const Duration _maxPitchHoldDuration = Duration(seconds: 2); // 음정 최소 유지시간
+  // 미탐지 시간 계산: 마지막으로 음정을 입력한 시간과 허용하는 미탐지 시간 차
+  DateTime? _lastSuccessPitchTime; // pitchData > 30 일 때 갱신
+  final _missedDetectTolerance = Duration(milliseconds: 200); // 0.2초 정도
 
   static const _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
@@ -142,8 +145,11 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with Widget
             // controller에서 pitched == false 이면 가짜 데이터: pitch=0, probabily=0 인 데이터를 줌 -> 거르기
             if (pitchData.pitch > 30) {
               // 사용자의 음정이 탐지됨 -> 사용자의 음성이 수집됨
+              final now = DateTime.now();
+              _lastSuccessPitchTime = now;
+
               final nowMidi = PitchToNoteConverter.frequencyToMidi(pitchData.pitch);
-              debugPrint("음정 탐지중: fre - ${pitchData.pitch} midi $nowMidi");
+              debugPrint("음정 탐지중: fre - ${pitchData.pitch} midi $nowMidi date $now ");
 
               setState(() {
                 indicatorAngle =
@@ -194,6 +200,18 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with Widget
               setState(() {
                 _isVoiceDetecting = false; // 음정이 탐지됨 --> _isButtonActive = true
               });
+
+              if (_lastSuccessPitchTime != null) {
+                // "마지막으로 pitchData > 30 이었던 시점"부터 지금까지 시간 경과 측정
+                final elapsed = DateTime.now().difference(_lastSuccessPitchTime!);
+                if (elapsed > _missedDetectTolerance) {
+                  // 지나친 끊김이므로, 후보 초기화!
+                  _candidateMaxPitch = null;
+                  _candidateSince = null;
+                  _lastSuccessPitchTime = null;
+                  // 기타 필요하면 로그 등 추가
+                }
+              }
             }
           },
           loading: () => CircularProgressIndicator(),

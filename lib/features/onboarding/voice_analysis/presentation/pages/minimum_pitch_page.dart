@@ -35,6 +35,9 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> with Widget
   double? _candidateMinPitch;
   DateTime? _candidateSince;
   static const Duration _minPitchHoldDuration = Duration(seconds: 2); // 음정 최소 유지 시간
+  // 미탐지 시간 계산: 마지막으로 음정을 입력한 시간과 허용하는 미탐지 시간 차
+  DateTime? _lastSuccessPitchTime; // pitchData > 30 일 때 갱신
+  final _missedDetectTolerance = Duration(milliseconds: 200); // 0.2초 정도
 
   static const List<String> _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
@@ -124,9 +127,12 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> with Widget
             // pitched == false 일 때 가짜 데이터 수신: pitch=0, probability=0
             if (pitchData.pitch > 30) {
               // 사용자의 음정이 탐지됨 -> 사용자의 음성이 수집됨
+              final now = DateTime.now();
+              _lastSuccessPitchTime = now;
+
               final nowMidi = PitchToNoteConverter.frequencyToMidi(pitchData.pitch);
 
-              debugPrint("음정 탐지중: fre: ${pitchData.pitch} midi: $nowMidi");
+              debugPrint("음정 탐지중: fre - ${pitchData.pitch} midi $nowMidi time = $now");
               setState(() {
                 indicatorAngle =
                     pi * ((nowMidi - 36) / 60 + 1); // 음정 탐지 동그리미 각도 -> 위치 c2: 36,c7 - c2: 60
@@ -175,9 +181,22 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> with Widget
 
               return SizedBox();
             } else {
+              // final now = DateTime.now();
+              // debugPrint("미탐지: time = $now");
               setState(() {
                 _isVoiceDetecting = false;
               });
+              if (_lastSuccessPitchTime != null) {
+                // "마지막으로 pitchData > 30 이었던 시점"부터 지금까지 시간 경과 측정
+                final elapsed = DateTime.now().difference(_lastSuccessPitchTime!);
+                if (elapsed > _missedDetectTolerance) {
+                  // 지나친 끊김이므로, 후보 초기화!
+                  _candidateMinPitch = null;
+                  _candidateSince = null;
+                  _lastSuccessPitchTime = null;
+                  // 기타 필요하면 로그 등 추가
+                }
+              }
             }
           },
           loading: () => CircularProgressIndicator(),
