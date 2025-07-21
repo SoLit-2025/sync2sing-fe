@@ -7,6 +7,7 @@ import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_pitch_metrics_provider.dart';
 
@@ -199,12 +200,7 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
               SizedBox(height: 20.h),
               Text(
                 '낼 수 있는 가장 낮은 음을\n3초 이상 유지해주세요',
-                style: TextStyle(
-                  color: AppColors.grayscale1,
-                  fontSize: 20.sp,
-                  fontFamily: 'Pretendard Variable',
-                  fontWeight: FontWeight.w400,
-                  height: 1.4,
+                style: AppTextStyles.heading4.copyWith(
                   decoration: TextDecoration.none,
                 ),
                 textAlign: TextAlign.center,

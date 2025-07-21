@@ -11,6 +11,7 @@ import 'package:sync2sing/features/training_common/data/services/pitch_to_note_c
 import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_pitch_metrics_provider.dart';
 import 'package:sync2sing/shared/providers/voice_type_profile_provider.dart';
+import 'package:sync2sing/config/theme/app_text_styles.dart';
 
 import '../../../../../shared/utils/mic_permission_helper.dart';
 import '../../data/service/determine_voice_type.dart';
@@ -231,12 +232,7 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
               SizedBox(height: 20.h),
               Text(
                 '낼 수 있는 가장 높은 음을\n3초 이상 유지해주세요',
-                style: TextStyle(
-                  color: AppColors.grayscale1,
-                  fontSize: 20.sp,
-                  fontFamily: 'Pretendard Variable',
-                  fontWeight: FontWeight.w400,
-                  height: 1.4,
+                style: AppTextStyles.heading4.copyWith(
                   decoration: TextDecoration.none,
                 ),
                 textAlign: TextAlign.center,
