@@ -81,14 +81,14 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
             children: [
               SizedBox(height: 32.h),
               Center(child: OnboardingPageIndicator(currentPage: 0)),
-              SizedBox(height: 40.h),
+              SizedBox(height: 20.h),
 
               Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 40.h),
+                     SizedBox(height: 40.h),
                     Text(
                       '맞춤형 보컬 분석을 시작합니다',
                       style: AppTextStyles.heading3Bold.copyWith(
