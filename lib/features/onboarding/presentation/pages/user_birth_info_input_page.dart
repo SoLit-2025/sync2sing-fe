@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
 
@@ -89,12 +91,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                     SizedBox(height: 40.h),
                     Text(
                       '맞춤형 보컬 분석을 시작합니다',
-                      style: TextStyle(
-                        color: AppColors.grayscale1,
-                        fontSize: 22.sp,
-                        fontFamily: 'Pretendard Variable',
-                        fontWeight: FontWeight.w600,
-                        height: 1.4,
+                      style: AppTextStyles.heading3Bold.copyWith(
                         decoration: TextDecoration.none,
                       ),
                       textAlign: TextAlign.left,
@@ -102,12 +99,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
                     SizedBox(height: 12.h),
                     Text(
                       '입력된 정보를 통해\n음역대를 더 정확하게 측정할 수 있어요',
-                      style: TextStyle(
-                        color: AppColors.grayscale1,
-                        fontSize: 20.sp,
-                        fontFamily: 'Pretendard Variable',
-                        fontWeight: FontWeight.w400,
-                        height: 1.4,
+                      style: AppTextStyles.heading4.copyWith(
                         decoration: TextDecoration.none,
                       ),
                       textAlign: TextAlign.left,
