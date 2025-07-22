@@ -3,18 +3,22 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/onboarding/voice_analysis/presentation/widgets/onboarding_page_indicator.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sync2sing/shared/providers/birth_info_provider.dart';
 
-class UserBirthInfoInputPage extends StatefulWidget {
+class UserBirthInfoInputPage extends ConsumerStatefulWidget  {
   const UserBirthInfoInputPage({super.key});
 
   @override
-  State<UserBirthInfoInputPage> createState() => _UserBirthInfoInputPageState();
+  ConsumerState<UserBirthInfoInputPage> createState() => _UserBirthInfoInputPageState();
 }
 
-class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
+class _UserBirthInfoInputPageState extends ConsumerState<UserBirthInfoInputPage> {
+
   String? _selectedGender;
   String? _selectedYear;
   bool _isYearPickerVisible = false;
@@ -22,13 +26,39 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
   int _pickerTempIndex = 0;
   final List<String> _years = List.generate(
     DateTime.now().year - 1899,
-    (index) => (1900 + index).toString(),
+        (index) => (1900 + index).toString(),
   );
+
+  @override
+  void initState() {
+    super.initState();
+
+    final birthInfo = ref.read(birthInfoProvider);
+
+    _selectedGender = birthInfo.gender;
+    _selectedYear = birthInfo.birthYear;
+
+    // 연도가 있으면 해당 연도의 인덱스로 피커 초기화 설정
+    if (_selectedYear != null) {
+      _pickerTempIndex = _years.indexOf(_selectedYear!);
+    } else {
+      _pickerTempIndex = _years.indexOf("2005");
+    }
+
+    _isButtonActive = _selectedGender != null && _selectedYear != null;
+  }
+
+
+
 
   void _selectGender(String gender) {
     setState(() {
       _selectedGender = gender;
       _updateButtonState();
+
+      ref.read(birthInfoProvider.notifier).update((state) => state.copyWith(gender: gender));
+
+
     });
   }
 
@@ -53,6 +83,9 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
       _selectedYear = _years[_pickerTempIndex];
       _isYearPickerVisible = false;
       _updateButtonState();
+
+      ref.read(birthInfoProvider.notifier).update((state) => state.copyWith(birthYear: _selectedYear));
+
     });
   }
 
@@ -65,6 +98,7 @@ class _UserBirthInfoInputPageState extends State<UserBirthInfoInputPage> {
   void _navigateToVoiceSamplePage() {
     if (_isButtonActive) {
       context.go(AppRoutePaths.voiceSample);
+      //context.go(AppRoutePaths.signupProfileInfo);
     }
   }
 
