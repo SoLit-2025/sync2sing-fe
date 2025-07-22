@@ -14,7 +14,6 @@ import 'package:sync2sing/features/training_common/presentation/widgets/pitch_an
 import 'package:sync2sing/shared/providers/audio_position_provider.dart';
 import 'package:sync2sing/shared/providers/evaluated_pitch_stream_provider.dart';
 import 'package:sync2sing/shared/providers/mic_permission_provider.dart';
-import 'package:sync2sing/shared/providers/vocal_result_provider.dart';
 import 'package:sync2sing/shared/providers/audio_recorder_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -34,7 +33,8 @@ class MusicContentPlayer extends ConsumerStatefulWidget {
   ConsumerState createState() => _MusicContentPlayerState();
 }
 
-class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
+class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
+    with WidgetsBindingObserver {
   late AudioPlayer _audioPlayer; // MR 재생
   bool _isPlaying = false; // MR 재생여부 확인 변수
   StreamSubscription? _positionSubscription; // 음악 재생 위치 실시간 업데이트
@@ -47,9 +47,6 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
   int? _userCurrentPitch; // 사용자 현재 음정
   Timer? _pitchDetectionTimer; // 일정한 간격을 두고 음정을 감지하는 도구
   Timer? _testTimer; // 테스트용 타이머 (오디오 없이 position 시뮬레이션)
-
-  // 박자 채점을 위한 변수들
-  final List<double> _rhythmDiffs = [];
 
   // 위젯이 처음 실행될 때 실행되는 초기화 함수
   @override
@@ -65,6 +62,9 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("마이크 권한이 필요합니다")));
       }
     });
+
+    // 앱 생명주기 옵저버: 등록
+    WidgetsBinding.instance.addObserver(this);
   }
 
   Future<bool> ensureMicPermission(WidgetRef ref) async {
@@ -267,23 +267,33 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
     _positionSubscription?.cancel(); // 재생 위치 스트림 구독 해제
     _pitchDetectionTimer?.cancel(); // 음정 감지 타이머 해제
     _audioPlayer.dispose(); // 오디오 플레이어 해제
+
+    // 앱 생명주기 옵저버: 해제
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
     debugPrint('MusicContentPlayer 리소스 정리 완료');
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.paused) {
+      // 앱에서 나간 경우: 만약 일시정지 x 상태라면 녹음기 종료: 다시 들어오면 위젯 재시작(부모 클래스에서).
+      if (_isPlaying) {
+        _audioPlayer.pause();
+        ref.read(audioRecorderProvider.notifier).stop();
+        setState(() {
+          _isPlaying = false;
+        });
+        debugPrint('MR 일시정지 + 녹음 정지');
+      }
+    }
   }
 
   // UI 구성 함수
   @override
   Widget build(BuildContext context) {
-    // if (!_hasListened) {
-    //   _hasListened = true; // 단 한 번만 실행
-    //   ref.listen<AsyncValue<EvaluatedPitch>>(evaluatedPitchStreamProvider, (prev, next) {
-    //     next.whenData((evaluatedPitch) {
-    //       final controller = ref.read(audioRecorderProvider.notifier);
-    //       controller.onPitchEvaluated(evaluatedPitch); //  실시간으로 음정 비교 -> bool list에 더함
-    //     });
-    //   });
-    // }
-
     final isRecording = ref.watch(audioRecorderProvider);
     final currentPosition = ref.watch(audioPositionProvider);
     final pitchAsync = ref.watch(evaluatedPitchStreamProvider);
@@ -306,7 +316,6 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer> {
       loading: () => SizedBox(),
       error: (e, _) {
         // debugPrint("flutter: pitchStream 에러: $e");
-        // return SizedBox();
       },
     );
 

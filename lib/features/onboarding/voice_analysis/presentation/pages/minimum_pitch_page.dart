@@ -12,6 +12,7 @@ import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_pitch_metrics_provider.dart';
 
 import '../../../../../shared/utils/mic_permission_helper.dart';
+import '../../../../training_common/data/services/pitch_to_note_converter.dart';
 
 class MinimumPitchPage extends ConsumerStatefulWidget {
   const MinimumPitchPage({super.key});
@@ -20,14 +21,24 @@ class MinimumPitchPage extends ConsumerStatefulWidget {
   ConsumerState<MinimumPitchPage> createState() => _MinimumPitchPageState();
 }
 
-class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
-  bool _isVoiceDetected = false;
+class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> with WidgetsBindingObserver {
+  bool _isVoiceDetecting = false;
+
   // '시작' 버튼 클릭 여부 -> 페이지에 처음 들어왔을 땐 무조건'시작' 버튼을 클릭할 수 있어야 함
   bool _isRecordingStarted = false;
-  bool get _isMicOn => _isVoiceDetected;
-  // 시작 버튼 클릭 x or 클릭 후 피치가 감지됨
-  bool get _isButtonActive => !_isRecordingStarted || _isVoiceDetected;
+  bool get _isMicOn => _isVoiceDetecting;
+  // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 음정이 탐지된 이후
+  bool get _isButtonActive => !_isRecordingStarted || (_minPitch != null);
   double? _minPitch;
+
+  double indicatorAngle = pi; // C2 위치
+
+  double? _candidateMinPitch;
+  DateTime? _candidateSince;
+  static const Duration _minPitchHoldDuration = Duration(seconds: 2); // 음정 최소 유지 시간
+  // 미탐지 시간 계산: 마지막으로 음정을 입력한 시간과 허용하는 미탐지 시간 차
+  DateTime? _lastSuccessPitchTime; // pitchData > 30 일 때 갱신
+  final _missedDetectTolerance = Duration(milliseconds: 200); // 0.2초 정도
 
   static const List<String> _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
@@ -61,12 +72,33 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
     super.initState();
     Future.microtask(() async {
       final granted = await ensureMicPermission(ref); // 공통 함수 재사용
-
       if (!granted) {
         // 권한이 없으면 안내하고 return
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
       }
+
+      // 옵저버 등록: 앱 생명주기
+      WidgetsBinding.instance.addObserver(this);
     });
+  }
+
+  @override
+  void dispose() {
+    // 옵저버 해제: 앱 생명주기
+    WidgetsBinding.instance.removeObserver(this);
+
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 앱에서 나가면 recorder 일시정지 / 다시 들어오면 recorder 이어가기 (resume)
+    if (state == AppLifecycleState.paused) {
+      ref.read(audioPitchNoSaveProvider.notifier).pause();
+    } else if (state == AppLifecycleState.resumed) {
+      ref.read(audioPitchNoSaveProvider.notifier).startOrResume();
+    }
+    super.didChangeAppLifecycleState(state);
   }
 
   @override
@@ -81,7 +113,6 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
     final double indicatorRadius = 10.w;
 
     final double startAngle = pi;
-    final double indicatorAngle = startAngle; // C2 위치
     final double endAngle = 2 * pi;
     final double sweepAngle = endAngle - startAngle;
     final int noteCount = _notes.length;
@@ -91,23 +122,88 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
     ref
         .watch(autoStartPitchStreamProvider)
         .when(
-      data: (pitchData) {
-        // 여기에서 pitchData.pitch 를 사용해서 화면 또는 로직 처리
+          data: (pitchData) {
+            // 여기에서 pitchData.pitch 를 사용해서 화면 또는 로직 처리
 
-        // pitched == false 일 때 가짜 데이터 수신: pitch=0, probability=0
-        if (pitchData.pitch > 30) {
-          _isVoiceDetected = true;
-          if (_minPitch == null || pitchData.pitch < _minPitch!) {
-            // 최저 음정 로컬 변수에 저장
-            debugPrint("음정 탐지: minPitch ${pitchData.pitch}");
-            setState(() => _minPitch = pitchData.pitch);
-          }
-          return SizedBox();
-        }
-      },
-      loading: () => CircularProgressIndicator(),
-      error: (e, _) => Text('Error: $e'),
-    );
+            // pitched == false 일 때 가짜 데이터 수신: pitch=0, probability=0
+            if (pitchData.pitch > 30) {
+              // 사용자의 음정이 탐지됨 -> 사용자의 음성이 수집됨
+              final now = DateTime.now();
+              _lastSuccessPitchTime = now;
+
+              final nowMidi = PitchToNoteConverter.frequencyToMidi(pitchData.pitch);
+
+              debugPrint("음정 탐지중: fre - ${pitchData.pitch} midi $nowMidi time = $now");
+              setState(() {
+                indicatorAngle =
+                    pi * ((nowMidi - 36) / 60 + 1); // 음정 탐지 동그리미 각도 -> 위치 c2: 36,c7 - c2: 60
+                _isVoiceDetecting = true; // 음정이 탐지됨 --> _isButtonActive = true
+              });
+
+              if (_minPitch == null || nowMidi < _minPitch!) {
+                // 최저 음정 로컬 변수에 저장
+
+                double tolerance = 2; // midi 기준, 이정도 차이는 유지 x도 ok
+                if (_candidateMinPitch == null) {
+                  // 후보 최초 세팅
+                  _candidateMinPitch = nowMidi;
+                  _candidateSince = DateTime.now();
+                  debugPrint("후보 최초 세팅: $_candidateMinPitch");
+                } else {
+                  // 허용 오차 안에 들어오는지 검사
+                  if ((nowMidi - _candidateMinPitch!).abs() <= tolerance) {
+                    // 유지 시간 검사
+                    final elapsed = DateTime.now().difference(_candidateSince!);
+                    if (elapsed >= _minPitchHoldDuration) {
+                      // 최소 유지시간 충족!
+                      setState(() {
+                        _minPitch = _candidateMinPitch;
+                        debugPrint("minPitch 저장: $_minPitch");
+                      });
+                      _candidateMinPitch = null;
+                      _candidateSince = null;
+                    }
+                  } else if (nowMidi < _candidateMinPitch!) {
+                    // 더 낮은 후보면 갱신
+                    _candidateMinPitch = nowMidi;
+                    _candidateSince = DateTime.now();
+                    debugPrint("후보 갱신: $nowMidi");
+                  } else {
+                    // 너무 벗어나면 후보 초기화
+                    _candidateMinPitch = null;
+                    _candidateSince = null;
+                  }
+                }
+              } else {
+                // pitch가 기존 minPitch보다 높으면 후보 초기화
+                _candidateMinPitch = null;
+                _candidateSince = null;
+              }
+
+              return SizedBox();
+            } else {
+              // final now = DateTime.now();
+              // debugPrint("미탐지: time = $now");
+              setState(() {
+                _isVoiceDetecting = false;
+              });
+              if (_lastSuccessPitchTime != null) {
+                // "마지막으로 pitchData > 30 이었던 시점"부터 지금까지 시간 경과 측정
+                final elapsed = DateTime.now().difference(_lastSuccessPitchTime!);
+                if (elapsed > _missedDetectTolerance) {
+                  // 지나친 끊김이므로, 후보 초기화!
+                  _candidateMinPitch = null;
+                  _candidateSince = null;
+                  _lastSuccessPitchTime = null;
+                  // 기타 필요하면 로그 등 추가
+                }
+              }
+            }
+          },
+          loading: () => CircularProgressIndicator(),
+          error: (e, _) => Text('Error: $e'),
+        );
+
 
     return CupertinoPageScaffold(
       backgroundColor: AppColors.grayscale8,
@@ -212,11 +308,17 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 20.h),
-                  Text(
-                    '낼 수 있는 가장 낮은 음을\n3초 이상 유지해주세요',
-                    style: AppTextStyles.heading4.copyWith(
-                      decoration: TextDecoration.none,
+
+              SizedBox(height: 20.h),
+              Text(
+                '낼 수 있는 가장 낮은 음을\n2초 이상 유지해주세요',
+                style: TextStyle(
+                  color: AppColors.grayscale1,
+                  fontSize: 20.sp,
+                  fontFamily: 'Pretendard Variable',
+                  fontWeight: FontWeight.w400,
+                  height: 1.4,
+                  decoration: TextDecoration.none,
                     ),
                     textAlign: TextAlign.center,
                   ),

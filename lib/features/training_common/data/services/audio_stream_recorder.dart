@@ -10,8 +10,8 @@ import 'save_wav_file.dart';
 class PitchData {
   final double pitch;
   final double probability;
-  static const double minPitch = 50; // 사용자의 음정으로 수집할 최소 주파수
-  static const double maxPitch = 2000; // 사용자의 음정으로 수집할 최대 주파수
+  static const double minPitch = 100; // 사용자의 음정으로 수집할 최소 주파수
+  static const double maxPitch = 1046; // 사용자의 음정으로 수집할 최대 주파수
 
   PitchData({required this.pitch, required this.probability});
 }
@@ -26,6 +26,9 @@ class AudioStreamRecorder {
   static const int _sampleRate = 44100;
   static const int _numberOfChannel = 1;
   late final FlutterSoundRecorder _recorder;
+  bool get isPaused => _recorder.isPaused; // _recorder의 상태변수들.
+  bool get isRecording => _recorder.isRecording;
+  bool get isStopped => _recorder.isStopped;
 
   StreamController<PitchData>? _pitchStreamController;
   late final PitchDetector _pitchDetector;
@@ -80,16 +83,10 @@ class AudioStreamRecorder {
         await _wavFile!.writeFrom(buffer);
         _totalDataSize += buffer.length; // 데이터 크기 누적
       }
-      debugPrint('▷ 청크 저장: ${buffer.length}바이트 | 누적: $_totalDataSize바이트');
 
       if (isPitchDetection) {
         // 음정 탐지해야 하는 경우 버퍼에 추가
-        _addBufferUtilBufferSize(buffer);
-      }
-
-      if (isRhythmDetection) {
-        // TODO: 박자 처리 관련 로직
-        //  실시간으로 처리할 필요 없는 경우 삭제
+        _accumulateBufferAndDetectPitch(buffer);
       }
     });
 
@@ -128,15 +125,17 @@ class AudioStreamRecorder {
       _wavFile = null;
     }
 
-    // 파일 최종 검증 로그 추가
-    final savedFile = File(recordingFilePath!);
-    debugPrint('''
+    if (isFileSave) {
+      // 파일 최종 검증 로그 추가
+      final savedFile = File(recordingFilePath!);
+      debugPrint('''
     ▤ 녹음 완료 파일 정보
     → 경로: ${savedFile.path}
     → 존재: ${await savedFile.exists()}
     → 크기: ${(await savedFile.length()) / 1024} KB
     → 수정 시간: ${await savedFile.lastModified()}
     ''');
+    }
 
     debugPrint("recorder dispose");
   }
@@ -150,8 +149,7 @@ class AudioStreamRecorder {
   // wav 파일 생성 및 헤더 초기화
   Future<void> _createWavFile() async {
     final tempDir = await getTemporaryDirectory();
-    recordingFilePath =
-        '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
+    recordingFilePath = '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
     debugPrint('▷ WAV 파일 생성 경로: $recordingFilePath');
 
     final header = SaveWavFile.buildHeader(
@@ -161,36 +159,32 @@ class AudioStreamRecorder {
       pcmDataSize: 0,
     );
 
-    _wavFile = await SaveWavFile.createFile(
-      path: recordingFilePath!,
-      header: header,
-    );
+    _wavFile = await SaveWavFile.createFile(path: recordingFilePath!, header: header);
     debugPrint('▷ WAV 파일 초기화 완료: ${_wavFile != null}');
   }
 
   // 실시간 음정탐지 로직
   // 누적 버퍼 변수
   List<int> _accumulatedBuffer = [];
-  int requiredBytes = _bufferSize * 2;
+  int requiredBytes = _bufferSize * 2; // 필요한 바이트 수는 버퍼 사이즈의 두 배
 
-  void _addBufferUtilBufferSize(Uint8List newData) async {
+  // 음성 데이터 버퍼 누적 및 음정 탐지 함수
+  void _accumulateBufferAndDetectPitch(Uint8List newData) async {
     // 1. 새 데이터 누적
     _accumulatedBuffer.addAll(newData);
 
-    // 2. 충분한 데이터가 모일 때까지 반복 처리
+    // 2. 충분한 크기의 데이터가 모이면:
     while (_accumulatedBuffer.length >= requiredBytes) {
-      // 3. 필요한 만큼 데이터 추출 (4096 bytes)
-      final chunk = Uint8List.fromList(
-        _accumulatedBuffer.sublist(0, requiredBytes),
-      );
+      // 3. 필요한 만큼 데이터 추출
+      final chunk = Uint8List.fromList(_accumulatedBuffer.sublist(0, requiredBytes));
 
       // 4. 남은 데이터 유지
       _accumulatedBuffer = _accumulatedBuffer.sublist(requiredBytes);
 
       // 5. 피치 감지 로직 실행
       if (chunk.length / 2 < _pitchDetector.bufferSize) return;
-
       final result = await _pitchDetector.getPitchFromIntBuffer(chunk);
+
       // 음정이 추출되고 / 그 음정이 범위 이내면 pitchStreamController에 PitchData를 보냄
       if (result.pitched &&
           result.pitch >= PitchData.minPitch &&

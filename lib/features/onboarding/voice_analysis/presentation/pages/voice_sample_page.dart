@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/features/training_common/data/services/pitch_to_note_converter.dart';
 import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_pitch_metrics_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -21,10 +22,11 @@ class VoiceSamplePage extends ConsumerStatefulWidget {
   ConsumerState createState() => _VoiceSamplePageState();
 }
 
-class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
+class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> with WidgetsBindingObserver {
   // 버튼 및 타이머 상태 변수
   bool isRecording = false;
   bool canFinish = false;
+  bool isPitchDetected = false;
   int remainingSeconds = 5;
   Timer? finishEnableTimer;
 
@@ -46,6 +48,9 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("마이크 권한이 필요합니다")));
       }
     });
+
+    // 생명주기 관리 옵저버 등록
+    WidgetsBinding.instance.addObserver(this);
   }
 
   // '읽기 시작' 버튼 클릭 시 호출: 녹음 시작 및 5초 타이머 시작
@@ -57,18 +62,6 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
     });
     // 녹음 시작
     await ref.read(audioPitchNoSaveProvider.notifier).startOrResume();
-
-    // 타이머: 5초 후 '읽기 종료' 버튼 활성화
-    finishEnableTimer?.cancel();
-    finishEnableTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        remainingSeconds--;
-        if (remainingSeconds <= 0) {
-          canFinish = true;
-          finishEnableTimer?.cancel();
-        }
-      });
-    });
   }
 
   // '읽기 종료' 버튼 클릭 시 호출: 녹음 종료 후 변환/분석/전송
@@ -86,7 +79,8 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
     if (_pitches.isNotEmpty) {
       final total = _pitches.reduce((a, b) => a + b);
       _averagePitch = total / _pitches.length;
-      ref.read(vocalPitchMetricsProvider.notifier).setAveragePitch(_averagePitch!);
+      final averageMidi = PitchToNoteConverter.frequencyToMidi(_averagePitch!);
+      ref.read(vocalPitchMetricsProvider.notifier).setAveragePitch(averageMidi);
     }
   }
 
@@ -98,8 +92,36 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
   @override
   void dispose() {
     finishEnableTimer?.cancel();
+    // 생명주기 관리 옵저버 해제
+    WidgetsBinding.instance.removeObserver(this);
 
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 앱에서 나가면 recorder 일시정지 / 다시 들어오면 recorder 이어가기 (resume)
+    if (state == AppLifecycleState.paused) {
+      ref.read(audioPitchNoSaveProvider.notifier).pause();
+      //  타이머 중지
+      finishEnableTimer?.cancel();
+      finishEnableTimer = null;
+    } else if (state == AppLifecycleState.resumed) {
+      ref.read(audioPitchNoSaveProvider.notifier).startOrResume();
+      // 타이머 재시작 조건
+      if (isRecording && !canFinish && finishEnableTimer == null) {
+        finishEnableTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          setState(() {
+            remainingSeconds--;
+            if (remainingSeconds <= 0) {
+              canFinish = true;
+              finishEnableTimer?.cancel();
+            }
+          });
+        });
+      }
+    }
+    super.didChangeAppLifecycleState(state);
   }
 
   @override
@@ -113,7 +135,24 @@ class _VoiceSamplePageState extends ConsumerState<VoiceSamplePage> {
     pitchAsync.when(
       data: (pitchData) {
         if (pitchData.pitch > 30) {
+          // 사용자의 음정이 탐지됨 -> 사용자의 음성이 입력됨
           _pitches.add(pitchData.pitch);
+          if (!isPitchDetected) {
+            // 처음으로 사용자의 음성이 입력됨 -> 타이머 시작
+            // 타이머: 5초 후 '읽기 종료' 버튼 활성화
+            finishEnableTimer?.cancel();
+            finishEnableTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+              setState(() {
+                remainingSeconds--;
+                if (remainingSeconds <= 0) {
+                  canFinish = true;
+                  finishEnableTimer?.cancel();
+                }
+              });
+            });
+            // onStartReading();
+            isPitchDetected = true;
+          }
           return const SizedBox();
         }
       },

@@ -23,13 +23,21 @@ class MaximumPitchPage extends ConsumerStatefulWidget {
   ConsumerState<MaximumPitchPage> createState() => _MaximumPitchPageState();
 }
 
-class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
-  bool _isVoiceDetected = false;
+class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with WidgetsBindingObserver {
+  bool _isVoiceDetecting = false;
   bool _isRecordingStarted = false; // '시작' 버튼을 눌러서 음성 녹음을 시작했는지 여부
-  bool get _isMicOn => _isVoiceDetected;
-  // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 음정이 탐지된 이후
-  bool get _isButtonActive => !_isRecordingStarted || _isVoiceDetected;
+  bool get _isMicOn => _isVoiceDetecting; // 음성이 수집 중이면 -> micOn 이미지 보여주기
+  // 버튼 활성화 조건: '시작' 버튼 클릭 전 or '시작' 클릭 후 최대음정이 저장된 이후
+  bool get _isButtonActive => !_isRecordingStarted || (_maxPitch != null);
   double? _maxPitch;
+  double indicatorAngle = pi; // 음정 탐지 동그라미 위치: 최초 -> C2
+
+  double? _candidateMaxPitch;
+  DateTime? _candidateSince;
+  static const Duration _maxPitchHoldDuration = Duration(seconds: 2); // 음정 최소 유지시간
+  // 미탐지 시간 계산: 마지막으로 음정을 입력한 시간과 허용하는 미탐지 시간 차
+  DateTime? _lastSuccessPitchTime; // pitchData > 30 일 때 갱신
+  final _missedDetectTolerance = Duration(milliseconds: 200); // 0.2초 정도
 
   static const _notes = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7'];
 
@@ -58,17 +66,11 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
     ref.read(vocalPitchMetricsProvider.notifier).setMaxPitch(_maxPitch!);
     final vocalPitchMetrics = ref.watch(vocalPitchMetricsProvider);
 
-    // final vocalPitchData = ref.watch(vocalPitchMetricsProvider);
-    // debugPrint(
-    //   "음역대 저장: ${vocalPitchData.averagePitch} | ${vocalPitchData.minPitch} | ${vocalPitchData.maxPitch}",
-    // );
-
     // 최저/최고 노트(String) 저장
     final pitchStats = ref.read(vocalPitchMetricsProvider);
-    final PitchToNoteConverter noteConverter = PitchToNoteConverter();
     final voiceTypeProfile = ref.read(voiceTypeProfileProvider.notifier);
-    voiceTypeProfile.setMaxNote(noteConverter.hzToNote(pitchStats.maxPitch!));
-    voiceTypeProfile.setMinNote(noteConverter.hzToNote(pitchStats.minPitch!));
+    voiceTypeProfile.setMaxNote(PitchToNoteConverter.midiToNote(pitchStats.maxPitch!));
+    voiceTypeProfile.setMinNote(PitchToNoteConverter.midiToNote(pitchStats.minPitch!));
 
     // 사용자 음역대 변환, 저장.
     String voiceType = determineVoiceType(
@@ -90,11 +92,31 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
     super.initState();
     Future.microtask(() async {
       final granted = await ensureMicPermission(ref); // 공통 함수 재사용
-
       if (!granted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("마이크 권한이 필요합니다")));
       }
+
+      // 앱 생명주기 관찰 옵저버 등록
+      WidgetsBinding.instance.addObserver(this);
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 앱에서 나가면 recorder 일시정지 / 다시 들어오면 recorder 이어가기 (resume)
+    if (state == AppLifecycleState.paused) {
+      ref.read(audioPitchNoSaveProvider.notifier).pause();
+    } else if (state == AppLifecycleState.resumed) {
+      ref.read(audioPitchNoSaveProvider.notifier).startOrResume();
+    }
+    super.didChangeAppLifecycleState(state);
   }
 
   @override
@@ -109,28 +131,93 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
     final double indicatorRadius = 10.w;
 
     final double startAngle = pi;
-    final double indicatorAngle = startAngle; // C2 위치
     final double endAngle = 2 * pi;
     final double sweepAngle = endAngle - startAngle;
     final int noteCount = _notes.length;
 
     final isRecording = ref.watch(audioPitchNoSaveProvider);
-    ref.watch(autoStartPitchStreamProvider).when(
-      data: (pitchData) {
-        if (pitchData.pitch > 30) {
-          if ((_maxPitch == null || pitchData.pitch > _maxPitch!)) {
-            debugPrint("음정 탐지: maxPitch ${pitchData.pitch}");
-            setState(() => _maxPitch = pitchData.pitch);
-          }
-          setState(() {
-            _isVoiceDetected = true;
-          });
-          return SizedBox();
-        }
-      },
-      loading: () => CircularProgressIndicator(),
-      error: (e, _) => Text('Error: $e'),
-    );
+    ref
+        .watch(autoStartPitchStreamProvider)
+        .when(
+          data: (pitchData) {
+            // 여기에서 pitchData.pitch 를 사용해서 화면 또는 로직 처리
+
+            // controller에서 pitched == false 이면 가짜 데이터: pitch=0, probabily=0 인 데이터를 줌 -> 거르기
+            if (pitchData.pitch > 30) {
+              // 사용자의 음정이 탐지됨 -> 사용자의 음성이 수집됨
+              final now = DateTime.now();
+              _lastSuccessPitchTime = now;
+
+              final nowMidi = PitchToNoteConverter.frequencyToMidi(pitchData.pitch);
+              debugPrint("음정 탐지중: fre - ${pitchData.pitch} midi $nowMidi date $now ");
+
+              setState(() {
+                indicatorAngle =
+                    pi * ((nowMidi - 36) / 60 + 1); // 음정탐지 동그라미 위치 바꾸기 36: C2, 60: C7-C2 (midi 기준)
+                _isVoiceDetecting = true; // 음정이 탐지됨 -> 사용자의 음성이 수집됨 -> minOn
+              });
+              if (_maxPitch == null || nowMidi > _maxPitch!) {
+                // 최저 음정 로컬 변수에 저장
+                double tolerance = 2; // midi 기준, 이정도 차이는 유지 x도 ok
+                if (_candidateMaxPitch == null) {
+                  // 후보 최초 세팅
+                  _candidateMaxPitch = nowMidi;
+                  _candidateSince = DateTime.now();
+                  debugPrint("후보 최초 세팅: $_candidateMaxPitch");
+                } else {
+                  // 허용 오차 안에 들어오는지 검사
+                  if ((nowMidi - _candidateMaxPitch!).abs() <= tolerance) {
+                    // 유지 시간 검사
+                    final elapsed = DateTime.now().difference(_candidateSince!);
+                    if (elapsed >= _maxPitchHoldDuration) {
+                      // 최소 유지시간 충족!
+                      setState(() {
+                        _maxPitch = _candidateMaxPitch;
+                        debugPrint("maxPitch 저장: $_maxPitch");
+                      });
+                      _candidateMaxPitch = null;
+                      _candidateSince = null;
+                    }
+                  } else if (nowMidi > _candidateMaxPitch!) {
+                    // 더 높은 후보면 갱신
+                    _candidateMaxPitch = nowMidi;
+                    _candidateSince = DateTime.now();
+                    debugPrint("후보 갱신: $nowMidi");
+                  } else {
+                    // 너무 벗어나면 후보 초기화
+                    _candidateMaxPitch = null;
+                    _candidateSince = null;
+                  }
+                }
+              } else {
+                // pitch가 기존 maxPitch보다 낮으면 후보 초기화
+                _candidateMaxPitch = null;
+                _candidateSince = null;
+              }
+
+              return SizedBox();
+            } else {
+              setState(() {
+                _isVoiceDetecting = false; // 음정이 탐지됨 --> _isButtonActive = true
+              });
+
+              if (_lastSuccessPitchTime != null) {
+                // "마지막으로 pitchData > 30 이었던 시점"부터 지금까지 시간 경과 측정
+                final elapsed = DateTime.now().difference(_lastSuccessPitchTime!);
+                if (elapsed > _missedDetectTolerance) {
+                  // 지나친 끊김이므로, 후보 초기화!
+                  _candidateMaxPitch = null;
+                  _candidateSince = null;
+                  _lastSuccessPitchTime = null;
+                  // 기타 필요하면 로그 등 추가
+                }
+              }
+            }
+          },
+          loading: () => CircularProgressIndicator(),
+          error: (e, _) => Text('Error: $e'),
+        );
+
 
     return CupertinoPageScaffold(
       backgroundColor: AppColors.grayscale8,
@@ -230,11 +317,17 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 20.h),
-                  Text(
-                    '낼 수 있는 가장 높은 음을\n3초 이상 유지해주세요',
-                    style: AppTextStyles.heading4.copyWith(
-                      decoration: TextDecoration.none,
+
+              SizedBox(height: 20.h),
+              Text(
+                '낼 수 있는 가장 높은 음을\n2초 이상 유지해주세요',
+                style: TextStyle(
+                  color: AppColors.grayscale1,
+                  fontSize: 20.sp,
+                  fontFamily: 'Pretendard Variable',
+                  fontWeight: FontWeight.w400,
+                  height: 1.4,
+                  decoration: TextDecoration.none,
                     ),
                     textAlign: TextAlign.center,
                   ),

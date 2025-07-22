@@ -8,6 +8,9 @@ class AudioRecorderController extends StateNotifier<bool> {
   final AudioStreamRecorder streamRecorder;
   final List<int> _pitchDiffs = [];
   final List<double> _rhythmDiffs = [];
+  bool get isPaused => streamRecorder.isPaused; // flutter sound의 recorder 상태 변수들
+  bool get isRecording => streamRecorder.isRecording;
+  bool get isStopped => streamRecorder.isStopped;
 
   AudioRecorderController({required this.streamRecorder}) : super(false);
 
@@ -65,21 +68,17 @@ class AudioRecorderController extends StateNotifier<bool> {
       debugPrint("pitch 정확도: pitchDiffs is empty");
       return 0;
     }
-    debugPrint("pitch 정확도: pitchDiffs is not empty");
-    // int type으로 계산
     return calculateTotalPitchAccuracy(_pitchDiffs, maxAllowedDiff: 8);
   }
 
   /// 음정 정확도 리스트(int) -> 100점 만점 정확도 환산
-  /// maxAllowedDiff: 최대로 인정하는 음정 차이 (미디 기준)
-  /// maxAllowedDiff 이하로 차이가 나더라도 음정이 정확히 일치하지 않으면 점수를 깎음
+  /// maxAllowedDiff: 최대로 인정하는 음정 차이. 이 이상 차이나면 0점.
   int calculateTotalPitchAccuracy(List<int> pitchDiffs, {int maxAllowedDiff = 8}) {
     int tolerance = 1; // 이정도 차이까지는 감점 x
     if (pitchDiffs.isEmpty) return 0;
 
     final accuracies =
         pitchDiffs.map((diff) {
-          // debugPrint("음정 정확도: 차이값: $diff");
           if (diff <= tolerance) {
             return 1;
           }
@@ -98,6 +97,7 @@ class AudioRecorderController extends StateNotifier<bool> {
     final diff = (actualTime - expectedTime).abs();
     _rhythmDiffs.add(diff);
 
+    /*
     // 🎯 박자 정확도 상세 로그
     String accuracyLevel;
     if (diff <= 0.1) {
@@ -116,6 +116,7 @@ class AudioRecorderController extends StateNotifier<bool> {
     debugPrint("   📊 차이: ${diff.toStringAsFixed(3)}초");
     debugPrint("   📈 누적 데이터: ${_rhythmDiffs.length}개");
     debugPrint("   ════════════════════════════════");
+     */
   }
 
   // 박자 정확도 계산 (100점 만점)
