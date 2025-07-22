@@ -11,6 +11,7 @@ import 'package:sync2sing/features/training_common/data/services/pitch_to_note_c
 import 'package:sync2sing/shared/providers/audio_pitch_no_save_provider.dart';
 import 'package:sync2sing/shared/providers/vocal_pitch_metrics_provider.dart';
 import 'package:sync2sing/shared/providers/voice_type_profile_provider.dart';
+import 'package:sync2sing/config/theme/app_text_styles.dart';
 
 import '../../../../../shared/utils/mic_permission_helper.dart';
 import '../../data/service/determine_voice_type.dart';
@@ -113,32 +114,23 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
     final double sweepAngle = endAngle - startAngle;
     final int noteCount = _notes.length;
 
-    // 음성 분석
     final isRecording = ref.watch(audioPitchNoSaveProvider);
-    ref
-        .watch(autoStartPitchStreamProvider)
-        .when(
-          data: (pitchData) {
-            // 여기에서 pitchData.pitch 를 사용해서 화면 또는 로직 처리
-
-            // controller에서 pitched == false 이면 가짜 데이터: pitch=0, probabily=0 인 데이터를 줌 -> 거르기
-            if (pitchData.pitch > 30) {
-              if ((_maxPitch == null || pitchData.pitch > _maxPitch!)) {
-                debugPrint("음정 탐지: maxPitch ${pitchData.pitch}");
-
-                setState(() => _maxPitch = pitchData.pitch);
-              }
-
-              setState(() {
-                _isVoiceDetected = true; // 음정이 탐지됨 --> _isButtonActive = true
-              });
-
-              return SizedBox();
-            }
-          },
-          loading: () => CircularProgressIndicator(),
-          error: (e, _) => Text('Error: $e'),
-        );
+    ref.watch(autoStartPitchStreamProvider).when(
+      data: (pitchData) {
+        if (pitchData.pitch > 30) {
+          if ((_maxPitch == null || pitchData.pitch > _maxPitch!)) {
+            debugPrint("음정 탐지: maxPitch ${pitchData.pitch}");
+            setState(() => _maxPitch = pitchData.pitch);
+          }
+          setState(() {
+            _isVoiceDetected = true;
+          });
+          return SizedBox();
+        }
+      },
+      loading: () => CircularProgressIndicator(),
+      error: (e, _) => Text('Error: $e'),
+    );
 
     return CupertinoPageScaffold(
       backgroundColor: AppColors.grayscale8,
@@ -146,135 +138,144 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
             children: [
-              SizedBox(height: 32.h),
-              Center(child: OnboardingPageIndicator(currentPage: 3)), // 4번째 페이지
-              SizedBox(height: 60.h),
-              Center(
-                child: SizedBox(
-                  width: stackSize,
-                  height: stackSize,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // 도넛 외부 원
-                      Container(
-                        width: donutSize,
-                        height: donutSize,
-                        decoration: BoxDecoration(
-                          color: AppColors.grayscale7,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      // 도넛 내부 원
-                      Container(
-                        width: innerDonutSize,
-                        height: innerDonutSize,
-                        decoration: BoxDecoration(
-                          color: AppColors.grayscale8,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      // 계이름
-                      ...List.generate(noteCount, (i) {
-                        final angle = startAngle + (sweepAngle / (noteCount - 1)) * i;
-                        final x = center + noteRadius * cos(angle) - 15.w;
-                        final y = center + noteRadius * sin(angle) - 15.h;
-                        return Positioned(
-                          left: x,
-                          top: y,
-                          child: SizedBox(
-                            width: 30.w,
-                            height: 30.h,
-                            child: Center(
-                              child: Text(
-                                _notes[i],
-                                style: TextStyle(
-                                  color: AppColors.grayscale4,
-                                  fontSize: 17.sp,
-                                  fontFamily: 'Pretendard Variable',
-                                  fontWeight: FontWeight.w600,
-                                  height: 1.4,
-                                  decoration: TextDecoration.none,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                      // 음정 감지 동그라미 (C2 위치, 도넛 위에 배치)
-                      Positioned(
-                        left: center + (donutRadius * 0.95) * cos(indicatorAngle) - indicatorRadius,
-                        top: center + (donutRadius * 0.95) * sin(indicatorAngle) - indicatorRadius,
-                        child: Container(
-                          width: 20.w,
-                          height: 20.w,
+
+              // ① 상단: 페이지네이션
+              Column(
+                children: [
+                  SizedBox(height: 32.h),
+                  Center(child: OnboardingPageIndicator(currentPage: 3)),
+                  SizedBox(height: 4.h),
+                ],
+              ),
+
+              // ② 중간: 도넛 그래픽 + 텍스트
+              Column(
+                children: [
+                  SizedBox(
+                    width: stackSize,
+                    height: stackSize,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        //도넛 외부 원
+                        Container(
+                          width: donutSize,
+                          height: donutSize,
                           decoration: BoxDecoration(
-                            color: AppColors.grayscale5,
+                            color: AppColors.grayscale7,
                             shape: BoxShape.circle,
                           ),
                         ),
+                        // 도넛 내부 원
+                        Container(
+                          width: innerDonutSize,
+                          height: innerDonutSize,
+                          decoration: BoxDecoration(
+                            color: AppColors.grayscale8,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        // 계이름
+                        ...List.generate(noteCount, (i) {
+                          final angle = startAngle + (sweepAngle / (noteCount - 1)) * i;
+                          final x = center + noteRadius * cos(angle) - 15.w;
+                          final y = center + noteRadius * sin(angle) - 15.h;
+                          return Positioned(
+                            left: x,
+                            top: y,
+                            child: SizedBox(
+                              width: 30.w,
+                              height: 30.h,
+                              child: Center(
+                                child: Text(
+                                  _notes[i],
+                                  style: TextStyle(
+                                    color: AppColors.grayscale4,
+                                    fontSize: 17.sp,
+                                    fontFamily: 'Pretendard Variable',
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.4,
+                                    decoration: TextDecoration.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                        // 음정 감지 동그라미 (C2 위치, 도넛 위에 배치)
+                        Positioned(
+                          left: center + (donutRadius * 0.95) * cos(indicatorAngle) - indicatorRadius,
+                          top: center + (donutRadius * 0.95) * sin(indicatorAngle) - indicatorRadius,
+                          child: Container(
+                            width: 20.w,
+                            height: 20.w,
+                            decoration: BoxDecoration(
+                              color: AppColors.grayscale5,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                        // 마이크 아이콘
+                        Center(
+                          child: Image.asset(
+                            _isMicOn ? 'assets/images/mic-on.png' : 'assets/images/mic-off.png',
+                            width: 84.w,
+                            height: 84.w,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  Text(
+                    '낼 수 있는 가장 높은 음을\n3초 이상 유지해주세요',
+                    style: AppTextStyles.heading4.copyWith(
+                      decoration: TextDecoration.none,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+
+              // ③ 하단: 버튼
+              Column(
+                children: [
+                  CupertinoButton(
+                    onPressed: isRecording ? _navigateToOnboardingRecordingGuidePage : _startPitchDetect,
+                    padding: EdgeInsets.zero,
+                    child: Container(
+                      width: 327.w,
+                      height: 50.h,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: _isButtonActive ? AppColors.primaryPink : AppColors.primaryPinkDisabled,
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
-                      // 마이크 아이콘
-                      Center(
-                        child: Image.asset(
-                          _isMicOn ? 'assets/images/mic-on.png' : 'assets/images/mic-off.png',
-                          width: 84.w,
-                          height: 84.w,
-                          fit: BoxFit.contain,
+                      child: Text(
+                        isRecording ? '확인' : '시작',
+                        style: TextStyle(
+                          color: AppColors.grayscale8,
+                          fontSize: 17.sp,
+                          fontFamily: 'Pretendard Variable',
+                          fontWeight: _isButtonActive ? FontWeight.w600 : FontWeight.w400,
+                          height: 1.4,
+                          decoration: TextDecoration.none,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 20.h),
-              Text(
-                '낼 수 있는 가장 높은 음을\n3초 이상 유지해주세요',
-                style: TextStyle(
-                  color: AppColors.grayscale1,
-                  fontSize: 20.sp,
-                  fontFamily: 'Pretendard Variable',
-                  fontWeight: FontWeight.w400,
-                  height: 1.4,
-                  decoration: TextDecoration.none,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 60.h),
-              Center(
-                child: CupertinoButton(
-                  onPressed:
-                      isRecording ? _navigateToOnboardingRecordingGuidePage : _startPitchDetect,
-                  padding: EdgeInsets.zero,
-                  child: Container(
-                    width: 327.w,
-                    height: 50.h,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color:
-                          _isButtonActive ? AppColors.primaryPink : AppColors.primaryPinkDisabled,
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    child: Text(
-                      isRecording ? '확인' : '시작',
-                      style: TextStyle(
-                        color: AppColors.grayscale8,
-                        fontSize: 17.sp,
-                        fontFamily: 'Pretendard Variable',
-                        fontWeight: _isButtonActive ? FontWeight.w600 : FontWeight.w400,
-                        height: 1.4,
-                        decoration: TextDecoration.none,
-                      ),
                     ),
                   ),
-                ),
+                  SizedBox(height: 50.h),
+                ],
               ),
-              SizedBox(height: 50.h),
             ],
           ),
         ),
       ),
     );
   }
+
 }
