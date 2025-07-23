@@ -1,9 +1,9 @@
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
-import 'package:sync2sing/features/auth/presentation/pages/login_page.dart';
-import 'package:sync2sing/features/auth/presentation/pages/signup_complete_page.dart';
-import 'package:sync2sing/features/auth/presentation/pages/signup_id_password_page.dart';
-import 'package:sync2sing/features/auth/presentation/pages/signup_profile_info_page.dart';
+import 'package:sync2sing/features/auth/views/login_page.dart';
+import 'package:sync2sing/features/auth/views/signup_complete_page.dart';
+import 'package:sync2sing/features/auth/views/signup_id_password_page.dart';
+import 'package:sync2sing/features/auth/views/signup_profile_info_page.dart';
 
 final List<GoRoute> authRoutes = [
   GoRoute(
