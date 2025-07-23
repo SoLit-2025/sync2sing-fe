@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_pitch_metrics_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/voice_type_profile_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/tools/mic_permission_helper.dart';
@@ -217,9 +218,10 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with Widget
           error: (e, _) => Text('Error: $e'),
         );
 
-    return CupertinoPageScaffold(
+    return Scaffold(
+      // 글씨 깨져서 CupertinoPageScaffold > Scaffold 변경
       backgroundColor: AppColors.grayscale8,
-      child: SafeArea(
+      body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
@@ -320,14 +322,7 @@ class _MaximumPitchPageState extends ConsumerState<MaximumPitchPage> with Widget
                   SizedBox(height: 20.h),
                   Text(
                     '낼 수 있는 가장 높은 음을\n2초 이상 유지해주세요',
-                    style: TextStyle(
-                      color: AppColors.grayscale1,
-                      fontSize: 20.sp,
-                      fontFamily: 'Pretendard Variable',
-                      fontWeight: FontWeight.w400,
-                      height: 1.4,
-                      decoration: TextDecoration.none,
-                    ),
+                    style: AppTextStyles.heading4.copyWith(decoration: TextDecoration.none),
                     textAlign: TextAlign.center,
                   ),
                 ],

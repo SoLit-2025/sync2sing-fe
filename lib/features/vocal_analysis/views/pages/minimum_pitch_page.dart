@@ -204,9 +204,10 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> with Widget
           error: (e, _) => Text('Error: $e'),
         );
 
-    return CupertinoPageScaffold(
+    return Scaffold(
+      // 글씨 깨져서 CupertinoPageScaffold > Scaffold 변경
       backgroundColor: AppColors.grayscale8,
-      child: SafeArea(
+      body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
@@ -306,14 +307,7 @@ class _MinimumPitchPageState extends ConsumerState<MinimumPitchPage> with Widget
                   SizedBox(height: 20.h),
                   Text(
                     '낼 수 있는 가장 낮은 음을\n2초 이상 유지해주세요',
-                    style: TextStyle(
-                      color: AppColors.grayscale1,
-                      fontSize: 20.sp,
-                      fontFamily: 'Pretendard Variable',
-                      fontWeight: FontWeight.w400,
-                      height: 1.4,
-                      decoration: TextDecoration.none,
-                    ),
+                    style: AppTextStyles.heading4.copyWith(decoration: TextDecoration.none),
                     textAlign: TextAlign.center,
                   ),
                 ],
