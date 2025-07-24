@@ -1,13 +1,13 @@
 import 'package:go_router/go_router.dart';
-import 'package:sync2sing/features/training_common/presentation/pages/vocal_analysis_loading_handler.dart';
-import '../../features/onboarding/presentation/pages/audio_environment_check_page.dart';
-import '../../features/onboarding/presentation/pages/onboarding_question_page.dart';
-import '../../features/onboarding/presentation/pages/user_birth_info_input_page.dart';
-import '../../features/onboarding/voice_analysis/presentation/pages/voice_sample_page.dart';
-import '../../features/onboarding/voice_analysis/presentation/pages/maximum_pitch_page.dart';
-import '../../features/onboarding/voice_analysis/presentation/pages/minimum_pitch_page.dart';
-import '../../features/training_common/presentation/pages/onboarding_recording_guide_page.dart';
-import '../../features/training_common/presentation/pages/onboarding_recording_song_page.dart';
+import 'package:sync2sing/features/report/views/vocal_analysis_loading_handler.dart';
+import 'package:sync2sing/features/vocal_analysis/views/pages/minimum_pitch_page.dart';
+import 'package:sync2sing/features/vocal_analysis/views/pages/onboarding_recording_song_page.dart';
+import 'package:sync2sing/features/vocal_analysis/views/pages/voice_sample_page.dart';
+import '../../features/onboarding/views/audio_environment_check_page.dart';
+import '../../features/onboarding/views/onboarding_question_page.dart';
+import '../../features/onboarding/views/user_birth_info_input_page.dart';
+import '../../features/vocal_analysis/views/pages/maximum_pitch_page.dart';
+import '../../features/onboarding/views/onboarding_recording_guide_page.dart';
 import 'route_names.dart';
 
 final List<GoRoute> onboardingRoutes = [

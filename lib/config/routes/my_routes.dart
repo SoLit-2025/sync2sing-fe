@@ -1,13 +1,19 @@
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
-import 'package:sync2sing/features/my/presentation/pages/my_page.dart';
-import 'package:sync2sing/features/my/presentation/pages/vocal_analysis_report_page.dart';
+import 'package:sync2sing/features/my/views/my_page.dart';
+import 'package:sync2sing/features/my/views/settings_page.dart';
+import 'package:sync2sing/features/report/views/vocal_analysis_report_page.dart';
 
 final List<GoRoute> myRoutes = [
   GoRoute(
     path: AppRoutePaths.my,
     name: AppRouteNames.my,
     builder: (context, state) => const MyPage(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.settings,
+    name: AppRouteNames.settings,
+    builder: (context, state) => const SettingsPage(),
   ),
   GoRoute(
     path: AppRoutePaths.vocalAnalysisReport,
