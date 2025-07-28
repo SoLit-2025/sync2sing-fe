@@ -190,7 +190,7 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
                         width: 326.w,
                         height: 15.h,
                         child: id.isEmpty
-                            ? null
+                            ? const SizedBox.shrink()
                             : Text(
                           idMessage ?? "",
                           style: AppTextStyles.body6.copyWith(
@@ -245,7 +245,7 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
                         width: 326.w,
                         height: 15.h,
                         child: pw.isEmpty || pwErrorType == 'success'
-                            ? null
+                            ? const SizedBox.shrink()
                             : Text(
                           pwMessage ?? "",
                           style: AppTextStyles.body6.copyWith(
@@ -278,9 +278,9 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
                       padding: EdgeInsets.zero,
                     ),
                     child: Text(
-                        '확인',
-                        textAlign: TextAlign.center,
-                        style: idValid && pwValid
+                      '확인',
+                      textAlign: TextAlign.center,
+                      style: idValid && pwValid
                           ? AppTextStyles.body1White
                           : AppTextStyles.body1.copyWith(color: AppColors.grayscale4),
                     ),
