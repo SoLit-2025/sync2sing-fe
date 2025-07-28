@@ -27,6 +27,12 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
       idMessage = null;
       idErrorType = null;
       if (id.isEmpty) return;
+
+      if(id.contains(' ')){
+        idMessage = "아이디에 공백은 포함할 수 없습니다";
+        idErrorType = 'space_error';
+        return;
+      }
       final regExp = RegExp(r'^[a-z0-9]+$');
       if (id.length < 6) {
         idMessage = "아이디는 영문 6글자 이상이어야 합니다";
@@ -52,6 +58,12 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
       pwMessage = null;
       pwErrorType = null;
       if (pw.isEmpty) return;
+
+      if (pw.contains(' ')) {
+        pwMessage = "비밀번호에 공백은 포함할 수 없습니다";
+        pwErrorType = 'space_error';
+        return;
+      }
 
       final hasAlphabet = RegExp(r'[a-zA-Z]').hasMatch(pw);
       final hasDigit = RegExp(r'\d').hasMatch(pw);
