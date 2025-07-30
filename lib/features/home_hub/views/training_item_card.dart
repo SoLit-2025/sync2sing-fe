@@ -1,0 +1,113 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:sync2sing/features/home_hub/views/solo_training_home_page.dart';
+
+class TrainingItemCard extends StatelessWidget {
+  final TrainingItem trainingItem;
+  final bool showButton;
+  final bool isMicReq; // 마이크가 필요한지 여부, 기본값: true
+  const TrainingItemCard({
+    super.key,
+    required this.trainingItem,
+    required this.showButton,
+    this.isMicReq = true,
+  });
+
+  Widget _trainingCardTop() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          trainingItem.category,
+          style: AppTextStyles.body5Bold.copyWith(color: AppColors.primaryPink),
+        ),
+
+        if (isMicReq)
+          Row(
+            children: [
+              Text("마이크 사용 필요 ", style: AppTextStyles.body6.copyWith(color: AppColors.grayscale4)),
+              Image.asset(
+                'assets/images/training_card_mic_icon.png',
+                width: 15.r,
+                height: 16.r,
+                color: AppColors.grayscale4,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          height: showButton ? 150.h : 95.h, // 사유
+          width: double.infinity,
+          padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 20.h),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: AppColors.grayscale8,
+          ),
+          child: Column(
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _trainingCardTop(),
+
+              SizedBox(height: 3.h),
+              RichText(
+                text: TextSpan(
+                  style: AppTextStyles.body5,
+                  children: [
+                    TextSpan(
+                      text: "${trainingItem.title}\n",
+                      style: AppTextStyles.body1Bold.copyWith(fontSize: 18.sp),
+                    ),
+                    TextSpan(
+                      text: trainingItem.description,
+                      style: TextStyle(color: AppColors.grayscale3),
+                    ),
+                  ],
+                ),
+              ),
+              if (showButton)
+                Container(
+                  alignment: Alignment.center,
+                  width: double.infinity,
+                  height: 40.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryPink,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  margin: EdgeInsets.only(top: 12.h),
+                  child: CupertinoButton(
+                    padding: EdgeInsets.symmetric(vertical: 8.h),
+                    onPressed: () {},
+                    child: Text('연습하러 가기', style: AppTextStyles.body2BoldWhite),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (trainingItem.progress >= 100)
+          Opacity(
+            opacity: 1.0,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/training_card_complete_cover.png', // 덮어씌울 이미지
+                width: double.infinity,
+                height: 95.h,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
