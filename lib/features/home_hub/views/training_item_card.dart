@@ -57,7 +57,6 @@ class TrainingItemCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _trainingCardTop(),
-
               SizedBox(height: 3.h),
               RichText(
                 text: TextSpan(
@@ -94,16 +93,13 @@ class TrainingItemCard extends StatelessWidget {
           ),
         ),
         if (trainingItem.progress >= 100)
-          Opacity(
-            opacity: 1.0,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8.r),
-              child: Image.asset(
-                'assets/images/training_card_complete_cover.png', // 덮어씌울 이미지
-                width: double.infinity,
-                height: 95.h,
-                fit: BoxFit.cover,
-              ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8.r),
+            child: Image.asset(
+              'assets/images/training_card_complete_cover.png', // 덮어씌울 이미지
+              width: double.infinity,
+              height: 95.h,
+              fit: BoxFit.cover,
             ),
           ),
       ],

@@ -527,10 +527,10 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
   void initState() {
     super.initState();
     trainingSessionStatus = getTrainingStatusFromJson(SoloTrainingHomePage.afterTrainingMockJson);
-    debugPrint("status:  $trainingSessionStatus");
     switch (trainingSessionStatus) {
       case TrainingSessionStatus.beforeSession:
       case TrainingSessionStatus.beforeTraining:
+        // 아직 트레이닝 시작 전 --> 진행 0.
         totalProgress = 0;
         break;
       case TrainingSessionStatus.afterTraining:
@@ -597,7 +597,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                           category: "트레이닝 준비",
                           title: "STEP1. 연습곡 선택",
                           desc: "연습곡과 연습기간을 선택하면 맞춤형 훈련을 추천받을 수 있어요",
-                          buttonText: "솔로 트레이닝 선택하기",
+                          buttonText: "솔로 트레이닝 시작하기",
                           isMicReq: false,
                           onPressed: () {},
                         ),
