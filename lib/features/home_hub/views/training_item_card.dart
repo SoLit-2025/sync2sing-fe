@@ -46,15 +46,14 @@ class TrainingItemCard extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          height: showButton ? 150.h : 95.h, // 사유
+          height: showButton ? 150.h : 95.h,
           width: double.infinity,
-          padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 20.h),
+          padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 5.h),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
             color: AppColors.grayscale8,
           ),
           child: Column(
-            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _trainingCardTop(),
@@ -82,11 +81,11 @@ class TrainingItemCard extends StatelessWidget {
                   height: 40.h,
                   decoration: BoxDecoration(
                     color: AppColors.primaryPink,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(30.r),
                   ),
                   margin: EdgeInsets.only(top: 12.h),
                   child: CupertinoButton(
-                    padding: EdgeInsets.symmetric(vertical: 8.h),
+                    padding: EdgeInsets.symmetric(vertical: 4.h),
                     onPressed: () {},
                     child: Text('연습하러 가기', style: AppTextStyles.body2BoldWhite),
                   ),
@@ -98,7 +97,7 @@ class TrainingItemCard extends StatelessWidget {
           Opacity(
             opacity: 1.0,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
               child: Image.asset(
                 'assets/images/training_card_complete_cover.png', // 덮어씌울 이미지
                 width: double.infinity,

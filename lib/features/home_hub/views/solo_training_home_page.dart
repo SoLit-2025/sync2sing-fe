@@ -68,27 +68,21 @@ TrainingSessionStatus getTrainingStatusFromJson(String jsonString) {
     final decodedJson = jsonDecode(jsonString);
 
     if (decodedJson is! Map<String, dynamic>) {
-      return TrainingSessionStatus.error; // JSON is not an object
+      return TrainingSessionStatus.error; // JSON이 객체가 아닐 때
     }
 
     final int? status = decodedJson['status'] as int?;
-    final String? message = decodedJson['message'] as String?;
 
     if (status == null) {
-      return TrainingSessionStatus.error; // 'status' field is missing or not a String
+      return TrainingSessionStatus.error; // 'status' 필드가 없거나 int type이 아니면
     }
 
-    if (status == 404) {
-      if (message == '해당 트레이닝 세션을 찾을 수 없습니다.') {
-        return TrainingSessionStatus.beforeSession;
-      } else {
-        // 404 but 다른 메시지
-        return TrainingSessionStatus.error;
-      }
-    } else if (status == 200) {
+    if (status == 200) {
       final Map<String, dynamic>? data = decodedJson['data'] as Map<String, dynamic>?;
-      if (data == null) {
-        return TrainingSessionStatus.error;
+
+      // data가 빈 객체이면 -> beforeSession
+      if (data == null || data.isEmpty) {
+        return TrainingSessionStatus.beforeSession;
       }
 
       final String? dataStatus = data['status'] as String?;
@@ -97,13 +91,13 @@ TrainingSessionStatus getTrainingStatusFromJson(String jsonString) {
       }
       return TrainingStatusConverter.fromDataStatusString(dataStatus);
     } else {
-      // 200 or 404 코드가 아니면
+      // If status != 200
       return TrainingSessionStatus.error;
     }
   } on FormatException {
     return TrainingSessionStatus.error;
   } on TypeError {
-    // 'stauts'가 String이 아닐거나 'data'가 map 이 아닐 때 등 타입예외 발생 시
+    // 'status'가 String이 아니거나 'data'가 map이 아닐 때 등 타입예외 발생 시
     return TrainingSessionStatus.error;
   } catch (e) {
     return TrainingSessionStatus.error;
@@ -160,8 +154,8 @@ class SoloTrainingHomePage extends StatefulWidget {
   const SoloTrainingHomePage({super.key});
   static const noSessionMockJson = '''  
    {
-     "status": 404,
-     "message": "해당 트레이닝 세션을 찾을 수 없습니다.",
+     "status": 200,
+     "message": "솔로 트레이닝 세션 정보 조회에 성공했습니다.",
      "data": {}
     }
    '''; // case 1: 세션 생성 전 (beforeSession)
@@ -532,9 +526,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
   @override
   void initState() {
     super.initState();
-    trainingSessionStatus = getTrainingStatusFromJson(
-      SoloTrainingHomePage.totalProgressFullMockJson,
-    );
+    trainingSessionStatus = getTrainingStatusFromJson(SoloTrainingHomePage.afterTrainingMockJson);
     debugPrint("status:  $trainingSessionStatus");
     switch (trainingSessionStatus) {
       case TrainingSessionStatus.beforeSession:
@@ -543,7 +535,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
         break;
       case TrainingSessionStatus.afterTraining:
       case TrainingSessionStatus.trainingInProgress:
-        final jsonData = json.decode(SoloTrainingHomePage.totalProgressFullMockJson)['data'];
+        final jsonData = json.decode(SoloTrainingHomePage.afterTrainingMockJson)['data'];
         items = parseCurriculumItemsInOrderAndPostCompletedLast(jsonData['curriculum']);
         totalProgress = calculateTotalProgressFromItems(items);
         if (totalProgress >= 100) trainingSessionStatus = TrainingSessionStatus.afterTraining;
@@ -607,6 +599,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                           desc: "연습곡과 연습기간을 선택하면 맞춤형 훈련을 추천받을 수 있어요",
                           buttonText: "솔로 트레이닝 선택하기",
                           isMicReq: false,
+                          onPressed: () {},
                         ),
                         SizedBox(height: 17.h),
                         Align(
@@ -624,6 +617,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                           desc: "AI가 트레이닝 전후를 비교해 나만의 성장 리포트를 제공해요",
                           buttonText: "진단하러 가기",
                           isMicReq: true,
+                          onPressed: () {},
                         ),
                         SizedBox(height: 17.h),
                         Align(
@@ -642,6 +636,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                           desc: "AI가 트레이닝 전후를 비교해 나만의 성장 리포트를 제공해요",
                           buttonText: "진단하러 가기",
                           isMicReq: true,
+                          onPressed: () {},
                         ),
                         Container(
                           width: 16.w,
@@ -688,7 +683,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
           ),
           Container(
             width: double.infinity,
-            padding: EdgeInsets.only(top: 117.h, left: 32.w),
+            padding: EdgeInsets.only(left: 24.w, top: 95.h),
             child: Text(
               (trainingSessionStatus == TrainingSessionStatus.trainingInProgress ||
                       trainingSessionStatus == TrainingSessionStatus.afterTraining)
@@ -738,6 +733,7 @@ class SessionOptionCard extends StatelessWidget {
   final String desc;
   final String buttonText;
   final bool isMicReq; // 마이크가 필요한지 여부
+  final VoidCallback onPressed;
 
   const SessionOptionCard({
     super.key,
@@ -746,6 +742,7 @@ class SessionOptionCard extends StatelessWidget {
     required this.desc,
     required this.buttonText,
     required this.isMicReq,
+    required this.onPressed,
   });
 
   Widget _trainingCardTop() {
@@ -777,9 +774,9 @@ class SessionOptionCard extends StatelessWidget {
         Container(
           height: 150.h,
           width: double.infinity,
-          padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 20.h),
+          padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 5.h),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
             color: AppColors.grayscale8,
           ),
           child: Column(
@@ -806,11 +803,11 @@ class SessionOptionCard extends StatelessWidget {
                 height: 40.h,
                 decoration: BoxDecoration(
                   color: AppColors.primaryPink,
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(30.r),
                 ),
                 margin: EdgeInsets.only(top: 12.h),
                 child: CupertinoButton(
-                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  padding: EdgeInsets.symmetric(vertical: 4.h),
                   onPressed: () {},
                   child: Text(buttonText, style: AppTextStyles.body2BoldWhite),
                 ),
