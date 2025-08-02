@@ -1,11 +1,255 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
   @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool _isNotificationEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkNotificationPermission();
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    // todo: 알림 권한 확인 로직 추가
+  }
+
+  void _showLeaveDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          child: Padding(
+            padding: EdgeInsets.all(24.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  '모든 성장 기록이 함께 삭제돼요',
+                  style: AppTextStyles.heading4Bold.copyWith(
+                    color: AppColors.grayscale1,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 13.h),
+                Text(
+                  '탈퇴시 보컬 분석 리포트 기록을 영구적으로 삭제됩니다\n불편한 점이 있으시다면 언제든 의견을 들려주세요',
+                  style: AppTextStyles.body4.copyWith(color: AppColors.grayscale2, height: 1.5),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 27.h),
+                // 버튼 영역 위 가로 구분선
+                Divider(height: 1, thickness: 1, color: AppColors.grayscale5),
+                SizedBox(
+                  height: 48.h,
+                  child: Row(
+                    children: [
+                      // 1:1 문의하기
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            // todo: 1:1 문의 연결
+                          },
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(12.r)),
+                            ),
+                          ),
+                          child: Text(
+                            '1:1 문의하기',
+                            style: AppTextStyles.body1.copyWith(
+                              color: AppColors.primaryPink,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      // 중간 세로 구분선
+                      Container(width: 1, height: 48.h, color: AppColors.grayscale5),
+                      // 탈퇴하기
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            context.go(AppRoutePaths.login);
+                          },
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(bottomRight: Radius.circular(12.r)),
+                            ),
+                          ),
+                          child: Text(
+                            '탈퇴하기',
+                            style: AppTextStyles.body1.copyWith(
+                              color: AppColors.grayscale1,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _divider() =>
+      Divider(height: 1, thickness: 1, color: AppColors.grayscale6, indent: 24.w, endIndent: 24.w);
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text("SettingsPage", style: AppTextStyles.display1)));
+    return Scaffold(
+      backgroundColor: AppColors.grayscale8,
+      appBar: AppBar(
+        backgroundColor: AppColors.grayscale8,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () => context.pop(),
+          icon: Image.asset(
+            'assets/images/left_arrow_icon.png',
+            width: 14.w,
+            height: 24.h,
+            errorBuilder:
+                (context, error, stackTrace) => Icon(Icons.arrow_back, color: AppColors.grayscale2),
+          ),
+        ),
+        title: Text(
+          '설정',
+          style: AppTextStyles.heading3Bold.copyWith(
+            color: AppColors.grayscale1,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(height: 28.h),
+          _buildSettingItem(
+            icon: 'assets/images/alarm_icon.png',
+            iconWidth: 21.w,
+            iconHeight: 25.h,
+            title: '알림 설정',
+            titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+            trailing: Align(
+              alignment: Alignment.centerRight,
+              child: CupertinoSwitch(
+                value: _isNotificationEnabled,
+                onChanged: (value) {
+                  setState(() => _isNotificationEnabled = value);
+                },
+                activeColor: AppColors.primaryPink,
+                trackColor: AppColors.grayscale4,
+              ),
+            ),
+          ),
+          _divider(),
+          _buildSettingItem(
+            icon: 'assets/images/logout_icon.png',
+            iconWidth: 22.5.w,
+            iconHeight: 22.5.h,
+            title: '로그아웃',
+            titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+            onTap: () => context.go(AppRoutePaths.login),
+          ),
+          _divider(),
+          _buildSettingItem(
+            icon: 'assets/images/leave_icon.png',
+            iconWidth: 22.w,
+            iconHeight: 22.h,
+            title: '회원탈퇴',
+            titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+            onTap: _showLeaveDialog,
+          ),
+          _divider(),
+          _buildSettingItem(
+            icon: 'assets/images/cherry.png',
+            iconWidth: 24.w,
+            iconHeight: 24.h,
+            title: '1:1 문의',
+            titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+            onTap: () {
+              // todo: 1:1 문의 연결
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingItem({
+    required String icon,
+    required double iconWidth,
+    required double iconHeight,
+    required String title,
+    required TextStyle titleTextStyle,
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
+    return SizedBox(
+      height: 56.h,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: iconWidth,
+                height: iconHeight,
+                child: Center(
+                  child: Image.asset(
+                    icon,
+                    width: iconWidth,
+                    height: iconHeight,
+                    fit: BoxFit.contain,
+                    errorBuilder:
+                        (context, error, stackTrace) =>
+                            Icon(Icons.error, color: Colors.red, size: iconHeight),
+                  ),
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Text(
+                  title,
+                  style: titleTextStyle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (trailing != null) trailing,
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
