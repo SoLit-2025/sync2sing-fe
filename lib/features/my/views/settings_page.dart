@@ -53,7 +53,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 27.h),
-                // 버튼 영역 위 가로 구분선
+                // 버튼 영역 위 가로 구분선 (회색)
                 Divider(height: 1, thickness: 1, color: AppColors.grayscale5),
                 SizedBox(
                   height: 48.h,
@@ -147,58 +147,94 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(height: 28.h),
-          _buildSettingItem(
-            icon: 'assets/images/alarm_icon.png',
-            iconWidth: 21.w,
-            iconHeight: 25.h,
-            title: '알림 설정',
-            titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
-            trailing: Align(
-              alignment: Alignment.centerRight,
-              child: CupertinoSwitch(
-                value: _isNotificationEnabled,
-                onChanged: (value) {
-                  setState(() => _isNotificationEnabled = value);
-                },
-                activeColor: AppColors.primaryPink,
-                trackColor: AppColors.grayscale4,
+      body: SingleChildScrollView(
+        padding: EdgeInsets.only(bottom: 24.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(height: 28.h),
+            _buildSettingItem(
+              icon: 'assets/images/alarm_icon.png',
+              iconWidth: 21.w,
+              iconHeight: 25.h,
+              title: '알림 설정',
+              titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+              trailing: Align(
+                alignment: Alignment.centerRight,
+                child: CupertinoSwitch(
+                  value: _isNotificationEnabled,
+                  onChanged: (value) {
+                    setState(() => _isNotificationEnabled = value);
+                  },
+                  activeColor: AppColors.primaryPink,
+                  trackColor: AppColors.grayscale4,
+                ),
               ),
             ),
-          ),
-          _divider(),
-          _buildSettingItem(
-            icon: 'assets/images/logout_icon.png',
-            iconWidth: 22.5.w,
-            iconHeight: 22.5.h,
-            title: '로그아웃',
-            titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
-            onTap: () => context.go(AppRoutePaths.login),
-          ),
-          _divider(),
-          _buildSettingItem(
-            icon: 'assets/images/leave_icon.png',
-            iconWidth: 22.w,
-            iconHeight: 22.h,
-            title: '회원탈퇴',
-            titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
-            onTap: _showLeaveDialog,
-          ),
-          _divider(),
-          _buildSettingItem(
-            icon: 'assets/images/cherry.png',
-            iconWidth: 24.w,
-            iconHeight: 24.h,
-            title: '1:1 문의',
-            titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
-            onTap: () {
-              // todo: 1:1 문의 연결
-            },
-          ),
-        ],
+            _divider(),
+            _buildSettingItem(
+              icon: 'assets/images/logout_icon.png',
+              iconWidth: 22.5.w,
+              iconHeight: 22.5.h,
+              title: '로그아웃',
+              titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+              onTap: () => context.go(AppRoutePaths.login),
+            ),
+            _divider(),
+            _buildSettingItem(
+              icon: 'assets/images/leave_icon.png',
+              iconWidth: 22.w,
+              iconHeight: 22.h,
+              title: '회원탈퇴',
+              titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+              onTap: _showLeaveDialog,
+            ),
+            _divider(),
+            _buildSettingItem(
+              icon: 'assets/images/cherry.png',
+              iconWidth: 24.w,
+              iconHeight: 24.h,
+              title: '1:1 문의',
+              titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+              onTap: () {
+                // todo: 1:1 문의 연결
+              },
+            ),
+
+            // 라이선스 영역
+            SizedBox(height: 240.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'flutter_sound',
+                    style: AppTextStyles.heading4Bold.copyWith(color: AppColors.grayscale1),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'License: Mozilla Public License, Version 2.0 (MPL 2.0)',
+                    style: AppTextStyles.body3.copyWith(color: AppColors.grayscale2),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Copyright © 2025 Canardoux',
+                    style: AppTextStyles.body3.copyWith(color: AppColors.grayscale2),
+                  ),
+                  SizedBox(height: 12.h),
+                  Text(
+                    '원본 소스: https://github.com/canardoux/flutter_sound\n\n'
+                    '본 앱에서는 이 소스를 수정하지 않고 사용했습니다.\n\n'
+                    'MPL 2.0 전문: https://mozilla.org/MPL/2.0/',
+                    style: AppTextStyles.body4.copyWith(color: AppColors.grayscale2, height: 1.5),
+                  ),
+                  SizedBox(height: 24.h),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
