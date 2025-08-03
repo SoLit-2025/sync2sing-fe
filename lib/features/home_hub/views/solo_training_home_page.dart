@@ -174,6 +174,7 @@ class SoloTrainingHomePage extends StatefulWidget {
      "status": 200,
      "message": "솔로 트레이닝 세션 정보 조회에 성공했습니다.",
   "data": {
+    "session_id": 4,
     "status": "AFTER_TRAINING",   
     "start_date": "2025-04-01",
     "end_date": "2025-04-07",
@@ -285,6 +286,7 @@ class SoloTrainingHomePage extends StatefulWidget {
   "status": 200,
   "message": "솔로 트레이닝 세션 정보 조회에 성공했습니다.",
   "data": {
+    "session_id": 4,
     "status": "TRAINING_IN_PROGRESS",   
     "start_date": "2025-04-01",
     "end_date": "2025-04-07",
@@ -396,7 +398,8 @@ class SoloTrainingHomePage extends StatefulWidget {
   "status": 200,
   "message": "솔로 트레이닝 세션 정보 조회에 성공했습니다.",
   "data": {
-    "status": "TRAINING_IN_PROGRESS",   
+   "session_id": 4,
+   "status": "TRAINING_IN_PROGRESS",   
     "start_date": "2025-04-01",
     "end_date": "2025-04-07",
     "training_days": 7,
@@ -511,6 +514,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
   final String nickname = "노래하는 해파리";
   late final int totalProgress;
   late TrainingSessionStatus trainingSessionStatus;
+  late final int sessionId;
   late int selectedIdx = // 버튼이 보이는 위젯 인덱스 == 클릭한 위젯의 인덱스
       (trainingSessionStatus == TrainingSessionStatus.trainingInProgress)
           ? 0 // 트레이닝 진행 중일 때: 첫 진입에는 0번 인덱스만 버튼 보임
@@ -536,6 +540,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
       case TrainingSessionStatus.afterTraining:
       case TrainingSessionStatus.trainingInProgress:
         final jsonData = json.decode(SoloTrainingHomePage.afterTrainingMockJson)['data'];
+        sessionId = jsonData['session_id'];
         items = parseCurriculumItemsInOrderAndPostCompletedLast(jsonData['curriculum']);
         totalProgress = calculateTotalProgressFromItems(items);
         if (totalProgress >= 100) trainingSessionStatus = TrainingSessionStatus.afterTraining;
@@ -719,7 +724,11 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () => onCardTap(index),
-              child: TrainingItemCard(trainingItem: items[index], showButton: selectedIdx == index),
+              child: TrainingItemCard(
+                trainingItem: items[index],
+                sessionId: sessionId,
+                showButton: selectedIdx == index,
+              ),
             ); //
           },
         );

@@ -6,11 +6,13 @@ import 'package:sync2sing/features/home_hub/views/solo_training_home_page.dart';
 
 class TrainingItemCard extends StatelessWidget {
   final TrainingItem trainingItem;
+  final int sessionId;
   final bool showButton;
   final bool isMicReq; // 마이크가 필요한지 여부, 기본값: true
   const TrainingItemCard({
     super.key,
     required this.trainingItem,
+    required this.sessionId,
     required this.showButton,
     this.isMicReq = true,
   });
@@ -43,6 +45,7 @@ class TrainingItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("card id: ${trainingItem.id} | sessionID: $sessionId");
     return Stack(
       children: [
         Container(
