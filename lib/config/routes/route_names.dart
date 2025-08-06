@@ -18,11 +18,18 @@ abstract class AppRouteNames {
 
   // 로그인 후 진입
   static const mainHome = 'main';
-  static const soloTrainingHome = 'soloTraining';
+  static const soloTrainingHome = 'soloTrainingHome';
   static const duetTrainingHome = 'duetTrainingHome';
   static const my = 'my';
   static const settings = 'settings';
   static const vocalAnalysisReport = 'vocalAnalysisReport';
+
+  // curriculum
+  static const songList = 'songList';
+  static const soloSongDetail = 'soloSongDetail';
+  static const soloExampleVideo = 'soloExampleVideo';
+  static const soloPreRecordingSong = 'soloPreRecordingSong';
+  static const trainingGenerationLoading = 'trainingGenerationLoading';
 }
 
 abstract class AppRoutePaths {
@@ -49,4 +56,11 @@ abstract class AppRoutePaths {
   static const my = '/my';
   static const settings = '/my/settings';
   static const vocalAnalysisReport = '/vocal_analysis_report';
+
+  // curriculum 라우트 주소 변경될 수도.
+  static const songList = '/songs';
+  static const soloSongDetail = '/songs/detail/solo';
+  static const soloExampleVideo = '/solo_training/example_video';
+  static const soloPreRecordingSong = '/solo_training/pre_recording_song';
+  static const trainingGenerationLoading = '/curriculum/trainingGenerationLoading';
 }
