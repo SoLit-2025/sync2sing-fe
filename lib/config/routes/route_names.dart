@@ -25,6 +25,7 @@ abstract class AppRouteNames {
   static const vocalAnalysisReport = 'vocalAnalysisReport';
 
   // curriculum
+  static const soloTrainingSetting = 'soloTrainingSetting';
   static const songList = 'songList';
   static const soloSongDetail = 'soloSongDetail';
   static const soloExampleVideo = 'soloExampleVideo';
@@ -58,6 +59,7 @@ abstract class AppRoutePaths {
   static const vocalAnalysisReport = '/vocal_analysis_report';
 
   // curriculum 라우트 주소 변경될 수도.
+  static const soloTrainingSetting = '/solo_training/setting';
   static const songList = '/songs';
   static const soloSongDetail = '/songs/detail/solo';
   static const soloExampleVideo = '/solo_training/example_video';
