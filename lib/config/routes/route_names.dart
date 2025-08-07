@@ -28,7 +28,7 @@ abstract class AppRouteNames {
   static const soloTrainingSetting = 'soloTrainingSetting';
   static const songList = 'songList';
   static const soloSongDetail = 'soloSongDetail';
-  static const soloExampleVideo = 'soloExampleVideo';
+  static const songExampleVideo = 'songExampleVideo';
   static const soloPreRecordingSong = 'soloPreRecordingSong';
   static const trainingGenerationLoading = 'trainingGenerationLoading';
 }
@@ -42,7 +42,7 @@ abstract class AppRoutePaths {
   static const maximumPitch = '/onboarding/max_pitch';
   static const onboardingRecordingGuide = '/onboarding/recording_guide';
   static const onboardingRecordingSong = '/onboarding/recording_song';
-  static const vocalAnalysisLoading = '/onboarding/analysis_loading';
+  static const vocalAnalysisLoading = '/vocal_analysis_report/loading';
 
   // auth
   static const signupIdPassword = '/auth/signup_id_password';
@@ -58,11 +58,11 @@ abstract class AppRoutePaths {
   static const settings = '/my/settings';
   static const vocalAnalysisReport = '/vocal_analysis_report';
 
-  // curriculum 라우트 주소 변경될 수도.
+  // curriculum 라우트 주소 변경 예정 (다음 스프린트를 위해 임시로 지음)
   static const soloTrainingSetting = '/solo_training/setting';
-  static const songList = '/songs';
+  static const songList = '/songs/:type'; // 예시. query or extra 사용해서 인자 넘기기.
   static const soloSongDetail = '/songs/detail/solo';
-  static const soloExampleVideo = '/solo_training/example_video';
+  static const songExampleVideo = '/curriculum/example_video';
   static const soloPreRecordingSong = '/solo_training/pre_recording_song';
   static const trainingGenerationLoading = '/curriculum/trainingGenerationLoading';
 }

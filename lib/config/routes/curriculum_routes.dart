@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
-import 'package:sync2sing/features/curriculum/views/solo_example_video_page.dart';
+import 'package:sync2sing/features/curriculum/views/song_example_video_page.dart';
 import 'package:sync2sing/features/curriculum/views/solo_pre_recording_song_page.dart';
 import 'package:sync2sing/features/curriculum/views/solo_song_detail_page.dart';
 import 'package:sync2sing/features/curriculum/views/solo_training_setting_page.dart';
@@ -16,7 +16,10 @@ final List<GoRoute> curriculumRoutes = [
   GoRoute(
     path: AppRoutePaths.songList,
     name: AppRouteNames.songList,
-    builder: (context, state) => const SongListPage(),
+    builder: (context, state) {
+      final type = state.pathParameters['type']!; // 예시. extra로 수정해도 ok.
+      return SongListPage(type: type);
+    },
   ),
   GoRoute(
     path: AppRoutePaths.soloSongDetail,
@@ -24,9 +27,9 @@ final List<GoRoute> curriculumRoutes = [
     builder: (context, state) => const SoloSongDetailPage(),
   ),
   GoRoute(
-    path: AppRoutePaths.soloExampleVideo,
-    name: AppRouteNames.soloExampleVideo,
-    builder: (context, state) => const SoloExampleVideoPage(),
+    path: AppRoutePaths.songExampleVideo,
+    name: AppRouteNames.songExampleVideo,
+    builder: (context, state) => const SongExampleVideoPage(),
   ),
   GoRoute(
     path: AppRoutePaths.soloPreRecordingSong,
