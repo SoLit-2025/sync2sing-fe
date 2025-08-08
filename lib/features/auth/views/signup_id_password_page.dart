@@ -37,7 +37,7 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
       if (id.length < 6) {
         idMessage = "아이디는 영문 6글자 이상이어야 합니다";
         idErrorType = 'length_short';
-      } else if (id.length > 15) {
+      } else if (id.length >= 15) {
         idMessage = "아이디는 영문 15글자 미만이어야 합니다";
         idErrorType = 'length_long';
       } else if (!regExp.hasMatch(id)) {
