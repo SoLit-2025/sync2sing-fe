@@ -59,7 +59,7 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
       pwErrorType = null;
       if (pw.isEmpty) return;
 
-      if (pw.contains(' ')) {
+      if ((RegExp(r'\s').hasMatch(pw))) {
         pwMessage = "비밀번호에 공백은 포함할 수 없습니다";
         pwErrorType = 'space_error';
         return;
