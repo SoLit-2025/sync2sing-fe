@@ -13,12 +13,26 @@ class SignupIdPasswordPage extends StatefulWidget {
 }
 
 class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _pwController = TextEditingController();
+  final FocusNode _idFocusNode = FocusNode();
+  final FocusNode _pwFocusNode = FocusNode();
+
   String id = '';
   String pw = '';
   bool idValid = false;
   bool pwValid = false;
   String? idMessage, pwMessage;
   String? idErrorType, pwErrorType;
+
+  @override
+  void dispose() {
+    _idController.dispose();
+    _pwController.dispose();
+    _idFocusNode.dispose();
+    _pwFocusNode.dispose();
+    super.dispose();
+  }
 
   void validateId(String value) {
     setState(() {
@@ -28,7 +42,7 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
       idErrorType = null;
       if (id.isEmpty) return;
 
-      if(id.contains(' ')){
+      if (id.contains(' ')) {
         idMessage = "아이디에 공백은 포함할 수 없습니다";
         idErrorType = 'space_error';
         return;
@@ -59,7 +73,7 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
       pwErrorType = null;
       if (pw.isEmpty) return;
 
-      if ((RegExp(r'\s').hasMatch(pw))) {
+      if (RegExp(r'\s').hasMatch(pw)) {
         pwMessage = "비밀번호에 공백은 포함할 수 없습니다";
         pwErrorType = 'space_error';
         return;
@@ -167,6 +181,8 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
                         width: 327.w,
                         height: 45.h,
                         child: TextField(
+                          controller: _idController,
+                          focusNode: _idFocusNode,
                           onChanged: validateId,
                           style: AppTextStyles.body1,
                           decoration: InputDecoration(
@@ -179,7 +195,6 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
                                 color: idErrorType == null || idErrorType == 'success'
                                     ? AppColors.grayscale4
                                     : AppColors.systemDanger,
-                                width: 1,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
@@ -188,7 +203,6 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
                                 color: idErrorType == null || idErrorType == 'success'
                                     ? AppColors.grayscale4
                                     : AppColors.systemDanger,
-                                width: 1,
                               ),
                             ),
                             suffixIcon: getIdIcon(),
@@ -200,7 +214,6 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
                     Center(
                       child: SizedBox(
                         width: 326.w,
-                        height: 15.h,
                         child: id.isEmpty
                             ? const SizedBox.shrink()
                             : Text(
@@ -210,7 +223,6 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
                                 ? AppColors.systemSuccessText
                                 : AppColors.systemDangerText,
                           ),
-                          textAlign: TextAlign.left,
                         ),
                       ),
                     ),
@@ -221,6 +233,8 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
                         width: 327.w,
                         height: 45.h,
                         child: TextField(
+                          controller: _pwController,
+                          focusNode: _pwFocusNode,
                           onChanged: validatePw,
                           obscureText: true,
                           style: AppTextStyles.body1,
