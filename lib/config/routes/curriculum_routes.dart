@@ -9,6 +9,7 @@ import 'package:sync2sing/features/curriculum/views/solo_song_detail_page.dart';
 import 'package:sync2sing/features/curriculum/views/solo_training_setting_page.dart';
 import 'package:sync2sing/features/curriculum/views/song_list_page.dart';
 import 'package:sync2sing/features/curriculum/views/training_generation_loading_page.dart';
+import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
 
 final List<GoRoute> curriculumRoutes = [
@@ -66,18 +67,43 @@ final List<GoRoute> curriculumRoutes = [
     },
   ),
   GoRoute(
-    path: "${AppRoutePaths.songExampleVideo}/:songId",
+    path: "${AppRoutePaths.songExampleVideo}/:trainingMode/:analysisType/:songId",
     name: AppRouteNames.songExampleVideo,
     builder: (context, state) {
+      final trainingMode = TrainingMode.values.firstWhere(
+        (e) => e.name == state.pathParameters['trainingMode'],
+      );
+      final analysisType = AnalysisType.values.firstWhere(
+        (e) => e.name == state.pathParameters['analysisType'],
+      );
       final songIdStr = state.pathParameters['songId'];
       final songId = int.tryParse(songIdStr!);
-      return SongExampleVideoPage(songId: songId!);
+      return SongExampleVideoPage(
+        songId: songId!,
+        trainingMode: trainingMode,
+        analysisType: analysisType,
+      );
     },
   ),
   GoRoute(
     path: AppRoutePaths.soloPreRecordingSong,
     name: AppRouteNames.soloPreRecordingSong,
-    builder: (context, state) => const SoloPreRecordingSongPage(),
+    builder: (context, state) {
+      final trainingMode = TrainingMode.values.firstWhere(
+        (e) => e.name == state.pathParameters['trainingMode'],
+      );
+      final analysisType = AnalysisType.values.firstWhere(
+        (e) => e.name == state.pathParameters['analysisType'],
+      );
+      final songIdStr = state.pathParameters['songId'];
+      final songId = int.tryParse(songIdStr!);
+
+      return SoloPreRecordingSongPage(
+        songId: songId!,
+        trainingMode: trainingMode,
+        analysisType: analysisType,
+      );
+    },
   ),
   GoRoute(
     path: AppRoutePaths.trainingGenerationLoading,
