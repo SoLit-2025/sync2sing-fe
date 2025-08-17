@@ -2,153 +2,14 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 
+import '../logics/training_session_status.dart';
+import '../logics/training_item.dart';
 import 'training_item_card.dart';
-
-const Map<String, String> categoryKr = {
-  // category 항목의 영어를 한글로 변환
-  'pitch': '음정',
-  'rhythm': '박자',
-  'vocalization': '발음',
-  'breath': '호흡',
-};
-
-class TrainingItem {
-  final int id;
-  final String title;
-  final String category;
-  final String description;
-  final String grade;
-  final int trainingMinutes;
-  final int progress;
-  final bool isCurrentTraining;
-
-  TrainingItem({
-    required this.id,
-    required this.title,
-    required this.category,
-    required this.description,
-    required this.grade,
-    required this.trainingMinutes,
-    required this.progress,
-    required this.isCurrentTraining,
-  });
-}
-
-enum TrainingSessionStatus {
-  // 세션 상태 : 세션 생성 전 | BEFORE_TRAINING (백엔드 api 참조) | TRAINING_IN_PROGRESS | AFTER_TRAINING
-  beforeSession,
-  beforeTraining,
-  trainingInProgress,
-  afterTraining,
-  error,
-}
-
-extension TrainingStatusConverter on TrainingSessionStatus {
-  // ['data']['status']로 들어온 값을 TrainingSessionStatus로 변환
-  static TrainingSessionStatus fromDataStatusString(String dataStatusString) {
-    switch (dataStatusString) {
-      case 'BEFORE_TRAINING':
-        return TrainingSessionStatus.beforeTraining;
-      case 'TRAINING_IN_PROGRESS':
-        return TrainingSessionStatus.trainingInProgress;
-      case 'AFTER_TRAINING':
-        return TrainingSessionStatus.afterTraining;
-      default:
-        return TrainingSessionStatus.error;
-    }
-  }
-}
-
-TrainingSessionStatus getTrainingStatusFromJson(String jsonString) {
-  // json 을 토대로 TrainingSessionStatus 파악
-  try {
-    final decodedJson = jsonDecode(jsonString);
-
-    if (decodedJson is! Map<String, dynamic>) {
-      return TrainingSessionStatus.error; // JSON이 객체가 아닐 때
-    }
-
-    final int? status = decodedJson['status'] as int?;
-
-    if (status == null) {
-      return TrainingSessionStatus.error; // 'status' 필드가 없거나 int type이 아니면
-    }
-
-    if (status == 200) {
-      final Map<String, dynamic>? data = decodedJson['data'] as Map<String, dynamic>?;
-
-      // data가 빈 객체이면 -> beforeSession
-      if (data == null || data.isEmpty) {
-        return TrainingSessionStatus.beforeSession;
-      }
-
-      final String? dataStatus = data['status'] as String?;
-      if (dataStatus == null) {
-        return TrainingSessionStatus.error;
-      }
-      return TrainingStatusConverter.fromDataStatusString(dataStatus);
-    } else {
-      // If status != 200
-      return TrainingSessionStatus.error;
-    }
-  } on FormatException {
-    return TrainingSessionStatus.error;
-  } on TypeError {
-    // 'status'가 String이 아니거나 'data'가 map이 아닐 때 등 타입예외 발생 시
-    return TrainingSessionStatus.error;
-  } catch (e) {
-    return TrainingSessionStatus.error;
-  }
-}
-
-// pitch-rhythm-vocalization-breath 인터리브 + 완료 항목 마지막으로 이동
-List<TrainingItem> parseCurriculumItemsInOrderAndPostCompletedLast(
-  Map<String, dynamic> curriculum,
-) {
-  final List pitch = curriculum['pitch'] ?? [];
-  final List rhythm = curriculum['rhythm'] ?? [];
-  final List vocalization = curriculum['vocalization'] ?? [];
-  final List breath = curriculum['breath'] ?? [];
-  int maxLen = [
-    pitch.length,
-    rhythm.length,
-    vocalization.length,
-    breath.length,
-  ].reduce((a, b) => a > b ? a : b);
-
-  List<TrainingItem> preList = [];
-  List<TrainingItem> completed = [];
-
-  for (int i = 0; i < maxLen; i++) {
-    void add(Map item, String key) {
-      final t = TrainingItem(
-        id: item['id'],
-        title: item['title'],
-        category: categoryKr[key] ?? key,
-        description: item['description'],
-        grade: item['grade'],
-        trainingMinutes: item['training_minutes'],
-        progress: item['progress'],
-        isCurrentTraining: item['is_current_training'],
-      );
-      if (t.progress >= 100) {
-        completed.add(t);
-      } else {
-        preList.add(t);
-      }
-    }
-
-    if (i < pitch.length) add(pitch[i], 'pitch');
-    if (i < rhythm.length) add(rhythm[i], 'rhythm');
-    if (i < vocalization.length) add(vocalization[i], 'vocalization');
-    if (i < breath.length) add(breath[i], 'breath');
-  }
-
-  return [...preList, ...completed];
-}
 
 class SoloTrainingHomePage extends StatefulWidget {
   const SoloTrainingHomePage({super.key});
@@ -513,8 +374,9 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
   late final List<TrainingItem> items;
   final String nickname = "노래하는 해파리";
   late final int totalProgress;
-  late TrainingSessionStatus trainingSessionStatus;
+  late final TrainingSessionStatus trainingSessionStatus;
   late final int sessionId;
+  late final int? songId;
   late int selectedIdx = // 버튼이 보이는 위젯 인덱스 == 클릭한 위젯의 인덱스
       (trainingSessionStatus == TrainingSessionStatus.trainingInProgress)
           ? 0 // 트레이닝 진행 중일 때: 첫 진입에는 0번 인덱스만 버튼 보임
@@ -530,8 +392,11 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
   @override
   void initState() {
     super.initState();
-    trainingSessionStatus = getTrainingStatusFromJson(SoloTrainingHomePage.afterTrainingMockJson);
-    switch (trainingSessionStatus) {
+
+    final mockJson = SoloTrainingHomePage.afterTrainingMockJson;
+    final jsonData = json.decode(mockJson)['data'];
+    var tTrainingsessionstatus = getTrainingStatusFromJson(mockJson);
+    switch (tTrainingsessionstatus) {
       case TrainingSessionStatus.beforeSession:
       case TrainingSessionStatus.beforeTraining:
         // 아직 트레이닝 시작 전 --> 진행 0.
@@ -539,15 +404,20 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
         break;
       case TrainingSessionStatus.afterTraining:
       case TrainingSessionStatus.trainingInProgress:
-        final jsonData = json.decode(SoloTrainingHomePage.afterTrainingMockJson)['data'];
         sessionId = jsonData['session_id'];
         items = parseCurriculumItemsInOrderAndPostCompletedLast(jsonData['curriculum']);
         totalProgress = calculateTotalProgressFromItems(items);
-        if (totalProgress >= 100) trainingSessionStatus = TrainingSessionStatus.afterTraining;
+        if (totalProgress >= 100) tTrainingsessionstatus = TrainingSessionStatus.afterTraining;
         // 만약 트레이닝진행 현황이 100% -> afterTraining 처럼 보이게.
         break;
       case TrainingSessionStatus.error:
         throw UnimplementedError();
+    }
+    trainingSessionStatus = tTrainingsessionstatus;
+
+    if (trainingSessionStatus != TrainingSessionStatus.beforeSession) {
+      songId = jsonData['song']['id'];
+      debugPrint("songId: $songId");
     }
   }
 
@@ -622,7 +492,9 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                           desc: "AI가 트레이닝 전후를 비교해 나만의 성장 리포트를 제공해요",
                           buttonText: "진단하러 가기",
                           isMicReq: true,
-                          onPressed: () {},
+                          onPressed: () {
+                            // context.go("${AppRoutePaths.songExampleVideo}/$songId");
+                          },
                         ),
                         SizedBox(height: 17.h),
                         Align(
@@ -641,7 +513,9 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                           desc: "AI가 트레이닝 전후를 비교해 나만의 성장 리포트를 제공해요",
                           buttonText: "진단하러 가기",
                           isMicReq: true,
-                          onPressed: () {},
+                          onPressed: () {
+                            context.go("${AppRoutePaths.songExampleVideo}/$songId");
+                          },
                         ),
                         Container(
                           width: 16.w,
@@ -790,6 +664,7 @@ class SessionOptionCard extends StatelessWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            // mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _trainingCardTop(),
 
@@ -806,18 +681,19 @@ class SessionOptionCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                alignment: Alignment.center,
-                width: double.infinity,
-                height: 40.h,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryPink,
-                  borderRadius: BorderRadius.circular(30.r),
-                ),
-                margin: EdgeInsets.only(top: 12.h),
-                child: CupertinoButton(
-                  padding: EdgeInsets.symmetric(vertical: 4.h),
-                  onPressed: () {},
+              CupertinoButton(
+                padding: EdgeInsets.symmetric(vertical: 4.h),
+
+                onPressed: onPressed,
+                child: Container(
+                  alignment: Alignment.center,
+                  width: double.infinity,
+                  height: 40.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryPink,
+                    borderRadius: BorderRadius.circular(30.r),
+                  ),
+                  margin: EdgeInsets.only(top: 12.h),
                   child: Text(buttonText, style: AppTextStyles.body2BoldWhite),
                 ),
               ),

@@ -28,6 +28,7 @@ abstract class AppRouteNames {
   static const soloTrainingSetting = 'soloTrainingSetting';
   static const songList = 'songList';
   static const soloSongDetail = 'soloSongDetail';
+  static const duetSongDetail = 'duetSongDetail';
   static const songExampleVideo = 'songExampleVideo';
   static const soloPreRecordingSong = 'soloPreRecordingSong';
   static const trainingGenerationLoading = 'trainingGenerationLoading';
@@ -60,8 +61,9 @@ abstract class AppRoutePaths {
 
   // curriculum 라우트 주소 변경 예정 (다음 스프린트를 위해 임시로 지음)
   static const soloTrainingSetting = '/solo_training/setting';
-  static const songList = '/songs/:type'; // 예시. query or extra 사용해서 인자 넘기기.
-  static const soloSongDetail = '/songs/detail/solo';
+  static const songList = '/songs';
+  static const soloSongDetail = '/songs/solo/detail';
+  static const duetSongDetail = '/songs/duet/detail';
   static const songExampleVideo = '/curriculum/example_video';
   static const soloPreRecordingSong = '/solo_training/pre_recording_song';
   static const trainingGenerationLoading = '/curriculum/trainingGenerationLoading';

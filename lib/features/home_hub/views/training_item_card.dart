@@ -2,7 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
-import 'package:sync2sing/features/home_hub/views/solo_training_home_page.dart';
+
+import '../logics/training_item.dart';
 
 class TrainingItemCard extends StatelessWidget {
   final TrainingItem trainingItem;
@@ -51,13 +52,14 @@ class TrainingItemCard extends StatelessWidget {
         Container(
           height: showButton ? 150.h : 95.h,
           width: double.infinity,
-          padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 5.h),
+          padding: EdgeInsets.fromLTRB(12.w, 5.h, 12.w, 5.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.r),
             color: AppColors.grayscale8,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _trainingCardTop(),
               SizedBox(height: 3.h),
