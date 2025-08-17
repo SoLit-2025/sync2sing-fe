@@ -119,6 +119,6 @@ const Map<String, String> _categoryKr = {
   // category 항목의 영어를 한글로 변환
   'pitch': '음정',
   'rhythm': '박자',
-  'vocalization': '발음',
+  'pronunciation': '발음',
   'breath': '호흡',
 };

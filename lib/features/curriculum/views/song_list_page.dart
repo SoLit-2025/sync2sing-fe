@@ -8,7 +8,7 @@ import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
 
 class SongListPage extends StatelessWidget {
-  final TrainingMode trainingMode; // enum 으로 수정해도 좋을 듯.
+  final TrainingMode trainingMode;
   const SongListPage({super.key, required this.trainingMode});
 
   @override
