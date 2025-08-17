@@ -108,6 +108,7 @@ final List<GoRoute> curriculumRoutes = [
   GoRoute(
     path: AppRoutePaths.trainingGenerationLoading,
     name: AppRouteNames.trainingGenerationLoading,
-    builder: (context, state) => const TrainingGenerationLoadingPage(),
+    builder: (context, state) => TrainingGenerationLoadingPage(),
+    // builder: (context, state) => TrainingGenerationLoadingPage(state.extra as CurriculumCreateData),  // extra로 정보 전달 시
   ),
 ];
