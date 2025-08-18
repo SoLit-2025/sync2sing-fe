@@ -46,7 +46,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
                     SizedBox(height: 32.h),
                     _buildSongSection(selectedSong, isSongSelected),
                     SizedBox(height: 40.h),
-                    _buildTrainingDaySelector(),
+                    _buildTrainingDaySection(),
                   ],
                 ),
               ),
@@ -239,7 +239,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
   }
 
   // 훈련기간 선택 영역 = '훈련기간 선택' 소제목 + 훈련기간 선택 버튼
-  Widget _buildTrainingDaySelector() {
+  Widget _buildTrainingDaySection() {
     return SizedBox(
       width: 327.w,
       child: Column(
