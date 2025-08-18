@@ -51,7 +51,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
                 ),
               ),
               _buildConfirmButton(isFormValid),
-              SizedBox(height: 24.h),
+              SizedBox(height: 150.h),
             ],
           ),
         ),
