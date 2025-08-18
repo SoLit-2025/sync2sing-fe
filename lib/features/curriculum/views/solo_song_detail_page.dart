@@ -1,5 +1,4 @@
 import 'dart:core';
-import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -17,16 +16,15 @@ class SoloSongDetailPage extends StatelessWidget {
   SoloSongDetailPage({super.key, required this.songDetailModel});
 
   final AudioPlayer _audioPlayer = AudioPlayer();
-  final ValueNotifier<bool> isPlaying = ValueNotifier(false);
+  final ValueNotifier<bool> isPlaying = ValueNotifier(false); // 노래가 재생되고 있는지 여부
 
-  void playMusic() {
+  void _playMusic() {
     _audioPlayer.play();
-    isPlaying.value = true;
   }
 
-  void pauseMusic() {
+  void _pauseMusic() {
     _audioPlayer.pause();
-    isPlaying.value = false;
+    _audioPlayer.playerState;
   }
 
   @override
@@ -130,15 +128,35 @@ class SoloSongDetailPage extends StatelessWidget {
                 ),
               ),
 
-              ValueListenableBuilder<bool>(
-                valueListenable: isPlaying, // 노래 재생 여부
-                builder: (context, playing, _) {
-                  return GestureDetector(
-                    onTap: playing ? pauseMusic : playMusic,
-                    child: Image.asset(
-                      playing ? "assets/images/pause.png" : "assets/images/play.png",
-                      color: AppColors.primaryPink,
-                    ),
+              // 재생 버튼
+              StreamBuilder<PlayerState>(
+                // 실시간 상태 반영.
+                stream: _audioPlayer.playerStateStream,
+                builder: (context, snapshot) {
+                  final state = snapshot.data;
+                  final isEnded =
+                      state?.processingState == ProcessingState.completed; // 음원이 다 재생되었는지 여부
+                  final playing = state?.playing ?? false; // 노래 재생되고 있는지 여부
+
+                  // 음원이 끝났으면 isPlaying을 false로
+                  if (isEnded) {
+                    isPlaying.value = false;
+                    _audioPlayer.pause();
+                    _audioPlayer.setUrl(songDetailModel.fileUrl); // 다시 재생 시 음원 듣기 가능
+                  } else {
+                    isPlaying.value = playing;
+                  }
+                  return ValueListenableBuilder<bool>(
+                    valueListenable: isPlaying,
+                    builder: (context, isPlayingVal, _) {
+                      return GestureDetector(
+                        onTap: isPlayingVal ? _pauseMusic : _playMusic,
+                        child: Image.asset(
+                          isPlayingVal ? "assets/images/pause.png" : "assets/images/play.png",
+                          color: AppColors.primaryPink,
+                        ),
+                      );
+                    },
                   );
                 },
               ),
