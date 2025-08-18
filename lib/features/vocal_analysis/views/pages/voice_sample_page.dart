@@ -9,12 +9,11 @@ import 'package:sync2sing/features/onboarding/views/onboarding_page_indicator.da
 import 'package:sync2sing/features/vocal_analysis/logics/providers/audio_pitch_no_save_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_pitch_metrics_provider.dart';
-import 'package:sync2sing/features/vocal_analysis/logics/providers/voice_type_profile_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/tools/mic_permission_helper.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/tools/pitch_to_note_converter.dart';
-import '../../../../../../config/theme/app_text_styles.dart';
 
 class VoiceSamplePage extends ConsumerStatefulWidget {
   const VoiceSamplePage({super.key});
