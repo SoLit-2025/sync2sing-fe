@@ -61,8 +61,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
                 Divider(height: 1, thickness: 1, color: AppColors.grayscale5),
-                SizedBox(
-                  height: 40.h,
+                IntrinsicHeight(
                   child: Row(
                     children: [
                       Expanded(

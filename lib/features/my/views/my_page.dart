@@ -66,12 +66,10 @@ class _MyPageState extends State<MyPage> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         GestureDetector(
-          child: GestureDetector(
-            onTap: () {
-              context.push(AppRoutePaths.settings);
-            },
-            child: Image.asset('assets/images/settings_icon.png', width: 27.w, height: 27.h),
-          ),
+          onTap: () {
+            context.push(AppRoutePaths.settings);
+          },
+          child: Image.asset('assets/images/settings_icon.png', width: 27.w, height: 27.h),
         ),
       ],
     );
@@ -220,8 +218,8 @@ class _MyPageState extends State<MyPage> {
   Widget _buildStatusCard(String title, String value) {
     return Container(
       width: 100.w,
-      height: 85.h, // 이하로 줄이면 BOTTOM OVERFLOWED BY 11 PIXEL 오류 발생
-      padding: EdgeInsets.symmetric(vertical: 16.h),
+      height: 70.h,
+      padding: EdgeInsets.symmetric(vertical: 8.h),
       decoration: BoxDecoration(
         color: AppColors.grayscale8,
         borderRadius: BorderRadius.circular(10.r),
@@ -235,7 +233,7 @@ class _MyPageState extends State<MyPage> {
             style: AppTextStyles.body4.copyWith(color: AppColors.grayscale2),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 4.h),
           Text(
             value,
             style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale1),
@@ -314,8 +312,6 @@ class _MyPageState extends State<MyPage> {
               _pressedReportIndex = null;
               _pressedReportType = null;
             });
-            // todo: 리포트 상세 페이지 이동 구현
-            // context.pushNamed(AppRouteNames.reportDetail, extra: {'date': date, 'title': title});
           },
           onTapCancel: () {
             setState(() {
