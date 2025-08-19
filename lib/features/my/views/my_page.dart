@@ -18,7 +18,7 @@ class _MyPageState extends State<MyPage> {
 
   // 보컬 분석 리포트 mock 데이터
   final List<Map<String, String>> _soloReports = [
-    {'date': '2025-07-15', 'title': 'Golden (From \'K-POP Demon H...)'},
+    {'date': '2025-07-15', 'title': 'Golden (From \'K-POP Demon H...'},
     {'date': '2025-06-15', 'title': 'Goodbye (From \'Catch Me If You Can\')'},
     {'date': '2025-04-15', 'title': 'Defying Gravity (From \'Wicked\')'},
     {'date': '2025-03-15', 'title': 'What is This Feeling? (From \'Wicked\')'},
@@ -35,7 +35,7 @@ class _MyPageState extends State<MyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.grayscale8,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -45,11 +45,11 @@ class _MyPageState extends State<MyPage> {
               _buildHeader(),
               SizedBox(height: 30.h),
               _buildProfileSection(),
-              SizedBox(height: 15.h),
+              SizedBox(height: 10.h),
               _buildVoiceTypeSection(),
               SizedBox(height: 20.h),
               _buildVoiceRangeSection(),
-              SizedBox(height: 30.h),
+              SizedBox(height: 20.h),
               _buildParticipationStatusSection(),
               SizedBox(height: 30.h),
               _buildVocalAnalysisReportSection(),
@@ -118,8 +118,8 @@ class _MyPageState extends State<MyPage> {
 
   Widget _buildVoiceTypeSection() {
     return Container(
-      width: 120.w,
-      height: 35.h,
+      width: 100.w,
+      height: 30.h,
       decoration: BoxDecoration(
         color: AppColors.primaryPink,
         borderRadius: BorderRadius.circular(30.r),
@@ -136,15 +136,15 @@ class _MyPageState extends State<MyPage> {
 
   Widget _buildVoiceRangeSection() {
     return Container(
-      width: 350.w,
-      height: 70.h,
+      width: 327.w,
+      height: 50.h,
       decoration: BoxDecoration(
         color: AppColors.grayscale8,
         borderRadius: BorderRadius.circular(30.r),
         border: Border.all(color: AppColors.grayscale6, width: 1),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 5.h),
         child: Row(
           children: [
             Text('나의 음역대', style: AppTextStyles.body4.copyWith(color: AppColors.grayscale1)),
@@ -219,13 +219,16 @@ class _MyPageState extends State<MyPage> {
 
   Widget _buildStatusCard(String title, String value) {
     return Container(
+      width: 100.w,
+      height: 85.h, // 이하로 줄이면 BOTTOM OVERFLOWED BY 11 PIXEL 오류 발생
       padding: EdgeInsets.symmetric(vertical: 16.h),
       decoration: BoxDecoration(
         color: AppColors.grayscale8,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: AppColors.grayscale6, width: 1),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             title,
@@ -252,11 +255,11 @@ class _MyPageState extends State<MyPage> {
           children: [
             Text(
               '보컬 분석 리포트 기록',
-              style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale3),
+              style: AppTextStyles.body4Bold.copyWith(color: AppColors.grayscale3),
             ),
             Text(
               '${_soloReports.length + _duetReports.length}',
-              style: AppTextStyles.body1Bold.copyWith(color: AppColors.primaryPink),
+              style: AppTextStyles.body3Bold.copyWith(color: AppColors.primaryPink),
             ),
           ],
         ),
@@ -280,8 +283,8 @@ class _MyPageState extends State<MyPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale1)),
-            Text(count, style: AppTextStyles.body1Bold.copyWith(color: AppColors.primaryPink)),
+            Text(title, style: AppTextStyles.body3Bold.copyWith(color: AppColors.grayscale1)),
+            Text(count, style: AppTextStyles.body3Bold.copyWith(color: AppColors.primaryPink)),
           ],
         ),
         SizedBox(height: 12.h),
@@ -297,66 +300,71 @@ class _MyPageState extends State<MyPage> {
   Widget _buildReportItem(String date, String title, int index, String type) {
     bool isPressed = _pressedReportIndex == index && _pressedReportType == type;
 
-    return GestureDetector(
-      onTapDown: (_) {
-        setState(() {
-          _pressedReportIndex = index;
-          _pressedReportType = type;
-        });
-      },
-      onTapUp: (_) {
-        setState(() {
-          _pressedReportIndex = null;
-          _pressedReportType = null;
-        });
-        // todo: 리포트 상세 페이지 이동 구현
-        // context.pushNamed(AppRouteNames.reportDetail, extra: {'date': date, 'title': title});
-      },
-      onTapCancel: () {
-        setState(() {
-          _pressedReportIndex = null;
-          _pressedReportType = null;
-        });
-      },
-      child: Container(
-        margin: EdgeInsets.only(bottom: 8.h),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: isPressed ? AppColors.grayscale7 : AppColors.grayscale8,
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-        child: Row(
-          children: [
-            Text(date, style: AppTextStyles.body5.copyWith(color: AppColors.grayscale3)),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final textPainter = TextPainter(
-                    text: TextSpan(
-                      text: title,
-                      style: AppTextStyles.body4.copyWith(color: AppColors.grayscale1),
-                    ),
-                    textDirection: TextDirection.ltr,
-                  );
-                  textPainter.layout(maxWidth: constraints.maxWidth);
-
-                  return Text(
-                    title,
-                    style: AppTextStyles.body4.copyWith(color: AppColors.grayscale1),
-                    overflow:
-                        textPainter.didExceedMaxLines
-                            ? TextOverflow.ellipsis
-                            : TextOverflow.visible,
-                  );
-                },
-              ),
+    return Column(
+      children: [
+        GestureDetector(
+          onTapDown: (_) {
+            setState(() {
+              _pressedReportIndex = index;
+              _pressedReportType = type;
+            });
+          },
+          onTapUp: (_) {
+            setState(() {
+              _pressedReportIndex = null;
+              _pressedReportType = null;
+            });
+            // todo: 리포트 상세 페이지 이동 구현
+            // context.pushNamed(AppRouteNames.reportDetail, extra: {'date': date, 'title': title});
+          },
+          onTapCancel: () {
+            setState(() {
+              _pressedReportIndex = null;
+              _pressedReportType = null;
+            });
+          },
+          child: Container(
+            width: 327.w,
+            height: 35.h,
+            padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 5.h),
+            decoration: BoxDecoration(
+              color: isPressed ? AppColors.grayscale7 : AppColors.grayscale8,
             ),
-            SizedBox(width: 8.w),
-            Icon(Icons.chevron_right, color: AppColors.grayscale4, size: 16.w),
-          ],
+            child: Row(
+              children: [
+                Text(date, style: AppTextStyles.body4.copyWith(color: AppColors.grayscale1)),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final textPainter = TextPainter(
+                        text: TextSpan(
+                          text: title,
+                          style: AppTextStyles.body4.copyWith(color: AppColors.grayscale1),
+                        ),
+                        textDirection: TextDirection.ltr,
+                      );
+                      textPainter.layout(maxWidth: constraints.maxWidth);
+
+                      return Text(
+                        title,
+                        style: AppTextStyles.body4.copyWith(color: AppColors.grayscale1),
+                        overflow:
+                            textPainter.didExceedMaxLines
+                                ? TextOverflow.ellipsis
+                                : TextOverflow.visible,
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Image.asset('assets/images/right_arrow_icon.png', width: 7.w, height: 12.h),
+              ],
+            ),
+          ),
         ),
-      ),
+        Container(width: 327.w, height: 1.h, color: AppColors.grayscale6),
+      ],
     );
   }
 }

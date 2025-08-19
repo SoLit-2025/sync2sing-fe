@@ -32,77 +32,66 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-          child: Padding(
-            padding: EdgeInsets.all(24.w),
+          child: SizedBox(
+            width: 270.w,
+            height: 142.h,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  '모든 성장 기록이 함께 삭제돼요',
-                  style: AppTextStyles.heading4Bold.copyWith(
-                    color: AppColors.grayscale1,
-                    fontWeight: FontWeight.w700,
+                Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        '모든 성장 기록이 함께 삭제돼요',
+                        style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale1),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        '탈퇴시 보컬 분석 리포트 기록을 영구적으로 삭제됩니다\n불편한 점이 있으시다면 언제든 의견을 들려주세요',
+                        style: AppTextStyles.body6.copyWith(
+                          color: AppColors.grayscale2,
+                          height: 1.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 13.h),
-                Text(
-                  '탈퇴시 보컬 분석 리포트 기록을 영구적으로 삭제됩니다\n불편한 점이 있으시다면 언제든 의견을 들려주세요',
-                  style: AppTextStyles.body4.copyWith(color: AppColors.grayscale2, height: 1.5),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 27.h),
-                // 버튼 영역 위 가로 구분선 (회색)
                 Divider(height: 1, thickness: 1, color: AppColors.grayscale5),
                 SizedBox(
-                  height: 48.h,
+                  height: 40.h,
                   child: Row(
                     children: [
-                      // 1:1 문의하기
                       Expanded(
                         child: TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                             // todo: 1:1 문의 연결
                           },
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            padding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(12.r)),
-                            ),
-                          ),
-                          child: Text(
-                            '1:1 문의하기',
-                            style: AppTextStyles.body1.copyWith(
-                              color: AppColors.primaryPink,
-                              fontWeight: FontWeight.w600,
+                          child: Center(
+                            child: Text(
+                              '1:1 문의하기',
+                              style: AppTextStyles.body1Bold.copyWith(color: AppColors.primaryPink),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
                       ),
-                      // 중간 세로 구분선
-                      Container(width: 1, height: 48.h, color: AppColors.grayscale5),
-                      // 탈퇴하기
+                      Container(width: 1, height: double.infinity, color: AppColors.grayscale5),
                       Expanded(
                         child: TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                             context.go(AppRoutePaths.login);
                           },
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            padding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(bottomRight: Radius.circular(12.r)),
-                            ),
-                          ),
-                          child: Text(
-                            '탈퇴하기',
-                            style: AppTextStyles.body1.copyWith(
-                              color: AppColors.grayscale1,
-                              fontWeight: FontWeight.w600,
+                          child: Center(
+                            child: Text(
+                              '탈퇴하기',
+                              style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale1),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
@@ -139,13 +128,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 (context, error, stackTrace) => Icon(Icons.arrow_back, color: AppColors.grayscale2),
           ),
         ),
-        title: Text(
-          '설정',
-          style: AppTextStyles.heading3Bold.copyWith(
-            color: AppColors.grayscale1,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        title: Text('설정', style: AppTextStyles.heading4Bold.copyWith(color: AppColors.grayscale1)),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.only(bottom: 24.h),
@@ -155,53 +138,48 @@ class _SettingsPageState extends State<SettingsPage> {
             SizedBox(height: 28.h),
             _buildSettingItem(
               icon: 'assets/images/alarm_icon.png',
-              iconWidth: 21.w,
-              iconHeight: 25.h,
+              iconWidth: 30.w,
+              iconHeight: 28.h,
               title: '알림 설정',
-              titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
-              trailing: Align(
-                alignment: Alignment.centerRight,
-                child: CupertinoSwitch(
-                  value: _isNotificationEnabled,
-                  onChanged: (value) {
-                    setState(() => _isNotificationEnabled = value);
-                  },
-                  activeColor: AppColors.primaryPink,
-                  trackColor: AppColors.grayscale4,
-                ),
+              titleTextStyle: AppTextStyles.heading4.copyWith(color: AppColors.grayscale1),
+              trailing: CupertinoSwitch(
+                value: _isNotificationEnabled,
+                onChanged: (value) {
+                  setState(() => _isNotificationEnabled = value);
+                },
+                activeColor: AppColors.primaryPink,
+                trackColor: AppColors.grayscale4,
               ),
             ),
             _divider(),
             _buildSettingItem(
               icon: 'assets/images/logout_icon.png',
-              iconWidth: 22.5.w,
-              iconHeight: 22.5.h,
+              iconWidth: 30.w,
+              iconHeight: 30.h,
               title: '로그아웃',
-              titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+              titleTextStyle: AppTextStyles.heading4.copyWith(color: AppColors.grayscale1),
               onTap: () => context.go(AppRoutePaths.login),
             ),
             _divider(),
             _buildSettingItem(
               icon: 'assets/images/leave_icon.png',
-              iconWidth: 22.w,
-              iconHeight: 22.h,
+              iconWidth: 28.w,
+              iconHeight: 30.h,
               title: '회원탈퇴',
-              titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+              titleTextStyle: AppTextStyles.heading4.copyWith(color: AppColors.grayscale1),
               onTap: _showLeaveDialog,
             ),
             _divider(),
             _buildSettingItem(
               icon: 'assets/images/cherry.png',
-              iconWidth: 24.w,
-              iconHeight: 24.h,
+              iconWidth: 30.w,
+              iconHeight: 30.h,
               title: '1:1 문의',
-              titleTextStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+              titleTextStyle: AppTextStyles.heading4.copyWith(color: AppColors.grayscale1),
               onTap: () {
                 // todo: 1:1 문의 연결
               },
             ),
-
-            // 라이선스 영역
             SizedBox(height: 240.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -248,42 +226,35 @@ class _SettingsPageState extends State<SettingsPage> {
     Widget? trailing,
     VoidCallback? onTap,
   }) {
-    return SizedBox(
-      height: 56.h,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.w),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: iconWidth,
-                height: iconHeight,
-                child: Center(
-                  child: Image.asset(
-                    icon,
-                    width: iconWidth,
-                    height: iconHeight,
-                    fit: BoxFit.contain,
-                    errorBuilder:
-                        (context, error, stackTrace) =>
-                            Icon(Icons.error, color: Colors.red, size: iconHeight),
-                  ),
-                ),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.translucent,
+      child: Container(
+        width: 327.w,
+        height: 60.h,
+        padding: EdgeInsets.only(left: 30.w, right: 30.w),
+        child: Row(
+          children: [
+            Image.asset(
+              icon,
+              width: iconWidth,
+              height: iconHeight,
+              fit: BoxFit.contain,
+              errorBuilder:
+                  (context, error, stackTrace) =>
+                      Icon(Icons.error, color: Colors.red, size: iconHeight),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Text(
+                title,
+                style: titleTextStyle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Text(
-                  title,
-                  style: titleTextStyle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (trailing != null) trailing,
-            ],
-          ),
+            ),
+            if (trailing != null) trailing,
+          ],
         ),
       ),
     );
