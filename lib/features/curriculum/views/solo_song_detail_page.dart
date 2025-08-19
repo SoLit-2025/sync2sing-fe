@@ -2,6 +2,7 @@ import 'dart:core';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
@@ -9,6 +10,7 @@ import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 
+import '../logics/selected_song_provider.dart';
 import '../logics/song_detail_model.dart';
 
 class SoloSongDetailPage extends StatelessWidget {
@@ -200,21 +202,33 @@ class SoloSongDetailPage extends StatelessWidget {
   }
 
   Widget _chooseButton(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 50.w,
-      alignment: Alignment(0.0, 0.0),
-      child: CupertinoButton(
-        color: AppColors.primaryPink,
-        borderRadius: BorderRadius.circular(10.r),
-        padding: EdgeInsets.all(0),
-        onPressed: () {
-          // ref.read(selectedSongProvider.notifier).selectSong(songDetailModel);  // soloTrainingSetting 에 정보 전달
-          context.go(AppRoutePaths.soloTrainingSetting);
-        },
-        minSize: 0.0,
-        child: Center(child: Text("선택하기", style: AppTextStyles.body1BoldWhite)),
-      ),
+    return Consumer(
+      builder: (context, ref, child) {
+        return Container(
+          width: double.infinity,
+          height: 50.w,
+          alignment: Alignment(0.0, 0.0),
+          child: CupertinoButton(
+            color: AppColors.primaryPink,
+            borderRadius: BorderRadius.circular(10.r),
+            padding: EdgeInsets.all(0),
+            onPressed: () {
+              ref
+                  .read(selectedSongProvider.notifier)
+                  .selectSong(
+                    id: songDetailModel.id,
+                    title: songDetailModel.title,
+                    artist: songDetailModel.artist,
+                    albumArtUrl: songDetailModel.albumArtUrl,
+                    voiceType: songDetailModel.voiceType,
+                  );
+              context.go(AppRoutePaths.soloTrainingSetting);
+            },
+            minSize: 0.0,
+            child: Center(child: Text("선택하기", style: AppTextStyles.body1BoldWhite)),
+          ),
+        );
+      },
     );
   }
 }
