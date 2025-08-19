@@ -50,7 +50,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       SizedBox(height: 8.h),
                       Text(
-                        '탈퇴시 보컬 분석 리포트 기록을 영구적으로 삭제됩니다\n불편한 점이 있으시다면 언제든 의견을 들려주세요',
+                        '탈퇴시 보컬 분석 리포트 기록을 영구적으로 삭제합니다\n불편한 점이 있으시다면 언제든 의견을 들려주세요',
                         style: AppTextStyles.body6.copyWith(
                           color: AppColors.grayscale2,
                           height: 1.5,
