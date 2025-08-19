@@ -49,8 +49,6 @@ class SongDetailModel {
         return '바리톤';
       case 'SOPRANO':
         return '소프라노';
-      case 'MEZZO_SOPRANO':
-        return '메조 소프라노';
       case 'ALTO':
         return '알토';
       default:
