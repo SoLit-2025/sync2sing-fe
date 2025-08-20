@@ -86,10 +86,11 @@ final List<GoRoute> curriculumRoutes = [
     },
   ),
   GoRoute(
-    path: AppRoutePaths.soloPreRecordingSong,
+    path: "${AppRoutePaths.soloPreRecordingSong}/:trainingMode/:analysisType/:songId",
     name: AppRouteNames.soloPreRecordingSong,
     builder: (context, state) {
       final trainingMode = TrainingMode.values.firstWhere(
+        // 추후 회고 기간 때 수정: 없애기.
         (e) => e.name == state.pathParameters['trainingMode'],
       );
       final analysisType = AnalysisType.values.firstWhere(
@@ -108,6 +109,7 @@ final List<GoRoute> curriculumRoutes = [
   GoRoute(
     path: AppRoutePaths.trainingGenerationLoading,
     name: AppRouteNames.trainingGenerationLoading,
-    builder: (context, state) => const TrainingGenerationLoadingPage(),
+    builder: (context, state) => TrainingGenerationLoadingPage(),
+    // builder: (context, state) => TrainingGenerationLoadingPage(state.extra as CurriculumCreateData),  // extra로 정보 전달 시
   ),
 ];

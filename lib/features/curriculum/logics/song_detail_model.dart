@@ -70,9 +70,5 @@ class DuetPart {
       partName: json['part_name'],
       lyricsIndexes: (json['lyrics_indexes'] as List).map((e) => e as int).toList(),
     );
-
-
   }
-
-
 }

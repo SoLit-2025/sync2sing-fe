@@ -14,13 +14,8 @@ String determineVoiceType(double lowestMidi, double highestMidi, double avgMidi)
     _VocalRange(name: 'Baritone', min: 43, max: 67),
     _VocalRange(name: 'Tenor', min: 48, max: 72),
     _VocalRange(name: 'Alto', min: 53, max: 77),
-    _VocalRange(name: 'Mezzo-Soprano', min: 57, max: 81),
     _VocalRange(name: 'Soprano', min: 60, max: 84),
   ];
-
-  // final lowestMidi = midiNote(lowestHz);
-  // final highestMidi = midiNote(highestHz);
-  // final avgMidi = midiNote(averageHz);
 
   // [1단계] 최저/최고 음을 완전히 포함하는 성부 검사
   final fullyContained =

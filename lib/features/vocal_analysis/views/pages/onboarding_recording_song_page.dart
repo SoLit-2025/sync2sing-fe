@@ -3,15 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
+import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
 import 'package:sync2sing/features/report/logics/vocal_analysis_submit_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
-import '../widgets/music_content_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/audio_recorder_provider.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import 'dart:io';
+
+import '../widgets/music_content_player.dart';
 
 /// 온보딩 과정의 녹음 페이지
 ///
@@ -34,6 +37,23 @@ class OnboardingRecordingSongPage extends ConsumerStatefulWidget {
 class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordingSongPage>
     with WidgetsBindingObserver {
   Key _playerKey = UniqueKey();
+  bool _isButtonEnabled = false;
+  late final SongDetailModel _songDetailModel = SongDetailModel(
+    1,
+    "Do-Re-Mi Song",
+    "Richard Rodgers",
+    "SOPRANO",
+    "C4",
+    "D5",
+    [
+      TimedLyric(0, "(전주중)", 0),
+      TimedLyric(1, "Doe - a deer,", 2300),
+      TimedLyric(2, "a female deer", 4000),
+      TimedLyric(3, "Ray - a drop of golden sun", 6000),
+    ],
+    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    "assets/songs/audios/doremi_song_v3_mr.wav", // 백엔드에 저장된 파일과 음정 박자 파일 불일치 -> asset 사용. 다만 길이 조정 필요 (음악 끝나기 전까지 다음버튼 클릭 불가)
+  );
 
   @override
   void initState() {
@@ -57,15 +77,11 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
     }
   }
 
-  /// 보컬 분석 버튼 활성화 조건을 확인하는 함수
-  ///
-  /// 현재는 항상 true를 반환하지만, 추후 다음 조건들을 추가할 수 있습니다:
-  /// - 최소 녹음 시간 달성 여부
-  /// - 음정 정확도 기준 달성 여부
-  /// - 필수 구간 녹음 완료 여부
-  bool isVocalAnalysisButtonEnabled() {
-    // 보컬 분석 버튼 활성화 조건
-    return true;
+  // 하위 위젯에서 bool 값을 전달할 콜백 함수
+  void onChildBoolChanged(bool value) {
+    setState(() {
+      _isButtonEnabled = value;
+    });
   }
 
   void storeVocalAnalysisSubmit(ref) {
@@ -130,16 +146,23 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
               /// 음악 플레이어와 시각화가 들어가는 메인 영역
               Container(
                 width: 327.w,
+                height: 556.h,
                 padding: EdgeInsets.fromLTRB(16.h, 16.h, 16.h, 20.h),
-                constraints: BoxConstraints(minHeight: 300.h),
+                // constraints: BoxConstraints(minHeight: 300.h),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.r),
-                  color: const Color(0xFFECECEC), // 연한 회색 배경
+                  color: AppColors.grayscale6,
                 ),
 
                 /// MusicContentPlayer: 음악 재생, 녹음, 시각화를 담당하는 핵심 위젯
                 /// 이 위젯에서 모든 음악 관련 기능이 처리됩니다
-                child: MusicContentPlayer(key: _playerKey),
+                // child: MusicContentPlayer(key: _playerKey),
+                child: MusicContentPlayer(
+                  _songDetailModel,
+                  'assets/songs/datas/doremi_song_piano_v2.json',
+                  onChildBoolChanged,
+                  key: _playerKey,
+                ),
               ),
 
               /// 중간과 버튼 사이 간격
@@ -162,7 +185,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
                       /// 버튼 클릭 시 동작
                       /// 활성화 조건을 만족하면 분석 로딩 페이지로 이동
                       onPressed:
-                          isVocalAnalysisButtonEnabled()
+                          _isButtonEnabled
                               ? () async {
                                 // 데이터 저장
                                 storeVocalAnalysisSubmit(ref);
@@ -176,7 +199,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
                       child: Text(
                         "보컬 분석 리포트 생성하기",
                         style:
-                            isVocalAnalysisButtonEnabled()
+                            _isButtonEnabled
                                 ? AppTextStyles
                                     .body1BoldWhite // 활성화: 굵은 흰색
                                 : AppTextStyles.body1White, // 비활성화: 일반 흰색
