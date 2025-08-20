@@ -316,7 +316,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
         onPressed: isFormValid
             ? () {
           ref.read(selectedSongProvider.notifier).setTrainingDays(_selectedDays!);
-          context.go("${AppRoutePaths.songExampleVideo}/solo/pre");
+          context.go("${AppRoutePaths.songExampleVideo}/solo/pre/${ref.watch(selectedSongProvider).id}");
         }
             : null,
         style: ElevatedButton.styleFrom(

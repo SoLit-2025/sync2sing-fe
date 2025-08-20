@@ -4,13 +4,14 @@ import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/curriculum/views/duet_song_detail_page.dart';
 import 'package:sync2sing/features/curriculum/views/song_example_video_page.dart';
-import 'package:sync2sing/features/curriculum/views/solo_pre_recording_song_page.dart';
 import 'package:sync2sing/features/curriculum/views/solo_song_detail_page.dart';
 import 'package:sync2sing/features/curriculum/views/solo_training_setting_page.dart';
 import 'package:sync2sing/features/curriculum/views/song_list_page.dart';
 import 'package:sync2sing/features/curriculum/views/training_generation_loading_page.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
+import 'package:sync2sing/features/vocal_analysis/views/pages/solo_recording_song_page.dart';
+
 
 final List<GoRoute> curriculumRoutes = [
   GoRoute(
@@ -86,22 +87,17 @@ final List<GoRoute> curriculumRoutes = [
     },
   ),
   GoRoute(
-    path: "${AppRoutePaths.soloPreRecordingSong}/:trainingMode/:analysisType/:songId",
+    path: "${AppRoutePaths.soloPreRecordingSong}/:analysisType/:songId",
     name: AppRouteNames.soloPreRecordingSong,
     builder: (context, state) {
-      final trainingMode = TrainingMode.values.firstWhere(
-        // 추후 회고 기간 때 수정: 없애기.
-        (e) => e.name == state.pathParameters['trainingMode'],
-      );
       final analysisType = AnalysisType.values.firstWhere(
         (e) => e.name == state.pathParameters['analysisType'],
       );
       final songIdStr = state.pathParameters['songId'];
       final songId = int.tryParse(songIdStr!);
 
-      return SoloPreRecordingSongPage(
+      return SoloRecordingSongPage(
         songId: songId!,
-        trainingMode: trainingMode,
         analysisType: analysisType,
       );
     },

@@ -142,7 +142,7 @@ class SongExampleVideoPage extends ConsumerWidget {
                         isButtonEnabled
                             ? () {
                               context.go(
-                                "${AppRoutePaths.soloPreRecordingSong}/${trainingMode.name}/${analysisType.name}/$songId",
+                                "${AppRoutePaths.soloPreRecordingSong}/${analysisType.name}/$songId",
                                 extra: songDetail.id,
                               );
                             }

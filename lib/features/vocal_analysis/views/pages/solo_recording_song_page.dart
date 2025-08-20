@@ -7,9 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
+import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/report/logics/vocal_analysis_submit_provider.dart';
-import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/views/widgets/music_content_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,26 +19,22 @@ import 'package:sync2sing/features/vocal_analysis/logics/providers/audio_recorde
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import 'dart:io';
 
-import '../logics/timed_lyric.dart';
 
-class SoloPreRecordingSongPage extends ConsumerStatefulWidget {
-  // 회고 기간에 수정: vocal_anlaysis 폴더로 이동, trainingMode 없애기.
-  final TrainingMode trainingMode;
+class SoloRecordingSongPage extends ConsumerStatefulWidget {
   final AnalysisType analysisType; // 아마 analysisType 로 onboarding 역할 아예 대체 가능할 듯.
   final int songId;
 
-  const SoloPreRecordingSongPage({
+  const SoloRecordingSongPage({
     required this.analysisType,
-    required this.trainingMode,
     required this.songId,
     super.key,
   });
 
   @override
-  ConsumerState createState() => _SoloPreRecordingSongPageState();
+  ConsumerState createState() => _SoloRecordingSongPageState();
 }
 
-class _SoloPreRecordingSongPageState extends ConsumerState<SoloPreRecordingSongPage>
+class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
     with WidgetsBindingObserver {
   Key _playerKey = UniqueKey();
 
