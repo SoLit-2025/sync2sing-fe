@@ -70,8 +70,8 @@ class SelectedSongNotifier extends StateNotifier<SelectedSong> {
     required int id,
     required String title,
     required String artist,
-    String? albumArtUrl,
-    String? voiceType,
+    required String? albumArtUrl,
+    required String? voiceType,
   }) {
     state = SelectedSong(
       id: id,

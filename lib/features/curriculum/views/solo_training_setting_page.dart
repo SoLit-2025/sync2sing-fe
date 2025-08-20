@@ -24,10 +24,13 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
     // 선택된 노래 정보 감지
     final selectedSong = ref.watch(selectedSongProvider);
 
-    // 선택된 노래가 유효한지 확인: id, 제목, 아티스트 존재 여부
+    // 선택된 노래가 유효한지 확인
     final bool isSongSelected = (selectedSong.id != null &&
         selectedSong.title != null &&
-        selectedSong.artist != null);
+        selectedSong.artist != null &&
+        selectedSong.albumArtUrl != null &&
+        selectedSong.voiceType != null
+    );
 
     // 연습곡과 훈련기간이 모두 선택되었는지 확인
     final bool isFormValid = isSongSelected && _selectedDays != null;
@@ -113,7 +116,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
 
   // 노래 정보 카드 = 앨범아트 + 노래 정보
   Widget _buildSongCard(selectedSong, bool isSongSelected) {
-    return Container(
+    return SizedBox(
       width: 327.w,
       height: 80.h,
       child: Row(
@@ -172,6 +175,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildSongInfo(isSelected, selectedSong),
+        SizedBox(height: 6.h),
         _buildVoiceTypeChip(isSelected, selectedSong),
       ],
     );
@@ -179,56 +183,49 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
 
   // 노래 제목 & 가수 이름 로직
   Widget _buildSongInfo(bool isSelected, selectedSong) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 3.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            isSelected ? (selectedSong.title ?? '') : "연습할 노래를 선택해주세요",
-            style: AppTextStyles.body1Bold.copyWith(
-              color: isSelected ? AppColors.grayscale1 : AppColors.grayscale3,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          isSelected ? (selectedSong.title ?? '') : "연습할 노래를 선택해주세요",
+          style: AppTextStyles.body1Bold.copyWith(
+            color: isSelected ? AppColors.grayscale1 : AppColors.grayscale3,
           ),
-          SizedBox(height: 2.h),
-          Text(
-            isSelected ? (selectedSong.artist ?? '') : "선택한 노래가 이곳에 표시됩니다",
-            style: AppTextStyles.body2.copyWith(
-              color: isSelected ? AppColors.grayscale3 : AppColors.grayscale5,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          isSelected ? (selectedSong.artist ?? '') : "선택한 노래가 이곳에 표시됩니다",
+          style: AppTextStyles.body2.copyWith(
+            color: isSelected ? AppColors.grayscale3 : AppColors.grayscale5,
           ),
-        ],
-      ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 
   // 성부 칩 로직
   Widget _buildVoiceTypeChip(bool isSelected, selectedSong) {
     if (isSelected && selectedSong.voiceType != null && selectedSong.voiceType != '') {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 3.h),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-          decoration: BoxDecoration(
-            color: AppColors.grayscale3,
-            borderRadius: BorderRadius.circular(10.r),
-          ),
-          child: Text(
-            selectedSong.voiceType!,
-            style: AppTextStyles.body6.copyWith(color: AppColors.grayscale8),
-          ),
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+        decoration: BoxDecoration(
+          color: AppColors.grayscale3,
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Text(
+          selectedSong.voiceType!,
+          style: AppTextStyles.body6.copyWith(color: AppColors.grayscale8),
         ),
       );
     } else {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 3.h),
+      return SizedBox(
+        width: 60.w,
+        height: 20.h,
         child: Container(
-          width: 60.w,
-          height: 20.h,
           decoration: BoxDecoration(
             color: AppColors.grayscale6,
             borderRadius: BorderRadius.circular(10.r),
@@ -319,7 +316,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
         onPressed: isFormValid
             ? () {
           ref.read(selectedSongProvider.notifier).setTrainingDays(_selectedDays!);
-          context.push("${AppRoutePaths.songExampleVideo}");
+          context.go("${AppRoutePaths.songExampleVideo}/solo/pre");
         }
             : null,
         style: ElevatedButton.styleFrom(
