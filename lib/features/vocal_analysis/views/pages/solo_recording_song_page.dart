@@ -115,7 +115,8 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
       );
     } else {
       Map<String, dynamic> decoded = jsonDecode(jsonStr);
-      _songDetailModel = SongDetailModel.fromJson(decoded);
+      Map<String, dynamic> data = decoded['data'] ?? {};
+      _songDetailModel = SongDetailModel.fromJson(data);
     }
   }
 

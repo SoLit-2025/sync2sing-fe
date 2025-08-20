@@ -24,8 +24,7 @@ class SongDetailModel {
   );
 
   // JSON → 객체 변환
-  factory SongDetailModel.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] ?? {};
+  factory SongDetailModel.fromJson(Map<String, dynamic> data) {
     return SongDetailModel(
       data['id'] ?? 0,
       data['title'] ?? '',
