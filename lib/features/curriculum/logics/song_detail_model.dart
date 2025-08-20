@@ -24,8 +24,7 @@ class SongDetailModel {
   );
 
   // JSON → 객체 변환
-  factory SongDetailModel.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] ?? {};
+  factory SongDetailModel.fromJson(Map<String, dynamic> data) {
     return SongDetailModel(
       data['id'] ?? 0,
       data['title'] ?? '',
@@ -37,6 +36,24 @@ class SongDetailModel {
       data['album_art_url'] ?? '',
       data['file_url'] ?? '',
     );
+  }
+  String getVoiceTypeKorean() {
+    switch (voiceType) {
+      case 'TENOR':
+        return '테너';
+      case 'BASS':
+        return '베이스';
+      case 'BARITONE':
+        return '바리톤';
+      case 'SOPRANO':
+        return '소프라노';
+      case 'MEZZO_SOPRANO':
+        return '메조 소프라노';
+      case 'ALTO':
+        return '알토';
+      default:
+        return voiceType;
+    }
   }
 }
 
@@ -53,5 +70,9 @@ class DuetPart {
       partName: json['part_name'],
       lyricsIndexes: (json['lyrics_indexes'] as List).map((e) => e as int).toList(),
     );
+
+
   }
+
+
 }
