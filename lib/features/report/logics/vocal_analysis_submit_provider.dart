@@ -26,7 +26,7 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose<Map<String, dynam
     debugPrint('[3/7] 📡 요청 생성');
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://13.125.152.131:8080/api/vocal_analysis/vocal-analysis'),
+      Uri.parse('http://13.125.152.131:8080/api/training/vocal-analysis'),
     )..headers.addAll({'User-Agent': 'Sync2Sing/1.0', 'Accept': 'application/json'});
 
     // 4. 오디오 파일 추가
@@ -63,8 +63,8 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose<Map<String, dynam
     // 7. 요청 전송 및 응답 처리
     debugPrint('[7/7] 🚀 요청 전송 시작');
     final response = await request.send().timeout(
-      const Duration(seconds: 30),
-      onTimeout: () => throw TimeoutException('서버 응답 시간 초과 (30초)'),
+      const Duration(seconds: 120),
+      onTimeout: () => throw TimeoutException('서버 응답 시간 초과 (120초)'),
     );
 
     final responseBody = await response.stream.bytesToString();
