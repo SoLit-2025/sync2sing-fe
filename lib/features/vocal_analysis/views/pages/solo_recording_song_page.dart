@@ -9,7 +9,6 @@ import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
-import 'package:sync2sing/features/report/logics/vocal_analysis_submit_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/views/widgets/music_content_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,16 +18,11 @@ import 'package:sync2sing/features/vocal_analysis/logics/providers/audio_recorde
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import 'dart:io';
 
-
 class SoloRecordingSongPage extends ConsumerStatefulWidget {
   final AnalysisType analysisType; // 아마 analysisType 로 onboarding 역할 아예 대체 가능할 듯.
   final int songId;
 
-  const SoloRecordingSongPage({
-    required this.analysisType,
-    required this.songId,
-    super.key,
-  });
+  const SoloRecordingSongPage({required this.analysisType, required this.songId, super.key});
 
   @override
   ConsumerState createState() => _SoloRecordingSongPageState();
@@ -144,10 +138,6 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
   }
 
   void storeVocalAnalysisSubmit(ref) {
-    /// vocalAnalysisSubmitProvider 새로고침
-    /// 이전 분석 결과를 초기화하고 새로운 분석 시작
-    ref.refresh(vocalAnalysisSubmitProvider);
-
     /// 파일 경로 및 정확도 저장
     final controller = ref.read(audioRecorderProvider.notifier);
     final pitchAccuracy = controller.pitchAccuracy;
@@ -212,7 +202,7 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
                 ),
                 child: MusicContentPlayer(
                   _songDetailModel,
-                  'assets/songs/datas/doremi_song_piano_v2.json', // 백엔드에 음정 박자 모델 파일 경로 추가 필요.
+                  'assets/songs/datas/doremi_song_piano_v2.json',
                   onChildBoolChanged,
                   key: _playerKey,
                 ),

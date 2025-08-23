@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/features/curriculum/logics/curriculum_generation_request.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/curriculum/views/duet_song_detail_page.dart';
 import 'package:sync2sing/features/curriculum/views/song_example_video_page.dart';
@@ -11,7 +12,6 @@ import 'package:sync2sing/features/curriculum/views/training_generation_loading_
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/vocal_analysis/views/pages/solo_recording_song_page.dart';
-
 
 final List<GoRoute> curriculumRoutes = [
   GoRoute(
@@ -96,16 +96,16 @@ final List<GoRoute> curriculumRoutes = [
       final songIdStr = state.pathParameters['songId'];
       final songId = int.tryParse(songIdStr!);
 
-      return SoloRecordingSongPage(
-        songId: songId!,
-        analysisType: analysisType,
-      );
+      return SoloRecordingSongPage(songId: songId!, analysisType: analysisType);
     },
   ),
   GoRoute(
     path: AppRoutePaths.trainingGenerationLoading,
     name: AppRouteNames.trainingGenerationLoading,
-    builder: (context, state) => TrainingGenerationLoadingPage(),
-    // builder: (context, state) => TrainingGenerationLoadingPage(state.extra as CurriculumCreateData),  // extra로 정보 전달 시
+    // builder: (context, state) => TrainingGenerationLoadingPage(),
+    builder:
+        (context, state) => TrainingGenerationLoadingPage(
+          state.extra as CurriculumGenerationRequest,
+        ), // extra로 정보 전달 시
   ),
 ];

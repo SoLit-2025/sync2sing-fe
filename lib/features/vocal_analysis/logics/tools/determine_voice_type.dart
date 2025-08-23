@@ -10,11 +10,11 @@ class _VocalRange {
 String determineVoiceType(double lowestMidi, double highestMidi, double avgMidi) {
   // 성부별 MIDI 범위
   const vocalRanges = [
-    _VocalRange(name: 'Bass', min: 40, max: 64),
-    _VocalRange(name: 'Baritone', min: 43, max: 67),
-    _VocalRange(name: 'Tenor', min: 48, max: 72),
-    _VocalRange(name: 'Alto', min: 53, max: 77),
-    _VocalRange(name: 'Soprano', min: 60, max: 84),
+    _VocalRange(name: 'BASS', min: 40, max: 64),
+    _VocalRange(name: 'BARITONE', min: 43, max: 67),
+    _VocalRange(name: 'TENOR', min: 48, max: 72),
+    _VocalRange(name: 'ALTO', min: 53, max: 77),
+    _VocalRange(name: 'SOPRANO', min: 60, max: 84),
   ];
 
   // [1단계] 최저/최고 음을 완전히 포함하는 성부 검사
