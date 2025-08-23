@@ -62,7 +62,8 @@ class SongExampleVideoPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Map<String, dynamic> decoded = jsonDecode(jsonStr);
-    SongDetailModel songDetail = SongDetailModel.fromJson(decoded);
+    Map<String, dynamic> data = decoded['data'] ?? {};
+    SongDetailModel songDetail = SongDetailModel.fromJson(data);
     final bool isButtonEnabled = ref.watch(isOnboardingRecordingStartButtonEnabledProvider);
 
     return Scaffold(
@@ -142,7 +143,7 @@ class SongExampleVideoPage extends ConsumerWidget {
                         isButtonEnabled
                             ? () {
                               context.go(
-                                "${AppRoutePaths.soloPreRecordingSong}/${trainingMode.name}/${analysisType.name}/$songId",
+                                "${AppRoutePaths.soloPreRecordingSong}/${analysisType.name}/$songId",
                                 extra: songDetail.id,
                               );
                             }

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 
 import '../logics/training_session_status.dart';
 import '../logics/training_item.dart';
@@ -393,7 +394,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
   void initState() {
     super.initState();
 
-    final mockJson = SoloTrainingHomePage.afterTrainingMockJson;
+    final mockJson = SoloTrainingHomePage.noSessionMockJson;
     final jsonData = json.decode(mockJson)['data'];
     var tTrainingsessionstatus = getTrainingStatusFromJson(mockJson);
     switch (tTrainingsessionstatus) {
@@ -474,7 +475,9 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                           desc: "연습곡과 연습기간을 선택하면 맞춤형 훈련을 추천받을 수 있어요",
                           buttonText: "솔로 트레이닝 시작하기",
                           isMicReq: false,
-                          onPressed: () {},
+                          onPressed: () {
+                            context.push(AppRoutePaths.soloTrainingSetting);
+                          },
                         ),
                         SizedBox(height: 17.h),
                         Align(
@@ -493,7 +496,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                           buttonText: "진단하러 가기",
                           isMicReq: true,
                           onPressed: () {
-                            // context.go("${AppRoutePaths.songExampleVideo}/$songId");
+                            context.go("${AppRoutePaths.songExampleVideo}/solo/pre/$songId");
                           },
                         ),
                         SizedBox(height: 17.h),
@@ -514,7 +517,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                           buttonText: "진단하러 가기",
                           isMicReq: true,
                           onPressed: () {
-                            context.go("${AppRoutePaths.songExampleVideo}/$songId");
+                            context.go("${AppRoutePaths.songExampleVideo}/solo/${AnalysisType.post.name}/$songId");
                           },
                         ),
                         Container(
@@ -528,7 +531,6 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                       ],
                       TrainingSessionStatus.error => [SizedBox()],
                     },
-                    // _curriculumListView(),
                   ],
                 ),
               ),
