@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
-import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
 
 import 'analysis_params.dart';
@@ -20,11 +19,6 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose.family<
     // 1. 데이터 검증
     debugPrint('[1/7] 🛠️ 데이터 검증 시작');
     final vocalData = ref.read(vocalResultProvider);
-    // final vocalData = VocalResult(
-    //   wavFilePath: '/data/user/0/com.example.sync2sing/cache/recording_1755913116617.wav',
-    //   pitchAccuracy: 54,
-    //   rhythmAccuracy: 75,
-    // );
     _validateRequestData(vocalData);
 
     // 2. 파일 확인

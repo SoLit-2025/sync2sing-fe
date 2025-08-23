@@ -125,28 +125,20 @@ class VocalAnalysisReportPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reportData = getReportData(context);
-
-    // final data = jsonDecode(guestJsonStr);
-    // final reportData = data['data'];
-    debugPrint("reportData: $reportData");
     final songData = getSongData(reportData);
 
     final voiceTypeData =
         (analysisType == AnalysisType.guest)
-            ? ref.watch(voiceTypeProfileProvider).voiceType! // ? "ALTO" //
+            ? ref.watch(voiceTypeProfileProvider).voiceType!
             : songData['voice_type'];
 
     final pitchNoteMin =
         (analysisType == AnalysisType.guest)
-            ? ref
-                .watch(voiceTypeProfileProvider)
-                .minNote // 'C3' //
+            ? ref.watch(voiceTypeProfileProvider).minNote
             : songData['pitch_note_min'] ?? "";
     final pitchNoteMax =
         (analysisType == AnalysisType.guest)
-            ? ref
-                .watch(voiceTypeProfileProvider)
-                .maxNote // 'A4' //
+            ? ref.watch(voiceTypeProfileProvider).maxNote
             : songData['pitch_note_max'] ?? "";
 
     if (reportData.isEmpty) {
@@ -448,7 +440,6 @@ class RadarChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    // final radius = (math.min(size.width, size.height) / 2) - 20;
     final radius = size.height / 2 - 20;
 
     // 배경 그리드 그리기

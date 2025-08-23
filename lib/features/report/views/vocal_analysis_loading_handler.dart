@@ -28,7 +28,6 @@ class VocalAnalysisLoadingHandler extends ConsumerWidget {
       (previous, next) {
         if (next.hasValue && context.mounted) {
           // 응답을 정상적으로 받으면
-          // context.goNamed(AppRouteNames.vocalAnalysisReport, extra: next.value);
           context.go(
             "${AppRoutePaths.vocalAnalysisReport}/${trainingMode.name}/${analysisType.name}",
             extra: next.value,

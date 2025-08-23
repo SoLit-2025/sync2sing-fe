@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
-import 'package:sync2sing/features/report/logics/vocal_analysis_submit_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
