@@ -9,8 +9,14 @@ import 'package:sync2sing/config/theme/app_text_styles.dart';
 class VoiceRangeDisplay extends StatelessWidget {
   final String pitchNoteMin;
   final String pitchNoteMax;
+  final String title;
 
-  const VoiceRangeDisplay({super.key, required this.pitchNoteMin, required this.pitchNoteMax});
+  const VoiceRangeDisplay({
+    super.key,
+    required this.pitchNoteMin,
+    required this.pitchNoteMax,
+    this.title = "노래 음역대",
+  });
 
   static int _noteToNumber(String note) {
     if (note.isEmpty) return -1;
@@ -54,7 +60,7 @@ class VoiceRangeDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     // 바의 음정 범위
     const String barMinNoteString = 'G#2';
-    const String barMaxNoteString = 'C5';
+    const String barMaxNoteString = 'C6';
 
     final int barMinNum = _noteToNumber(barMinNoteString); // 32
     final int barMaxNum = _noteToNumber(barMaxNoteString); // 60
@@ -99,7 +105,7 @@ class VoiceRangeDisplay extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("노래 음역대", style: AppTextStyles.body4),
+          Text(title, style: AppTextStyles.body4),
           SizedBox(
             width: 200.w,
             child: Column(
@@ -126,7 +132,7 @@ class VoiceRangeDisplay extends StatelessWidget {
                           Positioned(
                             left: maxNoteLabelAdjustedX.clamp(
                               minNoteLabelAdjustedX + 15,
-                              barWidth - 15,
+                              barWidth - 18,
                             ),
                             child: Text(pitchNoteMax, style: AppTextStyles.body6),
                           ),

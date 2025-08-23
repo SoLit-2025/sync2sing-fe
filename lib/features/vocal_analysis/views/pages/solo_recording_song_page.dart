@@ -234,9 +234,12 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
                                 storeVocalAnalysisSubmit(ref);
 
                                 context.go(
-                                  AppRoutePaths
-                                      .vocalAnalysisLoading, // /${widget.trainingMode}/${widget.analysisType}
+                                  "${AppRoutePaths.vocalAnalysisLoading}/solo/${widget.analysisType.name}",
                                 );
+                                // context.go(
+                                //   AppRoutePaths
+                                //       .vocalAnalysisLoading, // /${widget.trainingMode}/${widget.analysisType}
+                                // );
                               }
                               : null,
                       // 비활성화 시 null (클릭 불가)

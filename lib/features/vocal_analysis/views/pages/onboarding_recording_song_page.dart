@@ -85,10 +85,6 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
   }
 
   void storeVocalAnalysisSubmit(ref) {
-    /// vocalAnalysisSubmitProvider 새로고침
-    /// 이전 분석 결과를 초기화하고 새로운 분석 시작
-    ref.refresh(vocalAnalysisSubmitProvider);
-
     /// 파일 경로 및 정확도 저장
     /// *** ref 를 dispose() 에서 사용할 수 없어서 여기서 저장하게 로직을 작성하였습니다. -> 나중에 리팩토링될 수 있음.
     final controller = ref.read(audioRecorderProvider.notifier);
@@ -110,7 +106,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
     debugPrint(
       "파일 경로 및 정확도 저장: ${vocalPitchData.wavFilePath} | ${vocalPitchData.pitchAccuracy} | ${vocalPitchData.rhythmAccuracy}",
     );
-
+    //
     // ★ 실제 파일 존재 및 크기 확인
     if (vocalPitchData.wavFilePath != null) {
       final file = File(vocalPitchData.wavFilePath!);
@@ -190,7 +186,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
                                 // 데이터 저장
                                 storeVocalAnalysisSubmit(ref);
 
-                                context.goNamed(AppRouteNames.analysisLoading);
+                                context.go("${AppRoutePaths.vocalAnalysisLoading}/solo/guest");
                               }
                               : null,
                       // 비활성화 시 null (클릭 불가)

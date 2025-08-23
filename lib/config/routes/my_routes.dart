@@ -3,6 +3,8 @@ import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/features/my/views/my_page.dart';
 import 'package:sync2sing/features/my/views/settings_page.dart';
 import 'package:sync2sing/features/report/views/vocal_analysis_report_page.dart';
+import 'package:sync2sing/features/shared/logics/analysis_type.dart';
+import 'package:sync2sing/features/shared/logics/training_mode.dart';
 
 final List<GoRoute> myRoutes = [
   GoRoute(
@@ -16,8 +18,16 @@ final List<GoRoute> myRoutes = [
     builder: (context, state) => const SettingsPage(),
   ),
   GoRoute(
-    path: AppRoutePaths.vocalAnalysisReport,
+    path: "${AppRoutePaths.vocalAnalysisReport}/:trainingMode/:analysisType",
     name: AppRouteNames.vocalAnalysisReport,
-    builder: (context, state) => const VocalAnalysisReportPage(),
+    builder: (context, state) {
+      final trainingMode = TrainingMode.values.firstWhere(
+        (e) => e.name == state.pathParameters['trainingMode'],
+      );
+      final analysisType = AnalysisType.values.firstWhere(
+        (e) => e.name == state.pathParameters['analysisType'],
+      );
+      return VocalAnalysisReportPage(trainingMode: trainingMode, analysisType: analysisType);
+    },
   ),
 ];
