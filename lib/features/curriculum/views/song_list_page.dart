@@ -3,69 +3,434 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
-import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
+import 'package:sync2sing/config/theme/app_colors.dart';
 
-class SongListPage extends StatelessWidget {
+
+class SongListPage extends StatefulWidget {
   final TrainingMode trainingMode;
-  const SongListPage({super.key, required this.trainingMode});
+  const SongListPage({Key? key, required this.trainingMode}) : super(key: key);
+
+  @override
+  State<SongListPage> createState() => _SongListPageState();
+}
+
+class _SongListPageState extends State<SongListPage> {
+  final List<String> voiceTypes = ['전체', '소프라노', '알토', '테너', '바리톤','베이스'];
+  String selectedVoiceType = '전체';
+
+
+  final List<Map<String, String>> songList = [
+    // 소프라노 8곡
+    {
+      'title': "How It's Done",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "SOPRANO",
+      'album_art_url': "assets/images/album-art.png",
+    },
+    {
+      'title': "Soda Pop",
+      'artist': "Saja Boys(Andrew Choi, Neck...)",
+      'voice_type': "SOPRANO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Golden",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "SOPRANO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Free",
+      'artist': "Rumi(EJAE), Jinu(Andrew Choi)",
+      'voice_type': "SOPRANO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Take Down",
+      'artist': "TWICE(정연,지효,채영)",
+      'voice_type': "SOPRANO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Take Down",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "SOPRANO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Your Idol",
+      'artist': "Saja Boys(Andrew Choi, Neck...)",
+      'voice_type': "SOPRANO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "What It Sounds Like",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "SOPRANO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    // 알토 8곡
+    {
+      'title': "How It's Done",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "ALTO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Soda Pop",
+      'artist': "Saja Boys(Andrew Choi, Neck...)",
+      'voice_type': "ALTO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Golden",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "ALTO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Free",
+      'artist': "Rumi(EJAE), Jinu(Andrew Choi)",
+      'voice_type': "ALTO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Take Down",
+      'artist': "TWICE(정연,지효,채영)",
+      'voice_type': "ALTO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Take Down",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "ALTO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Your Idol",
+      'artist': "Saja Boys(Andrew Choi, Neck...)",
+      'voice_type': "ALTO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "What It Sounds Like",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "ALTO",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    //테너8곡
+    {
+      'title': "How It's Done",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "TENOR",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Soda Pop",
+      'artist': "Saja Boys(Andrew Choi, Neck...)",
+      'voice_type': "TENOR",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Golden",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "TENOR",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Free",
+      'artist': "Rumi(EJAE), Jinu(Andrew Choi)",
+      'voice_type': "TENOR",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Take Down",
+      'artist': "TWICE(정연,지효,채영)",
+      'voice_type': "TENOR",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Take Down",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "TENOR",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Your Idol",
+      'artist': "Saja Boys(Andrew Choi, Neck...)",
+      'voice_type': "TENOR",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "What It Sounds Like",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "TENOR",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    //BARITONE 8곡
+    {
+      'title': "How It's Done",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "BARITONE",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Soda Pop",
+      'artist': "Saja Boys(Andrew Choi, Neck...)",
+      'voice_type': "BARITONE",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Golden",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "BARITONE",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Free",
+      'artist': "Rumi(EJAE), Jinu(Andrew Choi)",
+      'voice_type': "BARITONE",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Take Down",
+      'artist': "TWICE(정연,지효,채영)",
+      'voice_type': "BARITONE",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Take Down",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "BARITONE",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Your Idol",
+      'artist': "Saja Boys(Andrew Choi, Neck...)",
+      'voice_type': "BARITONE",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "What It Sounds Like",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "BARITONE",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    // 베이스 8곡
+    {
+      'title': "How It's Done",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "BASS",
+      'album_art_url': "assets/images/album-art.png",
+    },
+    {
+      'title': "Soda Pop",
+      'artist': "Saja Boys(Andrew Choi, Neck...)",
+      'voice_type': "BASS",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Golden",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "BASS",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Free",
+      'artist': "Rumi(EJAE), Jinu(Andrew Choi)",
+      'voice_type': "BASS",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Take Down",
+      'artist': "TWICE(정연,지효,채영)",
+      'voice_type': "BASS",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Take Down",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "BASS",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "Your Idol",
+      'artist': "Saja Boys(Andrew Choi, Neck...)",
+      'voice_type': "BASS",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    },
+    {
+      'title': "What It Sounds Like",
+      'artist': "HUNTR/X(EJAE, Audrey Nuna...)",
+      'voice_type': "BASS",
+      'album_art_url': "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    }
+
+
+  ];
+
+  String getVoiceTypeEnglish(String korean) {
+    switch (korean) {
+      case '소프라노': return 'SOPRANO';
+      case '알토': return 'ALTO';
+      case '테너': return 'TENOR';
+      case '바리톤': return 'BARITONE';
+      case '베이스': return 'BASS';
+      default: return '';
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    SongDetailModel songDetailModel = SongDetailModel(
-      3,
-      "Golden",
-      "HUNXR/X(EJAE, Audrey NUNA, REI AMI",
-      "SOFRANO",
-      "A3",
-      "C4",
-      [
-        TimedLyric(0, "I'm done hidin", 100),
-        TimedLyric(1, "now I'm shinin'", 2000),
-        TimedLyric(2, "like I'm born to be", 3000),
-        TimedLyric(3, "We dreamin' hard", 5000),
-        TimedLyric(4, "we came so far", 7000),
-        TimedLyric(5, "now I believe", 9000),
-      ],
-      "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-      "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/6875743e-3955-4067-abed-da1911a6aae1.mp3",
-    );
-    List<DuetPart> duetParts = [
-      DuetPart(partNumber: 1, partName: "파트 A", lyricsIndexes: [1, 2]),
-    ];
+
+    final List<Map<String, String>> filteredSongList = selectedVoiceType == '전체'
+        ? songList
+        : songList.where((song) => song['voice_type'] == getVoiceTypeEnglish(selectedVoiceType)).toList();
+
     return Scaffold(
-      body: Center(
+      backgroundColor: AppColors.grayscale8,
+      body: SafeArea(
         child: Column(
           children: [
-            Text("SongListPage - $trainingMode"),
-            SizedBox(
-              width: 327.w,
-              height: 50.w,
-              child: CupertinoButton(
-                borderRadius: BorderRadius.circular(10.w),
-                onPressed: () {
-                  context.goNamed(AppRouteNames.soloSongDetail, extra: songDetailModel);
-                },
-                child: Text("soloSongDetailPage"),
+            SizedBox(height: 32.h),
+            Container(
+              height: 30.h,
+              margin: EdgeInsets.only(left: 15.w),
+              decoration: BoxDecoration(
+                color: AppColors.grayscale7,
+                borderRadius: BorderRadius.circular(30.w),
               ),
-            ),
-            SizedBox(
-              width: 327.w,
-              height: 50.w,
-              child: CupertinoButton(
-                borderRadius: BorderRadius.circular(10.w),
-                onPressed: () {
-                  context.goNamed(
-                    AppRouteNames.duetSongDetail,
-                    extra: (songDetailModel: songDetailModel, duetParts: duetParts),
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: voiceTypes.length,
+                separatorBuilder: (_, __) => SizedBox(width: 4.w),
+                itemBuilder: (BuildContext context, int index) {
+                  final isSelected = selectedVoiceType == voiceTypes[index];
+
+                  return GestureDetector(
+                    onTap: () => setState(() => selectedVoiceType = voiceTypes[index]),
+                    child: Container(
+                      width: 80.w,
+                      height: 30.h,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.grayscale3 : AppColors.grayscale7,
+                        borderRadius: BorderRadius.circular(15.w),
+                      ),
+                      child: Text(
+                        voiceTypes[index],
+                        style: AppTextStyles.body3.copyWith(
+                          color: isSelected ? AppColors.grayscale8 : AppColors.grayscale3,
+                        ),
+                      ),
+                    ),
                   );
                 },
-                child: Text("duetDetailPage"),
+              ),
+            ),
+
+            SizedBox(height: 20.h),
+            // 연습곡 리스트
+            Expanded(
+              child: ListView.separated(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                itemCount: filteredSongList.length,
+                separatorBuilder: (context, idx) =>  Container(
+                  padding: EdgeInsets.symmetric(vertical: 4.h),
+                  color: AppColors.grayscale6,
+                  width: double.infinity,
+                  height: 1,
+                ),
+                itemBuilder: (context, idx) {
+                  final song = filteredSongList[idx];
+
+                  final songDetailModel = SongDetailModel.fromJson(song);
+
+                  return GestureDetector(
+                    onTap: () {
+                      context.go(AppRoutePaths.soloSongDetail, extra: SongDetailModel.fromJson(song));
+                    },
+                    child: Container(
+                      width: 327.w.roundToDouble(),
+                      height: 103.h.roundToDouble(),
+                      decoration: BoxDecoration(
+                        color: AppColors.grayscale8,
+                        borderRadius: BorderRadius.circular(15.w),
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 10.w),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12.w),
+                            child: song['album_art_url']!.startsWith('assets') ?
+                            Image.asset(
+                              song['album_art_url']!,
+                              width: 80.w,
+                              height: 80.h,
+                              fit: BoxFit.cover,
+                            )
+                                : Image.network(
+                              song['album_art_url']!,
+                              width: 80.w,
+                              height: 80.h,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          SizedBox(width: 14.w),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  song['title']!,
+                                  style:AppTextStyles.body1Bold,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 5.h),
+                                Text(
+                                  song['artist']!,
+                                  style: AppTextStyles.body2.copyWith(
+                                      color: AppColors.grayscale3,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 5.h),
+                                Container(
+                                  height: 20.h ,
+                                  width: 60.w,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.grayscale3,
+                                    borderRadius: BorderRadius.circular(12.w),
+                                  ),
+                                  child: Text(
+                                    songDetailModel.getVoiceTypeKorean(),
+                                    style: AppTextStyles.body6.copyWith(
+                                        color: AppColors.grayscale8
+                                    ) ,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 20.w),
+                        ],
+                      ),
+                    ),
+                  ) ;
+                },
               ),
             ),
           ],
         ),
+
       ),
     );
   }

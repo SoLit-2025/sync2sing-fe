@@ -37,7 +37,6 @@ class SongDetailModel {
       data['file_url'] ?? '',
     );
   }
-
   String getVoiceTypeKorean() {
     switch (voiceType) {
       case 'TENOR':
