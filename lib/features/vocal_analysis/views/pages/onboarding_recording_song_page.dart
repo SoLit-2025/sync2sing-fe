@@ -83,7 +83,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
     });
   }
 
-  void storeVocalAnalysisSubmit(ref) {
+  Future<void> storeVocalAnalysisSubmit(ref) async {
     /// 파일 경로 및 정확도 저장
     /// *** ref 를 dispose() 에서 사용할 수 없어서 여기서 저장하게 로직을 작성하였습니다. -> 나중에 리팩토링될 수 있음.
     final controller = ref.read(audioRecorderProvider.notifier);
@@ -99,6 +99,8 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
     ref.read(vocalResultProvider.notifier).setRhythmAccuracy(controller.rhythmAccuracy);
 
     controller.printRhythmAccuracyDetailStatistics();
+
+    await controller.stop();
 
     /// *** 저장한 것: 파일 경로 및 정확도 조회하기
     final vocalPitchData = ref.watch(vocalResultProvider);
@@ -183,7 +185,8 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
                           _isButtonEnabled
                               ? () async {
                                 // 데이터 저장
-                                storeVocalAnalysisSubmit(ref);
+                                await storeVocalAnalysisSubmit(ref);
+                                if (!context.mounted) return; // 반드시 위 함수가 실행된 후에 페이지를 이동하도록 함
 
                                 context.go("${AppRoutePaths.vocalAnalysisLoading}/solo/guest");
                               }

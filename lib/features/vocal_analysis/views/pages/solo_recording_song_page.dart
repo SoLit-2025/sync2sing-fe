@@ -137,7 +137,7 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
     });
   }
 
-  void storeVocalAnalysisSubmit(ref) {
+  Future<void> storeVocalAnalysisSubmit(ref) async {
     /// 파일 경로 및 정확도 저장
     final controller = ref.read(audioRecorderProvider.notifier);
     final pitchAccuracy = controller.pitchAccuracy;
@@ -152,6 +152,8 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
     ref.read(vocalResultProvider.notifier).setRhythmAccuracy(controller.rhythmAccuracy);
 
     controller.printRhythmAccuracyDetailStatistics();
+
+    await controller.stop();
 
     /// *** 저장한 것: 파일 경로 및 정확도 조회하기
     final vocalPitchData = ref.watch(vocalResultProvider);
@@ -231,8 +233,8 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
                           _isButtonEnabled
                               ? () async {
                                 // 데이터 저장
-                                storeVocalAnalysisSubmit(ref);
-
+                                await storeVocalAnalysisSubmit(ref);
+                                if (!context.mounted) return; // 반드시 위 함수가 실행된 후에 페이지를 이동하도록 함
                                 context.go(
                                   "${AppRoutePaths.vocalAnalysisLoading}/solo/${widget.analysisType.name}",
                                 );

@@ -18,5 +18,5 @@ class AnalysisParams {
   }
 
   @override
-  int get hashCode => trainingMode.hashCode ^ analysisType.hashCode;
+  int get hashCode => Object.hash(trainingMode, analysisType);
 }
