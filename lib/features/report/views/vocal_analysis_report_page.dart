@@ -151,41 +151,45 @@ class VocalAnalysisReportPage extends ConsumerWidget {
       // backgroundColor: AppColors.grayscale8,
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Align(
-            alignment: Alignment(0.0, -1.0),
-            child: SizedBox(
-              width: 327.w,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(height: 18.h),
-                  _buildAppBar(context, reportData['title'] ?? ""),
-                  SizedBox(height: 36.h),
-                  _buildSongOverView(songData),
-                  SizedBox(height: 16.h),
-                  (analysisType == AnalysisType.guest)
-                      ? _buildVoiceTypeSection(voiceTypeData)
-                      : _buildVoiceTypeBadge(voiceTypeData),
-                  SizedBox(height: 16.h),
-                  VoiceRangeDisplay(
-                    pitchNoteMin: pitchNoteMin,
-                    pitchNoteMax: pitchNoteMax,
-                    title: (analysisType == AnalysisType.guest) ? "나의 음역대" : "노래 음역대",
+          child: Column(
+            children: [
+              SizedBox(height: 18.h),
+              _buildAppBar(context, reportData['title'] ?? ""),
+              SizedBox(height: 46.h),
+              Align(
+                alignment: Alignment(0.0, -1.0),
+                child: SizedBox(
+                  width: 327.w,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _buildSongOverView(songData),
+                      SizedBox(height: 16.h),
+                      (analysisType == AnalysisType.guest)
+                          ? _buildVoiceTypeSection(voiceTypeData)
+                          : _buildVoiceTypeBadge(voiceTypeData),
+                      SizedBox(height: 16.h),
+                      VoiceRangeDisplay(
+                        pitchNoteMin: pitchNoteMin,
+                        pitchNoteMax: pitchNoteMax,
+                        title: (analysisType == AnalysisType.guest) ? "나의 음역대" : "노래 음역대",
+                      ),
+                      SizedBox(height: 16.h),
+                      _buildAccuracySection(reportData['pitch_score'], reportData['beat_score']),
+                      SizedBox(height: 40.h),
+                      _buildRadarChart(reportData),
+                      SizedBox(height: 32.h),
+                      _buildAnalysisDescription(reportData),
+                      SizedBox(height: 14.h),
+                      _buildRecommendationSection(reportData),
+                      SizedBox(height: 40.h),
+                      _buildCurriculumButton(context, reportData),
+                      SizedBox(height: 40.h),
+                    ],
                   ),
-                  SizedBox(height: 16.h),
-                  _buildAccuracySection(reportData['pitch_score'], reportData['beat_score']),
-                  SizedBox(height: 40.h),
-                  _buildRadarChart(reportData),
-                  SizedBox(height: 32.h),
-                  _buildAnalysisDescription(reportData),
-                  SizedBox(height: 14.h),
-                  _buildRecommendationSection(reportData),
-                  SizedBox(height: 40.h),
-                  _buildCurriculumButton(context, reportData),
-                  SizedBox(height: 40.h),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -193,12 +197,13 @@ class VocalAnalysisReportPage extends ConsumerWidget {
   }
 
   Widget _buildAppBar(BuildContext context, String text) {
-    return SizedBox(
-      height: 56.h,
-      child: Row(
-        children: [
-          if (analysisType != AnalysisType.guest)
-            GestureDetector(
+    return Stack(
+      children: [
+        SizedBox(width: 18.w),
+        if (analysisType != AnalysisType.guest)
+          Padding(
+            padding: EdgeInsets.only(left: 18.w),
+            child: GestureDetector(
               onTap: () => context.pop(),
               child: Image.asset(
                 'assets/images/left_arrow_icon.png',
@@ -207,17 +212,17 @@ class VocalAnalysisReportPage extends ConsumerWidget {
                 fit: BoxFit.contain,
               ),
             ),
-          Expanded(
-            child: Text(
-              //./
-              text,
-              style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale1),
-              textAlign: TextAlign.center,
-            ),
           ),
-          SizedBox(width: 14.w),
-        ],
-      ),
+        Align(
+          alignment: Alignment.topCenter,
+          child: Text(
+            //./
+            text,
+            style: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
     );
   }
 
@@ -260,7 +265,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
         SizedBox(height: 20.h),
         Text(
           getVoiceTypeDescription(voiceType.toUpperCase()),
-          style: AppTextStyles.body2,
+          style: AppTextStyles.body2.copyWith(color: AppColors.grayscale2),
           textAlign: TextAlign.center,
         ),
       ],

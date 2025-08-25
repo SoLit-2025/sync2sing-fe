@@ -38,7 +38,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
   Key _playerKey = UniqueKey();
   bool _isButtonEnabled = false;
   late final SongDetailModel _songDetailModel = SongDetailModel(
-    1,
+    2,
     "Do-Re-Mi Song",
     "Richard Rodgers",
     "SOPRANO",

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -88,30 +86,31 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    if (widget.analysisType == AnalysisType.guest) {
-      // guest -> 온보딩처럼 -> 걍 가져오기
-      // context.go(AppRoutePaths.onboardingRecordingSong);
-      _songDetailModel = SongDetailModel(
-        1,
-        "Do-Re-Mi Song",
-        "Richard Rodgers",
-        "SOPRANO",
-        "C4",
-        "D5",
-        [
-          TimedLyric(0, "(전주중)", 0),
-          TimedLyric(1, "Doe - a deer,", 2300),
-          TimedLyric(2, "a female deer", 4000),
-          TimedLyric(3, "Ray - a drop of golden sun", 6000),
-        ],
-        "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-        "assets/songs/audios/doremi_song_v3_mr.wav",
-      );
-    } else {
-      Map<String, dynamic> decoded = jsonDecode(jsonStr);
-      Map<String, dynamic> data = decoded['data'] ?? {};
-      _songDetailModel = SongDetailModel.fromJson(data);
-    }
+    // if 문 임시 주석처리 : 어느 상항에서든 do re mi song.
+    // if (widget.analysisType == AnalysisType.guest) {
+    // guest -> 온보딩처럼 -> 걍 가져오기
+    // context.go(AppRoutePaths.onboardingRecordingSong);
+    _songDetailModel = SongDetailModel(
+      2,
+      "Do-Re-Mi Song",
+      "Richard Rodgers",
+      "SOPRANO",
+      "C4",
+      "D5",
+      [
+        TimedLyric(0, "(전주중)", 0),
+        TimedLyric(1, "Doe - a deer,", 2300),
+        TimedLyric(2, "a female deer", 4000),
+        TimedLyric(3, "Ray - a drop of golden sun", 6000),
+      ],
+      "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+      "assets/songs/audios/doremi_song_v3_mr.wav",
+    );
+    // } else {
+    //   Map<String, dynamic> decoded = jsonDecode(jsonStr);
+    //   Map<String, dynamic> data = decoded['data'] ?? {};
+    //   _songDetailModel = SongDetailModel.fromJson(data);
+    // }
   }
 
   @override
