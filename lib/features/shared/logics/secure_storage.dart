@@ -2,9 +2,14 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart';
 
 class SecureStorage {
-  final FlutterSecureStorage storage;
+  static final SecureStorage _instance = SecureStorage._internal();
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
 
-  SecureStorage({required this.storage});
+  factory SecureStorage() {
+    return _instance;
+  }
+
+  SecureStorage._internal();
 
   /// accessToken 저장
   Future<void> saveAccessToken(String accessToken) async {
