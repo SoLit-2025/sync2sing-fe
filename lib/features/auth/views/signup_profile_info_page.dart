@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import '../logics/birth_info_provider.dart';
+import '../logics/nickname_provider.dart';
 
 class SignupProfileInfoPage extends ConsumerStatefulWidget {
   const SignupProfileInfoPage({Key? key}) : super(key: key);
@@ -93,6 +94,11 @@ class _SignupProfileInfoPageState extends ConsumerState<SignupProfileInfoPage> {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 200), () {
       validateNickname(value);
+      if (isNicknameValid){
+        ref.read(nicknameProvider.notifier).state = value;
+      } else{
+        ref.read(nicknameProvider.notifier).state = null;
+      }
     });
   }
 
@@ -356,7 +362,7 @@ class _SignupProfileInfoPageState extends ConsumerState<SignupProfileInfoPage> {
         onPressed:
             isFormValid
                 ? () {
-                  context.go(AppRoutePaths.signupComplete);
+                  context.go(AppRoutePaths.signupIdPassword);
                 }
                 : null,
         style: ElevatedButton.styleFrom(
