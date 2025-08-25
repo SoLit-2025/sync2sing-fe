@@ -11,7 +11,7 @@ class DioFactory {
 
   Dio createDio() {
     final options = BaseOptions(
-      baseUrl: 'http://13.125.152.131:8080',
+      baseUrl: 'http://13.125.152.131:8080/api',
       connectTimeout: const Duration(seconds: 100),
       receiveTimeout: const Duration(seconds: 100),
       headers: {

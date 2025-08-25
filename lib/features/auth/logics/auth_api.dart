@@ -13,7 +13,7 @@ class AuthApi {
   }) async {
     try {
       final response = await dioFactory.post(
-        '/api/user/signup',
+        '/user/signup',
         data: {
           'username': username,
           'password': password,
@@ -38,7 +38,7 @@ class AuthApi {
   }) async {
     try {
       final response = await dioFactory.post(
-        '/api/user/login',
+        '/user/login',
         data: {
           'username': username,
           'password': password,
@@ -61,7 +61,7 @@ class AuthApi {
   }) async {
     try {
       final response = await dioFactory.post(
-        '/api/user/logout',
+        '/user/logout',
         data: {'refreshToken': refreshToken},
       );
 
