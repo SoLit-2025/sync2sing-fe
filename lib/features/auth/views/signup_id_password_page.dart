@@ -1,11 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/auth/logics/auth_api.dart';
@@ -31,13 +32,13 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
   String? idMessage, pwMessage;
   String? idErrorType, pwErrorType;
 
-  final dioFactory = DioFactory(FlutterSecureStorage());
+  final dioFactory = DioFactory(SecureStorage());
   late final AuthApi _authApi;
 
   @override
   void initState() {
     super.initState();
-    _authApi = AuthApi(dioFactory.createDio());
+    _authApi = AuthApi(dioFactory);
   }
 
   @override
@@ -157,6 +158,8 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
 
   Future<void> _doSignUp() async {
     final nickname = ref.watch(nicknameProvider) ?? '';
+
+    print('SignUp - username: $id, password: $pw, nickname: $nickname');
     try {
       final response = await _authApi.signUp(
         username: id,
@@ -171,7 +174,15 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
         _showError(message);
       }
     } catch (e) {
-      _showError(e.toString());
+      if (e is DioException) {
+        // DioError일 경우, 서버가 반환한 상세 에러 메시지를 출력
+        print('Dio error response data: ${e.response?.data}');
+        final errorMessage = e.response?.data['message'] ?? '회원가입에 실패했습니다.';
+        _showError(errorMessage);
+      } else {
+        // 일반 예외 처리
+        _showError(e.toString());
+      }
     }
   }
 
