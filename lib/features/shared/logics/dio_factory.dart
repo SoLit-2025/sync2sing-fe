@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 
 class DioFactory {
-  final FlutterSecureStorage storage;
+  final SecureStorage secureStorage;
+  late final Dio _dio;
 
-  DioFactory(this.storage);
+  DioFactory(this.secureStorage){
+    _dio = createDio();
+  }
 
   Dio createDio() {
     final options = BaseOptions(
@@ -21,7 +24,7 @@ class DioFactory {
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         if(!options.path.contains('/login') && !options.path.contains('/signup')){
-          final accessToken = await storage.read(key: 'ACCESS_TOKEN');
+          final accessToken = await secureStorage.readAccessToken();
           if (accessToken != null && accessToken.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $accessToken';
           }
@@ -35,5 +38,24 @@ class DioFactory {
     ));
 
     return dio;
+  }
+  /// CREATE - 새 데이터 생성
+  Future<Response> post(String path, {dynamic data}) async {
+    return await _dio.post(path, data: data);
+  }
+
+  /// READ - 데이터 조회
+  Future<Response> get(String path, {Map<String, dynamic>? queryParams}) async {
+    return await _dio.get(path, queryParameters: queryParams);
+  }
+
+  /// UPDATE - 데이터 수정
+  Future<Response> put(String path, {dynamic data}) async {
+    return await _dio.put(path, data: data);
+  }
+
+  /// DELETE - 데이터 삭제
+  Future<Response> delete(String path) async {
+    return await _dio.delete(path);
   }
 }
