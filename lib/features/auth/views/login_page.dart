@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/auth/logics/auth_api.dart';
+import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 
 class Loginpage extends ConsumerStatefulWidget {
   const Loginpage({super.key});
@@ -20,17 +20,17 @@ class _LoginpageState extends ConsumerState<Loginpage> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _pwController = TextEditingController();
 
-  final dioFactory = DioFactory(FlutterSecureStorage());
+  final dioFactory = DioFactory(SecureStorage());
   late final AuthApi _authApi;
-  final _storage = FlutterSecureStorage();
+  final _storage = SecureStorage();
 
   Future<void> printAccessToken() async {
-    String? accessToken = await _storage.read(key: 'ACCESS_TOKEN');
+    String? accessToken = await _storage.readAccessToken();
     print('Stored ACCESS_TOKEN: $accessToken');
   }
 
   Future<void> printRefreshToken() async {
-    String? refreshToken = await _storage.read(key: 'REFRESH_TOKEN');
+    String? refreshToken = await _storage.readRefreshToken();
     print('Stored REFRESH_TOKEN: $refreshToken');
   }
 
@@ -41,7 +41,7 @@ class _LoginpageState extends ConsumerState<Loginpage> {
   @override
   void initState() {
     super.initState();
-    _authApi = AuthApi(dioFactory.createDio());
+    _authApi = AuthApi(dioFactory);
     _idController.addListener(_onTextChanged);
     _pwController.addListener(_onTextChanged);
   }
@@ -75,8 +75,8 @@ class _LoginpageState extends ConsumerState<Loginpage> {
         final refreshToken = response['data']['refresh_token'] as String;
 
         // 토큰을 안전 저장소에 저장
-        await _storage.write(key: 'ACCESS_TOKEN', value: accessToken);
-        await _storage.write(key: 'REFRESH_TOKEN', value: refreshToken);
+        await _storage.saveAccessToken(accessToken);
+        await _storage.saveRefreshToken(refreshToken);
 
         await printAccessToken();
         await printRefreshToken();
