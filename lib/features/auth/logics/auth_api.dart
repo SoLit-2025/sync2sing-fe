@@ -1,9 +1,9 @@
-import 'package:dio/dio.dart';
+import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 
 class AuthApi {
-  final Dio dio;
+  final DioFactory dioFactory;
 
-  AuthApi(this.dio);
+  AuthApi(this.dioFactory);
 
   /// 회원가입 API
   Future<Map<String, dynamic>> signUp({
@@ -12,7 +12,7 @@ class AuthApi {
     required String nickname,
   }) async {
     try {
-      final response = await dio.post(
+      final response = await dioFactory.post(
         '/api/user/signup',
         data: {
           'username': username,
@@ -37,7 +37,7 @@ class AuthApi {
     required String password,
   }) async {
     try {
-      final response = await dio.post(
+      final response = await dioFactory.post(
         '/api/user/login',
         data: {
           'username': username,
@@ -60,14 +60,9 @@ class AuthApi {
     required String refreshToken,
   }) async {
     try {
-      final response = await dio.post(
+      final response = await dioFactory.post(
         '/api/user/logout',
         data: {'refreshToken': refreshToken},
-        options: Options(
-          headers: {
-            // accessToken은 Dio 인터셉터에서 자동으로 붙여준다고 가정
-          },
-        ),
       );
 
       if (response.statusCode != 200) {
