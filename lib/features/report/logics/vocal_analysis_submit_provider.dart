@@ -5,12 +5,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
 
-// 1. 반환 타입을 Map<String, dynamic>으로 변경
-final vocalAnalysisSubmitProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
-  final stopwatch = Stopwatch()..start();
+import 'analysis_params.dart';
 
+// 1. 반환 타입을 Map<String, dynamic>으로 변경
+final vocalAnalysisSubmitProvider = FutureProvider.autoDispose.family<
+  Map<String, dynamic>,
+  AnalysisParams
+>((ref, params) async {
   try {
     // 1. 데이터 검증
     debugPrint('[1/7] 🛠️ 데이터 검증 시작');
@@ -22,12 +26,24 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose<Map<String, dynam
     final audioFile = File(vocalData.wavFilePath!);
     _logFileDetails(audioFile);
 
+    // todo: bearerToken 동적으로 받아오기
+    final bearerToken =
+        'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYWR1Y2tAZXhhbXBsZS5jb20iLCJyb2xlcyI6WyJVU0VSIl0sImlhdCI6MTc1NTk1OTI0NCwiZXhwIjoxNzU1OTYxMDQ0fQ.EowcZDhDq_Qyx4M5kiIDVeMPgTm_zAyyvAgct22GJAA';
     // 3. 요청 객체 생성
     debugPrint('[3/7] 📡 요청 생성');
     final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('http://13.125.152.131:8080/api/vocal_analysis/vocal-analysis'),
-    )..headers.addAll({'User-Agent': 'Sync2Sing/1.0', 'Accept': 'application/json'});
+        'POST',
+        Uri.parse('http://13.125.152.131:8080/api/training/vocal-analysis'),
+      )
+      ..headers.addAll(
+        (params.analysisType == AnalysisType.guest)
+            ? {'User-Agent': 'Sync2Sing/1.0', 'Accept': 'application/json'}
+            : {
+              'User-Agent': 'Sync2Sing/1.0',
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $bearerToken',
+            },
+      );
 
     // 4. 오디오 파일 추가
     debugPrint('[4/7] 🔊 오디오 파일 추가');
@@ -42,8 +58,8 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose<Map<String, dynam
     // 5. JSON 데이터 추가
     debugPrint('[5/7] 📦 JSON 데이터 추가');
     final jsonData = jsonEncode({
-      'training_mode': 'SOLO',
-      'analysis_type': 'GUEST',
+      'training_mode': params.trainingMode.apiValue,
+      'analysis_type': params.analysisType.name.toUpperCase(),
       'pitch_accuracy': vocalData.pitchAccuracy,
       'beat_accuracy': vocalData.rhythmAccuracy,
     });
@@ -63,12 +79,13 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose<Map<String, dynam
     // 7. 요청 전송 및 응답 처리
     debugPrint('[7/7] 🚀 요청 전송 시작');
     final response = await request.send().timeout(
-      const Duration(seconds: 30),
-      onTimeout: () => throw TimeoutException('서버 응답 시간 초과 (30초)'),
+      const Duration(seconds: 120),
+      onTimeout: () => throw TimeoutException('서버 응답 시간 초과 (120초)'),
     );
 
     final responseBody = await response.stream.bytesToString();
     debugPrint('✅ [응답 수신] 상태 코드: ${response.statusCode}');
+    debugPrint('✅ [응답 수신] responseBody: $responseBody');
 
     // 8. 응답 데이터 직접 반환
     final jsonResult = jsonDecode(responseBody);

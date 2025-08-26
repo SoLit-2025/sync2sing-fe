@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -9,7 +7,6 @@ import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
-import 'package:sync2sing/features/report/logics/vocal_analysis_submit_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/views/widgets/music_content_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,16 +16,11 @@ import 'package:sync2sing/features/vocal_analysis/logics/providers/audio_recorde
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import 'dart:io';
 
-
 class SoloRecordingSongPage extends ConsumerStatefulWidget {
   final AnalysisType analysisType; // 아마 analysisType 로 onboarding 역할 아예 대체 가능할 듯.
   final int songId;
 
-  const SoloRecordingSongPage({
-    required this.analysisType,
-    required this.songId,
-    super.key,
-  });
+  const SoloRecordingSongPage({required this.analysisType, required this.songId, super.key});
 
   @override
   ConsumerState createState() => _SoloRecordingSongPageState();
@@ -94,30 +86,31 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    if (widget.analysisType == AnalysisType.guest) {
-      // guest -> 온보딩처럼 -> 걍 가져오기
-      // context.go(AppRoutePaths.onboardingRecordingSong);
-      _songDetailModel = SongDetailModel(
-        1,
-        "Do-Re-Mi Song",
-        "Richard Rodgers",
-        "SOPRANO",
-        "C4",
-        "D5",
-        [
-          TimedLyric(0, "(전주중)", 0),
-          TimedLyric(1, "Doe - a deer,", 2300),
-          TimedLyric(2, "a female deer", 4000),
-          TimedLyric(3, "Ray - a drop of golden sun", 6000),
-        ],
-        "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-        "assets/songs/audios/doremi_song_v3_mr.wav",
-      );
-    } else {
-      Map<String, dynamic> decoded = jsonDecode(jsonStr);
-      Map<String, dynamic> data = decoded['data'] ?? {};
-      _songDetailModel = SongDetailModel.fromJson(data);
-    }
+    // if 문 임시 주석처리 : 어느 상항에서든 do re mi song.
+    // if (widget.analysisType == AnalysisType.guest) {
+    // guest -> 온보딩처럼 -> 걍 가져오기
+    // context.go(AppRoutePaths.onboardingRecordingSong);
+    _songDetailModel = SongDetailModel(
+      2,
+      "Do-Re-Mi Song",
+      "Richard Rodgers",
+      "SOPRANO",
+      "C4",
+      "D5",
+      [
+        TimedLyric(0, "(전주중)", 0),
+        TimedLyric(1, "Doe - a deer,", 2300),
+        TimedLyric(2, "a female deer", 4000),
+        TimedLyric(3, "Ray - a drop of golden sun", 6000),
+      ],
+      "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+      "assets/songs/audios/doremi_song_v3_mr.wav",
+    );
+    // } else {
+    //   Map<String, dynamic> decoded = jsonDecode(jsonStr);
+    //   Map<String, dynamic> data = decoded['data'] ?? {};
+    //   _songDetailModel = SongDetailModel.fromJson(data);
+    // }
   }
 
   @override
@@ -143,11 +136,7 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
     });
   }
 
-  void storeVocalAnalysisSubmit(ref) {
-    /// vocalAnalysisSubmitProvider 새로고침
-    /// 이전 분석 결과를 초기화하고 새로운 분석 시작
-    ref.refresh(vocalAnalysisSubmitProvider);
-
+  Future<void> storeVocalAnalysisSubmit(ref) async {
     /// 파일 경로 및 정확도 저장
     final controller = ref.read(audioRecorderProvider.notifier);
     final pitchAccuracy = controller.pitchAccuracy;
@@ -162,6 +151,8 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
     ref.read(vocalResultProvider.notifier).setRhythmAccuracy(controller.rhythmAccuracy);
 
     controller.printRhythmAccuracyDetailStatistics();
+
+    await controller.stop();
 
     /// *** 저장한 것: 파일 경로 및 정확도 조회하기
     final vocalPitchData = ref.watch(vocalResultProvider);
@@ -212,7 +203,7 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
                 ),
                 child: MusicContentPlayer(
                   _songDetailModel,
-                  'assets/songs/datas/doremi_song_piano_v2.json', // 백엔드에 음정 박자 모델 파일 경로 추가 필요.
+                  'assets/songs/datas/doremi_song_piano_v2.json',
                   onChildBoolChanged,
                   key: _playerKey,
                 ),
@@ -241,11 +232,10 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
                           _isButtonEnabled
                               ? () async {
                                 // 데이터 저장
-                                storeVocalAnalysisSubmit(ref);
-
+                                await storeVocalAnalysisSubmit(ref);
+                                if (!context.mounted) return; // 반드시 위 함수가 실행된 후에 페이지를 이동하도록 함
                                 context.go(
-                                  AppRoutePaths
-                                      .vocalAnalysisLoading, // /${widget.trainingMode}/${widget.analysisType}
+                                  "${AppRoutePaths.vocalAnalysisLoading}/solo/${widget.analysisType.name}",
                                 );
                               }
                               : null,

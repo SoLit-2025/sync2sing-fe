@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
-import 'package:sync2sing/features/report/logics/vocal_analysis_submit_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
@@ -39,7 +38,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
   Key _playerKey = UniqueKey();
   bool _isButtonEnabled = false;
   late final SongDetailModel _songDetailModel = SongDetailModel(
-    1,
+    2,
     "Do-Re-Mi Song",
     "Richard Rodgers",
     "SOPRANO",
@@ -84,11 +83,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
     });
   }
 
-  void storeVocalAnalysisSubmit(ref) {
-    /// vocalAnalysisSubmitProvider 새로고침
-    /// 이전 분석 결과를 초기화하고 새로운 분석 시작
-    ref.refresh(vocalAnalysisSubmitProvider);
-
+  Future<void> storeVocalAnalysisSubmit(ref) async {
     /// 파일 경로 및 정확도 저장
     /// *** ref 를 dispose() 에서 사용할 수 없어서 여기서 저장하게 로직을 작성하였습니다. -> 나중에 리팩토링될 수 있음.
     final controller = ref.read(audioRecorderProvider.notifier);
@@ -105,12 +100,14 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
 
     controller.printRhythmAccuracyDetailStatistics();
 
+    await controller.stop();
+
     /// *** 저장한 것: 파일 경로 및 정확도 조회하기
     final vocalPitchData = ref.watch(vocalResultProvider);
     debugPrint(
       "파일 경로 및 정확도 저장: ${vocalPitchData.wavFilePath} | ${vocalPitchData.pitchAccuracy} | ${vocalPitchData.rhythmAccuracy}",
     );
-
+    //
     // ★ 실제 파일 존재 및 크기 확인
     if (vocalPitchData.wavFilePath != null) {
       final file = File(vocalPitchData.wavFilePath!);
@@ -188,9 +185,10 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
                           _isButtonEnabled
                               ? () async {
                                 // 데이터 저장
-                                storeVocalAnalysisSubmit(ref);
+                                await storeVocalAnalysisSubmit(ref);
+                                if (!context.mounted) return; // 반드시 위 함수가 실행된 후에 페이지를 이동하도록 함
 
-                                context.goNamed(AppRouteNames.analysisLoading);
+                                context.go("${AppRoutePaths.vocalAnalysisLoading}/solo/guest");
                               }
                               : null,
                       // 비활성화 시 null (클릭 불가)

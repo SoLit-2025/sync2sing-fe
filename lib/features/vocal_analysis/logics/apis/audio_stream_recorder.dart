@@ -109,8 +109,7 @@ class AudioStreamRecorder {
     await _recorder.stopRecorder();
 
     // 헤더 덮어쓰기: 파일 크기 업데이트 필요
-    // 헤더 덮어쓰기
-    if (isFileSave && recordingFilePath != null) {
+    if (isFileSave && _wavFile != null) {
       // 헤더 업데이트
       await _wavFile!.setPosition(0);
       final updatedHeader = SaveWavFile.buildHeader(
@@ -120,6 +119,7 @@ class AudioStreamRecorder {
         pcmDataSize: _totalDataSize, // 실제 데이터 크기 반영
       );
       await _wavFile!.writeFrom(updatedHeader);
+      debugPrint("헤더 붙이기 완료");
       await _wavFile!.close();
       _wavFile = null;
     }
