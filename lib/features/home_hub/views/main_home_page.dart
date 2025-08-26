@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:flutter/cupertino.dart';
 
 class MainHomePage extends StatefulWidget {
   const MainHomePage({Key? key}) : super(key: key);
@@ -12,8 +15,8 @@ class MainHomePage extends StatefulWidget {
 
 class _MainHomePageState extends State<MainHomePage> {
   final String nickname = "노래하는 해파리";
-  final bool hasSoloTraining = true;
-  final bool hasDuetTraining = true;
+  final bool hasSoloTraining = false;
+  final bool hasDuetTraining = false;
   final int soloDDay = 3;
   final int duetDDay = 2;
 
@@ -75,13 +78,14 @@ class _MainHomePageState extends State<MainHomePage> {
         ),
         Container(
           width: double.infinity,
-          padding: EdgeInsets.only(top: 55.h, right: 80.w),
+          padding: EdgeInsets.only(top: 55.h, right: 50.w),
           child: Text(
             hasAnyTraining
                 ? "$nickname 님,\n진행중인\n트레이닝이 있어요"
                 : "$nickname 님,\n지금 바로\n트레이닝을 시작해보세요",
             style: AppTextStyles.heading2Bold,
             textAlign: TextAlign.left,
+            softWrap: false,
           ),
         ),
       ],
@@ -113,10 +117,13 @@ class _MainHomePageState extends State<MainHomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          hasSoloTraining ? "솔로 트레이닝 D-$soloDDay" : "솔로 트레이닝",
-          style: AppTextStyles.heading3Bold,
-          textAlign: TextAlign.left,
+        Padding(
+          padding: EdgeInsets.only(left: 4.w), // 왼쪽 여백 추가
+          child: Text(
+            hasSoloTraining ? "솔로 트레이닝 D-$soloDDay" : "솔로 트레이닝",
+            style: AppTextStyles.heading3Bold,
+            textAlign: TextAlign.left,
+          ),
         ),
         SizedBox(height: 12.h),
         Column(
@@ -150,7 +157,9 @@ class _MainHomePageState extends State<MainHomePage> {
                       child: _buildEmptyTrainingCard(
                         message: "진행중인 트레이닝이 없어요",
                         buttonText: "맞춤형 커리큘럼 생성하기",
-                        onPressed: () {},
+                        onPressed: () {
+                          context.push(AppRoutePaths.soloTrainingHome);
+                        },
                       ),
                     );
                   }
@@ -192,12 +201,13 @@ class _MainHomePageState extends State<MainHomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          hasDuetTraining ? "듀엣 트레이닝 D-$duetDDay" : "듀엣 트레이닝",
-          style: AppTextStyles.heading3Bold.copyWith(
-            color: AppColors.grayscale1,
+        Padding(
+          padding: EdgeInsets.only(left: 4.w),
+          child: Text(
+            hasDuetTraining ? "듀엣 트레이닝 D-$duetDDay" : "듀엣 트레이닝",
+            style: AppTextStyles.heading3Bold,
+            textAlign: TextAlign.left,
           ),
-          textAlign: TextAlign.left,
         ),
         SizedBox(height: 12.h),
         Column(
@@ -231,7 +241,9 @@ class _MainHomePageState extends State<MainHomePage> {
                       child: _buildEmptyTrainingCard(
                         message: "진행중인 트레이닝이 없어요",
                         buttonText: "맞춤형 커리큘럼 생성하기",
-                        onPressed: () {},
+                        onPressed: () {
+                          context.push(AppRoutePaths.duetTrainingHome);
+                        },
                       ),
                     );
                   }
@@ -332,50 +344,58 @@ class _MainHomePageState extends State<MainHomePage> {
     required String buttonText,
     required VoidCallback onPressed,
   }) {
-    return Container(
-      width: 327.w,
-      height: 180.h,
-      decoration: BoxDecoration(
-        color: AppColors.grayscale7,
-        borderRadius: BorderRadius.circular(10.r),
-      ),
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Center(
-              child: Text(
-                message,
-                style: AppTextStyles.body1.copyWith(
-                  color: AppColors.grayscale3,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
+    return Stack(
+      children: [
+        Container(
+          height: 150.h,
+          width: double.infinity,
+          padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 5.h),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8.r),
+            color: AppColors.grayscale7,
           ),
-          Center(
-            child: SizedBox(
-              width: 290.w,
-              height: 50.h,
-              child: ElevatedButton(
-                onPressed: onPressed,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryRed,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Spacer(),
+                ],
+              ),
+              SizedBox(height: 3.h),
+
+              SizedBox(height: 20.h),
+
+              // desc
+              Center(
                 child: Text(
-                  buttonText,
-                  style: AppTextStyles.body1BoldWhite,
+                  message,
+                  style: AppTextStyles.body1.copyWith(color: AppColors.grayscale3),
                   textAlign: TextAlign.center,
                 ),
               ),
-            ),
+
+              CupertinoButton(
+                padding: EdgeInsets.symmetric(vertical: 4.h),
+                onPressed: onPressed,
+                child: Container(
+                  alignment: Alignment.center,
+                  width: double.infinity,
+                  height: 50.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryPink,
+                    borderRadius: BorderRadius.circular(30.r),
+                  ),
+                  margin: EdgeInsets.only(top: 12.h),
+                  child: Text(buttonText, style: AppTextStyles.body2BoldWhite),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
+
 }
