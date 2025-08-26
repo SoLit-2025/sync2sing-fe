@@ -1,18 +1,25 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
+import 'package:sync2sing/features/shared/logics/dio_factory.dart';
+import 'package:sync2sing/features/auth/logics/auth_api.dart';
 
-class SignupIdPasswordPage extends StatefulWidget {
+import '../logics/nickname_provider.dart';
+
+class SignupIdPasswordPage extends ConsumerStatefulWidget {
   const SignupIdPasswordPage({super.key});
   @override
-  State<SignupIdPasswordPage> createState() => _SignupIdPasswordPageState();
+  ConsumerState<SignupIdPasswordPage> createState() => _SignupIdPasswordPageState();
 }
 
-class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
+class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _pwController = TextEditingController();
   final FocusNode _idFocusNode = FocusNode();
@@ -24,6 +31,15 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
   bool pwValid = false;
   String? idMessage, pwMessage;
   String? idErrorType, pwErrorType;
+
+  final dioFactory = DioFactory(SecureStorage());
+  late final AuthApi _authApi;
+
+  @override
+  void initState() {
+    super.initState();
+    _authApi = AuthApi(dioFactory);
+  }
 
   @override
   void dispose() {
@@ -138,6 +154,42 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
       );
     }
     return null;
+  }
+
+  Future<void> _doSignUp() async {
+    final nickname = ref.watch(nicknameProvider) ?? '';
+
+    print('SignUp - username: $id, password: $pw, nickname: $nickname');
+    try {
+      final response = await _authApi.signUp(
+        username: id,
+        password: pw,
+        nickname: nickname,
+      );
+
+      if (response['status'] == 201) {
+        context.go(AppRoutePaths.signupComplete);
+      } else {
+        final message = response['message'] ?? '회원가입에 실패했습니다.';
+        _showError(message);
+      }
+    } catch (e) {
+      if (e is DioException) {
+        // DioError일 경우, 서버가 반환한 상세 에러 메시지를 출력
+        print('Dio error response data: ${e.response?.data}');
+        final errorMessage = e.response?.data['message'] ?? '회원가입에 실패했습니다.';
+        _showError(errorMessage);
+      } else {
+        // 일반 예외 처리
+        _showError(e.toString());
+      }
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -290,9 +342,7 @@ class _SignupIdPasswordPageState extends State<SignupIdPasswordPage> {
                   width: 327.w,
                   height: 50.h,
                   child: ElevatedButton(
-                    onPressed: idValid && pwValid
-                        ? () => context.go(AppRoutePaths.signupProfileInfo)
-                        : null,
+                    onPressed: idValid && pwValid ? _doSignUp : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: idValid && pwValid
                           ? AppColors.primaryPink
