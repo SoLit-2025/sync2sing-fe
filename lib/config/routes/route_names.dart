@@ -23,6 +23,7 @@ abstract class AppRouteNames {
   static const my = 'my';
   static const settings = 'settings';
   static const vocalAnalysisReport = 'vocalAnalysisReport';
+  static const license = 'license';
 }
 
 abstract class AppRoutePaths {
@@ -49,4 +50,5 @@ abstract class AppRoutePaths {
   static const my = '/my';
   static const settings = '/my/settings';
   static const vocalAnalysisReport = '/vocal_analysis_report';
+  static const license = '/license';
 }

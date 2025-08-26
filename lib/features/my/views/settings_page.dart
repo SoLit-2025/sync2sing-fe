@@ -136,7 +136,7 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             SizedBox(height: 28.h),
             _buildSettingItem(
-              icon: 'assets/images/alarm_icon.png',
+              iconAsset: 'assets/images/alarm_icon.png',
               iconWidth: 30.w,
               iconHeight: 28.h,
               title: '알림 설정',
@@ -146,13 +146,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (value) {
                   setState(() => _isNotificationEnabled = value);
                 },
-                activeColor: AppColors.primaryPink,
-                trackColor: AppColors.grayscale4,
+                activeTrackColor: AppColors.primaryPink,
+                inactiveTrackColor: AppColors.grayscale4,
               ),
             ),
             _divider(),
             _buildSettingItem(
-              icon: 'assets/images/logout_icon.png',
+              iconAsset: 'assets/images/logout_icon.png',
               iconWidth: 30.w,
               iconHeight: 30.h,
               title: '로그아웃',
@@ -161,7 +161,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             _divider(),
             _buildSettingItem(
-              icon: 'assets/images/leave_icon.png',
+              iconAsset: 'assets/images/leave_icon.png',
               iconWidth: 28.w,
               iconHeight: 30.h,
               title: '회원탈퇴',
@@ -170,7 +170,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             _divider(),
             _buildSettingItem(
-              icon: 'assets/images/cherry.png',
+              iconAsset: 'assets/images/cherry.png',
               iconWidth: 30.w,
               iconHeight: 30.h,
               title: '1:1 문의',
@@ -179,36 +179,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 // todo: 1:1 문의 연결
               },
             ),
-            SizedBox(height: 240.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'flutter_sound',
-                    style: AppTextStyles.heading4Bold.copyWith(color: AppColors.grayscale1),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'License: Mozilla Public License, Version 2.0 (MPL 2.0)',
-                    style: AppTextStyles.body3.copyWith(color: AppColors.grayscale2),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'Copyright © 2025 Canardoux',
-                    style: AppTextStyles.body3.copyWith(color: AppColors.grayscale2),
-                  ),
-                  SizedBox(height: 12.h),
-                  Text(
-                    '원본 소스: https://github.com/canardoux/flutter_sound\n\n'
-                    '본 앱에서는 이 소스를 수정하지 않고 사용했습니다.\n\n'
-                    'MPL 2.0 전문: https://mozilla.org/MPL/2.0/',
-                    style: AppTextStyles.body4.copyWith(color: AppColors.grayscale2, height: 1.5),
-                  ),
-                  SizedBox(height: 24.h),
-                ],
-              ),
+            _divider(),
+            _buildSettingItem(
+              iconData: Icons.copyright,
+              iconWidth: 30.w,
+              iconHeight: 30.w,
+              title: '라이센스 정보',
+              titleTextStyle: AppTextStyles.heading4.copyWith(color: AppColors.grayscale1),
+              onTap: (){
+                  context.push(AppRoutePaths.license);
+              },
             ),
           ],
         ),
@@ -217,7 +197,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildSettingItem({
-    required String icon,
+    String? iconAsset,
+    IconData? iconData,
     required double iconWidth,
     required double iconHeight,
     required String title,
@@ -234,15 +215,22 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: EdgeInsets.only(left: 30.w, right: 30.w),
         child: Row(
           children: [
-            Image.asset(
-              icon,
-              width: iconWidth,
-              height: iconHeight,
-              fit: BoxFit.contain,
-              errorBuilder:
-                  (context, error, stackTrace) =>
-                      Icon(Icons.error, color: Colors.red, size: iconHeight),
-            ),
+            if (iconAsset != null)
+              Image.asset(
+                iconAsset,
+                width: iconWidth,
+                height: iconHeight,
+                fit: BoxFit.contain,
+                errorBuilder:
+                    (context, error, stackTrace) =>
+                        Icon(Icons.error, color: Colors.red, size: iconHeight),
+              )
+            else if (iconData != null)
+              Icon(
+                iconData,
+                size: iconWidth,
+                color: AppColors.grayscale1,
+              ),
             SizedBox(width: 16.w),
             Expanded(
               child: Text(

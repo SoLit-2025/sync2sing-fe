@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/features/my/views/license_page.dart';
 import 'package:sync2sing/features/my/views/my_page.dart';
 import 'package:sync2sing/features/my/views/settings_page.dart';
 import 'package:sync2sing/features/report/views/vocal_analysis_report_page.dart';
@@ -20,4 +21,9 @@ final List<GoRoute> myRoutes = [
     name: AppRouteNames.vocalAnalysisReport,
     builder: (context, state) => const VocalAnalysisReportPage(),
   ),
+  GoRoute(
+    path: AppRoutePaths.license,
+    name: AppRouteNames.license,
+    builder: (Context,state) => const LicensePage(),
+  )
 ];
