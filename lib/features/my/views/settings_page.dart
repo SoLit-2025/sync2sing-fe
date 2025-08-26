@@ -229,7 +229,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Icon(
                 iconData,
                 size: iconWidth,
-                color: AppColors.grayscale1,
+                color: AppColors.grayscale3,
               ),
             SizedBox(width: 16.w),
             Expanded(
