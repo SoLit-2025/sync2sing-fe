@@ -78,7 +78,7 @@ class _MainHomePageState extends State<MainHomePage> {
         ),
         Container(
           width: double.infinity,
-          padding: EdgeInsets.only(top: 55.h, right: 50.w),
+          padding: EdgeInsets.only(top: 55.h),
           child: Text(
             hasAnyTraining
                 ? "$nickname 님,\n진행중인\n트레이닝이 있어요"
