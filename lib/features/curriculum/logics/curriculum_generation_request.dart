@@ -25,7 +25,7 @@ class CurriculumGenerationRequest {
       trainingMode: json['training_mode'],
       pitch: json['pitch'],
       rhythm: json['rhythm'],
-      pronunciation: json['vocalization'],
+      pronunciation: json['pronunciation'],
       breath: json['breath'],
       trainingDays: json['training_days'],
     );
@@ -37,7 +37,7 @@ class CurriculumGenerationRequest {
       "training_mode": trainingMode.name.toUpperCase(),
       "pitch": pitch.name.toUpperCase(),
       "rhythm": rhythm.name.toUpperCase(),
-      "vocalization": pronunciation.name.toUpperCase(),
+      "pronunciation": pronunciation.name.toUpperCase(),
       "breath": breath.name.toUpperCase(),
       "training_days": trainingDays,
     };

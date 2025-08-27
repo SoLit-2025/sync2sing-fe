@@ -7,8 +7,11 @@ import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'dart:math' as math;
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/features/curriculum/logics/curriculum_generation_request.dart';
+import 'package:sync2sing/features/curriculum/logics/selected_song_provider.dart';
 import 'package:sync2sing/features/curriculum/logics/training_grade.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
+import 'package:sync2sing/features/shared/logics/dio_factory.dart';
+import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/shared/views/voice_range_display.dart';
 import 'dart:convert';
@@ -399,40 +402,54 @@ class VocalAnalysisReportPage extends ConsumerWidget {
   }
 
   Widget _buildCurriculumButton(BuildContext context, Map<String, dynamic> reportData) {
-    return GestureDetector(
-      onTap: () {
-        if (analysisType == AnalysisType.guest) {
-          context.go(AppRoutePaths.signupProfileInfo);
-        } else if (analysisType == AnalysisType.pre) {
-          final trainingDays = 3; // 서버 조회 필요.
-          final curriculumGenerationRequest = CurriculumGenerationRequest(
-            trainingMode: trainingMode,
-            pitch: _getGradeFromScore(reportData['pitch_score'] as int),
-            rhythm: _getGradeFromScore(reportData['beat_score'] as int),
-            pronunciation: _getGradeFromScore(reportData['pronunciation_score'] as int),
-            breath: _getGradeFromScore(reportData['breath_score'] as int),
-            trainingDays: trainingDays,
-          );
-          context.go(AppRoutePaths.trainingGenerationLoading, extra: curriculumGenerationRequest);
-        } else {
-          context.go(AppRoutePaths.soloTrainingHome);
-        }
+    return Consumer(
+      builder: (BuildContext context, WidgetRef ref, Widget? child) {
+        return GestureDetector(
+          onTap: () {
+            if (analysisType == AnalysisType.guest) {
+              context.go(AppRoutePaths.signupProfileInfo);
+            } else if (analysisType == AnalysisType.pre) {
+              final trainingDays =
+                  ref.watch(selectedSongProvider).trainingDays ??
+                  () async {
+                    DioFactory(SecureStorage()).get('/api/solo-training/session').then((data) {
+                          return data.data['training_days'];
+                        })
+                        as int;
+                  }; // 서버 조회 필요.
+              final curriculumGenerationRequest = CurriculumGenerationRequest(
+                trainingMode: trainingMode,
+                pitch: _getGradeFromScore(reportData['pitch_score'] as int),
+                rhythm: _getGradeFromScore(reportData['beat_score'] as int),
+                pronunciation: _getGradeFromScore(reportData['pronunciation_score'] as int),
+                breath: _getGradeFromScore(reportData['breath_score'] as int),
+                trainingDays: trainingDays as int,
+              );
+              context.go(
+                AppRoutePaths.trainingGenerationLoading,
+                extra: curriculumGenerationRequest,
+              );
+            } else {
+              context.go(AppRoutePaths.soloTrainingHome);
+            }
+          },
+          child: Container(
+            width: double.infinity,
+            height: 52.h,
+            decoration: BoxDecoration(
+              color: AppColors.primaryPink,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Center(
+              child: Text(switch (analysisType) {
+                AnalysisType.guest => "회원가입하고 리포트 저장하기",
+                AnalysisType.pre => "맞춤형 커리큘럼 생성하기",
+                AnalysisType.post => "홈 페이지로 이동하기", // todo: 임시 -> 수정 필요
+              }, style: AppTextStyles.body1BoldWhite),
+            ),
+          ),
+        );
       },
-      child: Container(
-        width: double.infinity,
-        height: 52.h,
-        decoration: BoxDecoration(
-          color: AppColors.primaryPink,
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-        child: Center(
-          child: Text(switch (analysisType) {
-            AnalysisType.guest => "회원가입하고 리포트 저장하기",
-            AnalysisType.pre => "맞춤형 커리큘럼 생성하기",
-            AnalysisType.post => "홈 페이지로 이동하기", // todo: 임시 -> 수정 필요
-          }, style: AppTextStyles.body1BoldWhite),
-        ),
-      ),
     );
   }
 }
