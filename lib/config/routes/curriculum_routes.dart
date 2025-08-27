@@ -105,7 +105,7 @@ final List<GoRoute> curriculumRoutes = [
     // builder: (context, state) => TrainingGenerationLoadingPage(),
     builder:
         (context, state) => TrainingGenerationLoadingPage(
-          state.extra as CurriculumGenerationRequest,
+          curriculumGenerationRequest: state.extra as CurriculumGenerationRequest,
         ), // extra로 정보 전달 시
   ),
 ];
