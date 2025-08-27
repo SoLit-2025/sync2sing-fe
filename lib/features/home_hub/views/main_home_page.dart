@@ -344,51 +344,47 @@ class _MainHomePageState extends State<MainHomePage> {
     required String buttonText,
     required VoidCallback onPressed,
   }) {
-    return Stack(
-      children: [
-        Container(
-          height: 150.h,
-          width: double.infinity,
-          padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 5.h),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.r),
-            color: AppColors.grayscale7,
+    return Container(
+      height: 180.h,
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 5.h),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.r),
+        color: AppColors.grayscale7,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          SizedBox(height: 36.h),
+
+          // desc
+          Center(
+            child: Text(
+              message,
+              style: AppTextStyles.body1.copyWith(color: AppColors.grayscale3),
+              textAlign: TextAlign.center,
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          SizedBox(height: 18.h),
 
-              SizedBox(height: 23.h),
-
-              // desc
-              Center(
-                child: Text(
-                  message,
-                  style: AppTextStyles.body1.copyWith(color: AppColors.grayscale3),
-                  textAlign: TextAlign.center,
-                ),
+          CupertinoButton(
+            padding: EdgeInsets.symmetric(vertical: 4.h),
+            onPressed: onPressed,
+            child: Container(
+              alignment: Alignment.center,
+              width: double.infinity,
+              height: 50.h,
+              decoration: BoxDecoration(
+                color: AppColors.primaryPink,
+                borderRadius: BorderRadius.circular(30.r),
               ),
-
-              CupertinoButton(
-                padding: EdgeInsets.symmetric(vertical: 4.h),
-                onPressed: onPressed,
-                child: Container(
-                  alignment: Alignment.center,
-                  width: double.infinity,
-                  height: 50.h,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryPink,
-                    borderRadius: BorderRadius.circular(30.r),
-                  ),
-                  margin: EdgeInsets.only(top: 12.h),
-                  child: Text(buttonText, style: AppTextStyles.body2BoldWhite),
-                ),
-              ),
-            ],
+              margin: EdgeInsets.only(top: 12.h),
+              child: Text(buttonText, style: AppTextStyles.body2BoldWhite),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
-
 }
