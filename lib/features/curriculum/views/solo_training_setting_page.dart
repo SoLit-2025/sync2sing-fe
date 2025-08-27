@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
-
+import 'package:sync2sing/features/shared/logics/dio_factory.dart';
+import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import '../logics/selected_song_provider.dart';
 
 class SoloTrainingSettingPage extends ConsumerStatefulWidget {
@@ -307,29 +310,50 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
     );
   }
 
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   // 확인 버튼 로직
   Widget _buildConfirmButton(bool isFormValid) {
     return SizedBox(
       width: 327.w,
       height: 50.h,
       child: ElevatedButton(
-        onPressed: isFormValid
-            ? () {
+        onPressed:
+        isFormValid
+            ? () async {
           ref.read(selectedSongProvider.notifier).setTrainingDays(_selectedDays!);
-          context.go("${AppRoutePaths.songExampleVideo}/solo/pre/${ref.watch(selectedSongProvider).id}");
+          final data = {
+            "song_id": ref.read(selectedSongProvider).id,
+            "key_adjustment": 0,
+            "training_days": ref.read(selectedSongProvider).trainingDays,
+          };
+          final response  = await DioFactory(
+            SecureStorage(),
+          ).post('/solo-training/session', data: jsonEncode(data));
+
+          debugPrint("커리큘럼 생성 확인: ${response.data}");
+
+          if (response.statusCode != 201) {
+
+            _showError("설정 실패! 다시 확인해주세요.");
+          }
+          // debugPrint
+          context.go(
+            "${AppRoutePaths.songExampleVideo}/solo/pre/${ref.watch(selectedSongProvider).id}",
+          );
         }
             : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isFormValid
-              ? AppColors.primaryPink
-              : AppColors.primaryPinkDisabled,
+          backgroundColor: isFormValid ? AppColors.primaryPink : AppColors.primaryPinkDisabled,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
-        child: Text(
-          "확인",
-          style: AppTextStyles.body1White,
-        ),
+        child: Text("확인", style: AppTextStyles.body1White),
       ),
     );
   }
+
 }
