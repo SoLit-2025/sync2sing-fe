@@ -412,7 +412,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
               final trainingDays =
                   ref.watch(selectedSongProvider).trainingDays ??
                   () async {
-                    DioFactory(SecureStorage()).get('/api/solo-training/session').then((data) {
+                    DioFactory(SecureStorage()).get('/solo-training/session').then((data) {
                           return data.data['training_days'];
                         })
                         as int;
