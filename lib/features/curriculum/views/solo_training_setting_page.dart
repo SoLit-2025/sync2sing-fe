@@ -327,7 +327,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
             ? () async {
           ref.read(selectedSongProvider.notifier).setTrainingDays(_selectedDays!);
           final data = {
-            "song_id": 2 ,// ref.read(selectedSongProvider).id,
+            "song_id": ref.read(selectedSongProvider).id,
             "key_adjustment": 0,
             "training_days": ref.read(selectedSongProvider).trainingDays,
           };
