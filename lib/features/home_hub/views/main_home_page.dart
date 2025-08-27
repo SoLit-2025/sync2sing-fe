@@ -357,12 +357,6 @@ class _MainHomePageState extends State<MainHomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Spacer(),
-                ],
-              ),
 
               SizedBox(height: 23.h),
 
