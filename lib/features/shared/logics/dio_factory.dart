@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 
 class DioFactory {
@@ -29,6 +30,10 @@ class DioFactory {
             options.headers['Authorization'] = 'Bearer $accessToken';
           }
         }
+
+        debugPrint(" 경로: ${options.path} | 데이터: ${options.data}");
+        debugPrint(" 경로: ${options.uri} | header: ${options.headers}");
+        debugPrint(" 경로: ${options.uri} | method: ${options.method}");
         return handler.next(options);
       },
       onError: (error, handler) {
