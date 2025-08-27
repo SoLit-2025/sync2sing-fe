@@ -46,7 +46,6 @@ class TrainingItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("card id: ${trainingItem.id} | sessionID: $sessionId");
     return Stack(
       children: [
         Container(
@@ -59,8 +58,9 @@ class TrainingItemCard extends StatelessWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              SizedBox(height: 5.h),
               _trainingCardTop(),
               SizedBox(height: 3.h),
               RichText(
