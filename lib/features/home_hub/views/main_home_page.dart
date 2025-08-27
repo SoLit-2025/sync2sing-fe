@@ -94,25 +94,25 @@ class _MainHomePageState extends State<MainHomePage> {
 
   Widget _buildSoloTrainingSection() {
     final List<Map<String, String>> trainings =
-        hasSoloTraining
-            ? [
-              {
-                'category': '음정',
-                'title': '스타카토',
-                'description': '짧게 끊어 내는 소리 연습하기',
-              },
-              {
-                'category': '호흡',
-                'title': '레가토',
-                'description': '부드럽게 이어지는 호흡 연습',
-              },
-              {
-                'category': '발성',
-                'title': '벨팅',
-                'description': '성량을 높이는 발성 연습하기',
-              },
-            ]
-            : [];
+    hasSoloTraining
+        ? [
+      {
+        'category': '음정',
+        'title': '스타카토',
+        'description': '짧게 끊어 내는 소리 연습하기',
+      },
+      {
+        'category': '호흡',
+        'title': '레가토',
+        'description': '부드럽게 이어지는 호흡 연습',
+      },
+      {
+        'category': '발성',
+        'title': '벨팅',
+        'description': '성량을 높이는 발성 연습하기',
+      },
+    ]
+        : [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,7 +172,7 @@ class _MainHomePageState extends State<MainHomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   trainings.length,
-                  (index) => _buildPageIndicator(index == _soloActiveCardIndex),
+                      (index) => _buildPageIndicator(index == _soloActiveCardIndex),
                 ),
               ),
           ],
@@ -183,20 +183,20 @@ class _MainHomePageState extends State<MainHomePage> {
 
   Widget _buildDuetTrainingSection() {
     final List<Map<String, String>> trainings =
-        hasDuetTraining
-            ? [
-              {
-                'category': '음정',
-                'title': '하모니',
-                'description': '듀엣 곡을 조화롭게 부르기',
-              },
-              {
-                'category': '리듬',
-                'title': '박자 맞추기',
-                'description': '함께 박자를 맞추는 연습',
-              },
-            ]
-            : [];
+    hasDuetTraining
+        ? [
+      {
+        'category': '음정',
+        'title': '하모니',
+        'description': '듀엣 곡을 조화롭게 부르기',
+      },
+      {
+        'category': '리듬',
+        'title': '박자 맞추기',
+        'description': '함께 박자를 맞추는 연습',
+      },
+    ]
+        : [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,7 +256,7 @@ class _MainHomePageState extends State<MainHomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   trainings.length,
-                  (index) => _buildPageIndicator(index == _duetActiveCardIndex),
+                      (index) => _buildPageIndicator(index == _duetActiveCardIndex),
                 ),
               ),
           ],
@@ -356,7 +356,7 @@ class _MainHomePageState extends State<MainHomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          SizedBox(height: 36.h),
+          SizedBox(height: 32.h),
 
           // desc
           Center(
