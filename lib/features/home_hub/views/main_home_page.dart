@@ -363,9 +363,8 @@ class _MainHomePageState extends State<MainHomePage> {
                   const Spacer(),
                 ],
               ),
-              SizedBox(height: 3.h),
 
-              SizedBox(height: 20.h),
+              SizedBox(height: 23.h),
 
               // desc
               Center(
