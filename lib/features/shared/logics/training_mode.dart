@@ -1,6 +1,6 @@
 enum TrainingMode {
-  solo('SOLO', '/api/solo-training'),
-  duet('DUET', '/api/duet-training');
+  solo('SOLO', 'solo-training'),
+  duet('DUET', 'duet-training');
 
   final String apiValue;
   final String apiBasePath;
