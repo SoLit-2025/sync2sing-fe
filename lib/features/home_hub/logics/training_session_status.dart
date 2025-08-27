@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'training_item.dart';
 
 enum TrainingSessionStatus {
@@ -27,38 +25,20 @@ extension TrainingStatusConverter on TrainingSessionStatus {
   }
 }
 
-TrainingSessionStatus getTrainingStatusFromJson(String jsonString) {
-  // json 을 토대로 TrainingSessionStatus 파악
+TrainingSessionStatus getTrainingStatusFromJson(Map<String, dynamic> decodedJson) {
   try {
-    final decodedJson = jsonDecode(jsonString);
+    final Map<String, dynamic> data = decodedJson; // decodedJson['data'] as Map<String, dynamic>?;
 
-    if (decodedJson is! Map<String, dynamic>) {
-      return TrainingSessionStatus.error; // JSON이 객체가 아닐 때
+    // data가 빈 객체이면 -> beforeSession
+    if (data.isEmpty) {
+      return TrainingSessionStatus.beforeSession;
     }
 
-    final int? status = decodedJson['status'] as int?;
-
-    if (status == null) {
-      return TrainingSessionStatus.error; // 'status' 필드가 없거나 int type이 아니면
-    }
-
-    if (status == 200) {
-      final Map<String, dynamic>? data = decodedJson['data'] as Map<String, dynamic>?;
-
-      // data가 빈 객체이면 -> beforeSession
-      if (data == null || data.isEmpty) {
-        return TrainingSessionStatus.beforeSession;
-      }
-
-      final String? dataStatus = data['status'] as String?;
-      if (dataStatus == null) {
-        return TrainingSessionStatus.error;
-      }
-      return TrainingStatusConverter.fromDataStatusString(dataStatus);
-    } else {
-      // If status != 200
+    final String? dataStatus = data['status'] as String?;
+    if (dataStatus == null) {
       return TrainingSessionStatus.error;
     }
+    return TrainingStatusConverter.fromDataStatusString(dataStatus);
   } on FormatException {
     return TrainingSessionStatus.error;
   } on TypeError {
@@ -69,18 +49,18 @@ TrainingSessionStatus getTrainingStatusFromJson(String jsonString) {
   }
 }
 
-// pitch-rhythm-vocalization-breath 인터리브 + 완료 항목 마지막으로 이동
+// pitch-rhythm-pronunciation-breath 인터리브 + 완료 항목 마지막으로 이동
 List<TrainingItem> parseCurriculumItemsInOrderAndPostCompletedLast(
   Map<String, dynamic> curriculum,
 ) {
   final List pitch = curriculum['pitch'] ?? [];
   final List rhythm = curriculum['rhythm'] ?? [];
-  final List vocalization = curriculum['vocalization'] ?? [];
+  final List pronunciation = curriculum['pronunciation'] ?? [];
   final List breath = curriculum['breath'] ?? [];
   int maxLen = [
     pitch.length,
     rhythm.length,
-    vocalization.length,
+    pronunciation.length,
     breath.length,
   ].reduce((a, b) => a > b ? a : b);
 
@@ -97,7 +77,7 @@ List<TrainingItem> parseCurriculumItemsInOrderAndPostCompletedLast(
         grade: item['grade'],
         trainingMinutes: item['training_minutes'],
         progress: item['progress'],
-        isCurrentTraining: item['is_current_training'],
+        // isCurrentTraining: item['is_current_training'],
       );
       if (t.progress >= 100) {
         completed.add(t);
@@ -108,7 +88,7 @@ List<TrainingItem> parseCurriculumItemsInOrderAndPostCompletedLast(
 
     if (i < pitch.length) add(pitch[i], 'pitch');
     if (i < rhythm.length) add(rhythm[i], 'rhythm');
-    if (i < vocalization.length) add(vocalization[i], 'vocalization');
+    if (i < pronunciation.length) add(pronunciation[i], 'pronunciation');
     if (i < breath.length) add(breath[i], 'breath');
   }
 

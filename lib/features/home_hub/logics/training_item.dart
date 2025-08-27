@@ -16,6 +16,6 @@ class TrainingItem {
     required this.grade,
     required this.trainingMinutes,
     required this.progress,
-    required this.isCurrentTraining,
+    this.isCurrentTraining = false,
   });
 }
