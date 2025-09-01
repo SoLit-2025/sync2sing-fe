@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
@@ -95,9 +96,8 @@ class _UserBirthInfoInputPageState extends ConsumerState<UserBirthInfoInputPage>
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      backgroundColor: AppColors.grayscale7,
-      child: SafeArea(
+    return Scaffold(
+      body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
@@ -116,13 +116,13 @@ class _UserBirthInfoInputPageState extends ConsumerState<UserBirthInfoInputPage>
                     SizedBox(height: 40.h),
                     Text(
                       '맞춤형 보컬 분석을 시작합니다',
-                      style: AppTextStyles.heading3Bold.copyWith(decoration: TextDecoration.none),
+                      style: AppTextStyles.heading3Bold,
                       textAlign: TextAlign.left,
                     ),
                     SizedBox(height: 12.h),
                     Text(
                       '입력된 정보를 통해\n음역대를 더 정확하게 측정할 수 있어요',
-                      style: AppTextStyles.heading4.copyWith(decoration: TextDecoration.none),
+                      style: AppTextStyles.heading4,
                       textAlign: TextAlign.left,
                     ),
                     SizedBox(height: 40.h),
@@ -170,16 +170,11 @@ class _UserBirthInfoInputPageState extends ConsumerState<UserBirthInfoInputPage>
                             alignment: Alignment.center,
                             child: Text(
                               _selectedYear ?? '태어난 연도를 선택해주세요',
-                              style: TextStyle(
+                              style: AppTextStyles.body1.copyWith(
                                 color:
                                     _selectedYear == null
                                         ? AppColors.grayscale3
                                         : AppColors.grayscale1,
-                                fontSize: 17.sp,
-                                fontFamily: 'Pretendard Variable',
-                                fontWeight: FontWeight.w400,
-                                height: 1.4,
-                                decoration: TextDecoration.none,
                               ),
                             ),
                           ),
@@ -209,15 +204,7 @@ class _UserBirthInfoInputPageState extends ConsumerState<UserBirthInfoInputPage>
                                         _years
                                             .map(
                                               (year) => Center(
-                                                child: Text(
-                                                  year,
-                                                  style: TextStyle(
-                                                    fontSize: 22.sp,
-                                                    fontFamily: 'Pretendard Variable',
-                                                    fontWeight: FontWeight.w400,
-                                                    color: AppColors.grayscale1,
-                                                  ),
-                                                ),
+                                                child: Text(year, style: AppTextStyles.heading3),
                                               ),
                                             )
                                             .toList(),
