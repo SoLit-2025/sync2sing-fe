@@ -34,9 +34,7 @@ class _LoginpageState extends ConsumerState<Loginpage> {
     print('Stored REFRESH_TOKEN: $refreshToken');
   }
 
-
-  bool get _isLoginButtonEnabled =>
-      _idController.text.isNotEmpty && _pwController.text.isNotEmpty;
+  bool get _isLoginButtonEnabled => _idController.text.isNotEmpty && _pwController.text.isNotEmpty;
 
   @override
   void initState() {
@@ -47,7 +45,8 @@ class _LoginpageState extends ConsumerState<Loginpage> {
   }
 
   void _onTextChanged() {
-    setState(() { // 버튼 활성화 상태 갱신
+    setState(() {
+      // 버튼 활성화 상태 갱신
     });
   }
 
@@ -93,15 +92,11 @@ class _LoginpageState extends ConsumerState<Loginpage> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
-
-
   void _onSignUpPressed() {
-    context.push(AppRoutePaths.signupIdPassword);
+    context.push(AppRoutePaths.signupProfileInfo);
   }
 
   @override
@@ -128,7 +123,6 @@ class _LoginpageState extends ConsumerState<Loginpage> {
                   ),
                 ),
 
-
                 SizedBox(height: 45.h),
 
                 // 2. 아이디 입력 영역
@@ -137,25 +131,18 @@ class _LoginpageState extends ConsumerState<Loginpage> {
                   height: 45.h,
                   child: TextField(
                     controller: _idController,
-                    style: AppTextStyles.body1.copyWith(
-                      color: AppColors.grayscale1,
-                    ),
+                    style: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
                     decoration: InputDecoration(
-                      contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
                       hintText: '아이디를 입력해주세요',
-                      hintStyle: AppTextStyles.body1.copyWith(
-                        color: AppColors.grayscale4,
-                      ),
+                      hintStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale4),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
-                        borderSide:
-                        BorderSide(color: AppColors.grayscale4, width: 1),
+                        borderSide: BorderSide(color: AppColors.grayscale4, width: 1),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
-                        borderSide:
-                        BorderSide(color: AppColors.grayscale4, width: 1),
+                        borderSide: BorderSide(color: AppColors.grayscale4, width: 1),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
@@ -175,25 +162,18 @@ class _LoginpageState extends ConsumerState<Loginpage> {
                   child: TextField(
                     controller: _pwController,
                     obscureText: true,
-                    style: AppTextStyles.body1.copyWith(
-                      color: AppColors.grayscale1,
-                    ),
+                    style: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
                     decoration: InputDecoration(
-                      contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
                       hintText: '비밀번호를 입력해주세요',
-                      hintStyle: AppTextStyles.body1.copyWith(
-                        color: AppColors.grayscale4,
-                      ),
+                      hintStyle: AppTextStyles.body1.copyWith(color: AppColors.grayscale4),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
-                        borderSide:
-                        BorderSide(color: AppColors.grayscale4, width: 1),
+                        borderSide: BorderSide(color: AppColors.grayscale4, width: 1),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
-                        borderSide:
-                        BorderSide(color: AppColors.grayscale4, width: 1),
+                        borderSide: BorderSide(color: AppColors.grayscale4, width: 1),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
@@ -220,13 +200,11 @@ class _LoginpageState extends ConsumerState<Loginpage> {
                         return AppColors.primaryPink;
                       }),
                       shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
+                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
                       ),
                     ),
 
-                  child: Text(
+                    child: Text(
                       '로그인',
                       style: AppTextStyles.body1White,
                       textAlign: TextAlign.center,
@@ -242,17 +220,13 @@ class _LoginpageState extends ConsumerState<Loginpage> {
                   children: [
                     Text(
                       '아직 계정이 없으신가요? ',
-                      style: AppTextStyles.body3.copyWith(
-                        color: AppColors.grayscale1,
-                      ),
+                      style: AppTextStyles.body3.copyWith(color: AppColors.grayscale1),
                     ),
                     GestureDetector(
                       onTap: _onSignUpPressed,
                       child: Text(
                         '회원가입',
-                        style: AppTextStyles.body2Bold.copyWith(
-                          color: AppColors.grayscale1,
-                        ),
+                        style: AppTextStyles.body2Bold.copyWith(color: AppColors.grayscale1),
                       ),
                     ),
                   ],
