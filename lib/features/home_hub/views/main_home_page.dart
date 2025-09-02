@@ -215,7 +215,7 @@ class _MainHomePageState extends State<MainHomePage> {
         ),
         SizedBox(height: 12.h),
         SizedBox(
-          height: 210.h,
+          height: hasSolo ? 210.h : 180.h,
           child: hasSolo
               ? PageView.builder(
             controller: _pageController,
