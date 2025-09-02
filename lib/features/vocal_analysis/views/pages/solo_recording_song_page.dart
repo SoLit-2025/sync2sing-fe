@@ -102,6 +102,7 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
         TimedLyric(1, "Doe - a deer,", 2300),
         TimedLyric(2, "a female deer", 4000),
         TimedLyric(3, "Ray - a drop of golden sun", 6000),
+        TimedLyric(4, "Me, a name I call myself", 10000),
       ],
       "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
       "assets/songs/audios/doremi_song_v3_mr.wav",

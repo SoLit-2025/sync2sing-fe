@@ -49,6 +49,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
       TimedLyric(1, "Doe - a deer,", 2300),
       TimedLyric(2, "a female deer", 4000),
       TimedLyric(3, "Ray - a drop of golden sun", 6000),
+      TimedLyric(4, "Me, a name I call myself", 10000),
     ],
     "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
     "assets/songs/audios/doremi_song_v3_mr.wav", // 백엔드에 저장된 파일과 음정 박자 파일 불일치 -> asset 사용. 다만 길이 조정 필요 (음악 끝나기 전까지 다음버튼 클릭 불가)
