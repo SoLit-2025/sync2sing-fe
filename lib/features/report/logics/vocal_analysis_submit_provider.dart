@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
@@ -47,6 +47,11 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose.family<
         contentType: MediaType('audio', 'wav'),
       ),
     });
+
+    if (params.analysisType == AnalysisType.guest) {
+      // 게스트 모드 -> 액세스 토큰 삭제
+      await SecureStorage().deleteTokens();
+    }
 
     debugPrint('[4/4] 요청 전송');
     final response = await dioFactory.post('/training/vocal-analysis', data: formData);
