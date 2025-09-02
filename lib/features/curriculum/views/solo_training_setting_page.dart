@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import '../logics/selected_song_provider.dart';
@@ -28,12 +29,12 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
     final selectedSong = ref.watch(selectedSongProvider);
 
     // 선택된 노래가 유효한지 확인
-    final bool isSongSelected = (selectedSong.id != null &&
-        selectedSong.title != null &&
-        selectedSong.artist != null &&
-        selectedSong.albumArtUrl != null &&
-        selectedSong.voiceType != null
-    );
+    final bool isSongSelected =
+        (selectedSong.id != null &&
+            selectedSong.title != null &&
+            selectedSong.artist != null &&
+            selectedSong.albumArtUrl != null &&
+            selectedSong.voiceType != null);
 
     // 연습곡과 훈련기간이 모두 선택되었는지 확인
     final bool isFormValid = isSongSelected && _selectedDays != null;
@@ -100,10 +101,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "연습곡 선택",
-            style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale2),
-          ),
+          Text("연습곡 선택", style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale2)),
           SizedBox(height: 16.h),
           GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -127,9 +125,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
         children: [
           _buildAlbumArt(isSongSelected, selectedSong.albumArtUrl),
           SizedBox(width: 15.w),
-          Expanded(
-            child: _buildSongInfoColumn(isSongSelected, selectedSong),
-          ),
+          Expanded(child: _buildSongInfoColumn(isSongSelected, selectedSong)),
         ],
       ),
     );
@@ -144,18 +140,19 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
         color: AppColors.primaryPinkDisabled,
         borderRadius: BorderRadius.circular(5.r),
       ),
-      child: isSelected && url != null && url.isNotEmpty
-          ? ClipRRect(
-        borderRadius: BorderRadius.circular(5.r),
-        child: Image.network(
-          url,
-          width: 80.w,
-          height: 80.w,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildDefaultAlbumArt(),
-        ),
-      )
-          : _buildDefaultAlbumArt(),
+      child:
+          isSelected && url != null && url.isNotEmpty
+              ? ClipRRect(
+                borderRadius: BorderRadius.circular(5.r),
+                child: Image.network(
+                  url,
+                  width: 80.w,
+                  height: 80.w,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _buildDefaultAlbumArt(),
+                ),
+              )
+              : _buildDefaultAlbumArt(),
     );
   }
 
@@ -175,10 +172,9 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
   Widget _buildSongInfoColumn(bool isSelected, selectedSong) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildSongInfo(isSelected, selectedSong),
-        SizedBox(height: 6.h),
         _buildVoiceTypeChip(isSelected, selectedSong),
       ],
     );
@@ -188,6 +184,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
   Widget _buildSongInfo(bool isSelected, selectedSong) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Text(
           isSelected ? (selectedSong.title ?? '') : "연습할 노래를 선택해주세요",
@@ -197,7 +194,6 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        SizedBox(height: 2.h),
         Text(
           isSelected ? (selectedSong.artist ?? '') : "선택한 노래가 이곳에 표시됩니다",
           style: AppTextStyles.body2.copyWith(
@@ -213,14 +209,20 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
   // 성부 칩 로직
   Widget _buildVoiceTypeChip(bool isSelected, selectedSong) {
     if (isSelected && selectedSong.voiceType != null && selectedSong.voiceType != '') {
+      debugPrint("selected voiceType: [${selectedSong.voiceType}]");
+      debugPrint(
+        "selected voiceType korean: [${SongDetailModel.convertVoiceTypeEng2Kor(selectedSong.voiceType)})]",
+      );
       return Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+        height: 20.h,
+        width: 60.w,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: AppColors.grayscale3,
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(12.w),
         ),
         child: Text(
-          selectedSong.voiceType!,
+          SongDetailModel.convertVoiceTypeEng2Kor(selectedSong.voiceType!),
           style: AppTextStyles.body6.copyWith(color: AppColors.grayscale8),
         ),
       );
@@ -245,10 +247,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "훈련기간 선택",
-            style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale2),
-          ),
+          Text("훈련기간 선택", style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale2)),
           SizedBox(height: 16.h),
           _buildTrainingDayButtons(),
         ],
@@ -260,15 +259,9 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
   Widget _buildTrainingDayButtons() {
     return Row(
       children: [
-        Expanded(
-          child: _buildDayBtn(3, isFirst: true),
-        ),
-        Expanded(
-          child: _buildDayBtn(7),
-        ),
-        Expanded(
-          child: _buildDayBtn(14, isLast: true),
-        ),
+        Expanded(child: _buildDayBtn(3, isFirst: true)),
+        Expanded(child: _buildDayBtn(7)),
+        Expanded(child: _buildDayBtn(14, isLast: true)),
       ],
     );
   }
@@ -311,9 +304,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   // 확인 버튼 로직
@@ -323,30 +314,30 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
       height: 50.h,
       child: ElevatedButton(
         onPressed:
-        isFormValid
-            ? () async {
-          ref.read(selectedSongProvider.notifier).setTrainingDays(_selectedDays!);
-          final data = {
-            "song_id": ref.read(selectedSongProvider).id,
-            "key_adjustment": 0,
-            "training_days": ref.read(selectedSongProvider).trainingDays,
-          };
-          final response  = await DioFactory(
-            SecureStorage(),
-          ).post('/solo-training/session', data: jsonEncode(data));
+            isFormValid
+                ? () async {
+                  ref.read(selectedSongProvider.notifier).setTrainingDays(_selectedDays!);
+                  final data = {
+                    "song_id": ref.read(selectedSongProvider).id,
+                    "key_adjustment": 0,
+                    "training_days": ref.read(selectedSongProvider).trainingDays,
+                  };
+                  final response = await DioFactory(
+                    SecureStorage(),
+                  ).post('/solo-training/session', data: jsonEncode(data));
 
-          debugPrint("커리큘럼 생성 확인: ${response.data}");
+                  debugPrint("커리큘럼 생성 확인: ${response.data}");
 
-          if (response.statusCode != 201) {
-
-            _showError("설정 실패! 다시 확인해주세요.");
-          }
-          // debugPrint
-          context.go(
-            "${AppRoutePaths.songExampleVideo}/solo/pre/${ref.watch(selectedSongProvider).id}",
-          );
-        }
-            : null,
+                  if (response.statusCode != 201) {
+                    _showError("설정 실패! 다시 확인해주세요.");
+                    return;
+                  }
+                  // debugPrint
+                  context.go(
+                    "${AppRoutePaths.songExampleVideo}/solo/pre/${ref.watch(selectedSongProvider).id}",
+                  );
+                }
+                : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: isFormValid ? AppColors.primaryPink : AppColors.primaryPinkDisabled,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -355,5 +346,4 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
       ),
     );
   }
-
 }
