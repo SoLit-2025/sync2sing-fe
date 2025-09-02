@@ -53,6 +53,23 @@ class SongDetailModel {
         return voiceType;
     }
   }
+
+  static String convertVoiceTypeEng2Kor(String voiceTypeEng) {
+    switch (voiceTypeEng) {
+      case 'TENOR':
+        return '테너';
+      case 'BASS':
+        return '베이스';
+      case 'BARITONE':
+        return '바리톤';
+      case 'SOPRANO':
+        return '소프라노';
+      case 'ALTO':
+        return '알토';
+      default:
+        return voiceTypeEng;
+    }
+  }
 }
 
 class DuetPart {
