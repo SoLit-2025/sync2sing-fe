@@ -7,7 +7,9 @@ import 'package:sync2sing/features/home_hub/views/solo_training_home_page.dart';
 import 'package:sync2sing/features/home_hub/views/duet_training_home_page.dart';
 
 class MainTabScreen extends StatelessWidget {
-  const MainTabScreen({super.key});
+  final int initialTabIndex;
+
+  const MainTabScreen({super.key, this.initialTabIndex = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +41,7 @@ class MainTabScreen extends StatelessWidget {
             return const Center(child: Text('Unknown'));
         }
       },
+      controller: CupertinoTabController(initialIndex: initialTabIndex),
     );
   }
 }

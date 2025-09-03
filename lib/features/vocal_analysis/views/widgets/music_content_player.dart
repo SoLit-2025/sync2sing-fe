@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
-import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/vocal_analysis/views/widgets/lyrics_display_widget.dart';
 import 'song_information_widget.dart';
 import 'pitch_and_rhythm_bar.dart';
@@ -27,7 +27,16 @@ import 'package:flutter/services.dart' show rootBundle;
 // 6. BPM 기반 막대 이동속도 조절
 
 class MusicContentPlayer extends ConsumerStatefulWidget {
-  const MusicContentPlayer({super.key});
+  final SongDetailModel songDetailModel;
+  final String pitchRhythmJsonPath;
+  final ValueChanged<bool> onButtonEnabledChanged; // 보분리 생성 버튼 enabled 여부 콜백 함수.
+
+  const MusicContentPlayer(
+    this.songDetailModel,
+    this.pitchRhythmJsonPath,
+    this.onButtonEnabledChanged, {
+    super.key,
+  });
 
   @override
   ConsumerState createState() => _MusicContentPlayerState();
@@ -47,6 +56,15 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
   int? _userCurrentPitch; // 사용자 현재 음정
   Timer? _pitchDetectionTimer; // 일정한 간격을 두고 음정을 감지하는 도구
   Timer? _testTimer; // 테스트용 타이머 (오디오 없이 position 시뮬레이션)
+
+  // 일정 시간 지나면 콜백 함수 실행: 버튼 활성화
+  Timer? _enableButtonTimer;
+  final int _enableTimeMs = 3000; // 버튼활성화 시점(ms)
+  /// 재생 버튼 누른 후 시간
+  int _elapsedMillis = 0;
+
+  /// 누적 시간 (ms 단위)
+  bool _buttonEnabledAlready = false; // 3초 콜백이 이미 실행됐는지 체크
 
   // 위젯이 처음 실행될 때 실행되는 초기화 함수
   @override
@@ -81,7 +99,12 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
     _audioPlayer = AudioPlayer();
     try {
       // MR 불러오기
-      await _audioPlayer.setAsset('assets/songs/audios/doremi_song_v3_mr.wav');
+      if (widget.songDetailModel.fileUrl.startsWith("assets")) {
+        await _audioPlayer.setAsset(widget.songDetailModel.fileUrl);
+      } else {
+        await _audioPlayer.setUrl(widget.songDetailModel.fileUrl);
+      }
+      //
       debugPrint('MR 불러오기 성공');
     } catch (e) {
       debugPrint('MR 불러오기 실패: $e');
@@ -107,9 +130,13 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
     // MR 재생이 끝나면 자동으로 처음으로 돌아간 뒤 일시정지
     _audioPlayer.playerStateStream.listen((playerState) {
       if (playerState.processingState == ProcessingState.completed) {
-        setState(() => _isPlaying = false);
         _audioPlayer.seek(Duration.zero); // 처음으로 돌아가기
+        _audioPlayer.pause();
         ref.read(audioRecorderProvider.notifier).pause(); // 녹음 정지
+        setState(() {
+          _isPlaying = false;
+        });
+        debugPrint("currentPosition: ${ref.watch(audioPositionProvider)}");
         debugPrint('MR 재생 완료, 처음으로 돌아감');
       }
     });
@@ -127,9 +154,7 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
   Future _loadPitchBars() async {
     try {
       // JSON 파일에서 음정/박자 데이터 불러오기
-      final String jsonString = await rootBundle.loadString(
-        'assets/songs/datas/doremi_song_piano_v2.json',
-      );
+      final String jsonString = await rootBundle.loadString(widget.pitchRhythmJsonPath);
       debugPrint('JSON 파일 로딩 성공, 길이: ${jsonString.length}');
 
       final List jsonData = json.decode(jsonString);
@@ -222,13 +247,34 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
 
       debugPrint('🎵 테스트 타이머 - 현재 위치: ${currentPos.inMilliseconds}ms');
 
-      // 30초 후 자동 정지
-      if (currentPos.inSeconds >= 30) {
+      // 12초 후 자동 정지
+      if (currentPos.inSeconds >= 12) {
         timer.cancel();
         setState(() => _isPlaying = false);
         debugPrint('테스트 재생 완료');
       }
     });
+  }
+
+  // 버튼 활성화를 위한 타이머 재기
+  void _startEnableButtonTimer() {
+    // 이미 활성화 됐다면 다시 실행할 필요 없음
+    if (_buttonEnabledAlready) return;
+
+    _enableButtonTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+      _elapsedMillis += 100;
+
+      if (_elapsedMillis >= _enableTimeMs && !_buttonEnabledAlready) {
+        _buttonEnabledAlready = true;
+        widget.onButtonEnabledChanged(true);
+        _enableButtonTimer?.cancel();
+      }
+    });
+  }
+
+  void _pauseEnableButtonTimer() {
+    _enableButtonTimer?.cancel();
+    _enableButtonTimer = null;
   }
 
   // MR 재생과 녹음을 동시에 시작/정지하는 함수
@@ -238,6 +284,7 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
       _audioPlayer.pause();
       await ref.read(audioRecorderProvider.notifier).pause();
       setState(() => _isPlaying = false);
+      _pauseEnableButtonTimer(); // 시간 카운트 일시중지
       debugPrint('MR 일시정지 + 녹음 정지');
     } else {
       // 현재 일시정지 상태면 재생 + 녹음 시작
@@ -245,6 +292,7 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
         _audioPlayer.play();
         await ref.read(audioRecorderProvider.notifier).startOrResume();
         setState(() => _isPlaying = true);
+        _startEnableButtonTimer(); // 3초 카운트 시작 (이미 활성화면 무시)
         debugPrint('MR 재생 + 녹음 시작');
       } catch (e) {
         debugPrint('MR 재생 실패: $e');
@@ -256,11 +304,6 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
       }
     }
   }
-
-  // 키 내리기 기능: 추후 구현 예정
-  void _decreaseKey() => debugPrint('키 내리기 기능 실행');
-  // 키 올리기 기능: 추후 구현 예정
-  void _increaseKey() => debugPrint('키 올리기 기능 실행');
 
   @override
   void dispose() {
@@ -324,12 +367,23 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // 곡 정보 표시
-        SongInformationWidget(),
+        SongInformationWidget(
+          title: widget.songDetailModel.title,
+          artist: widget.songDetailModel.artist,
+        ),
         // 가사 표시
-        LyricsSection(),
+        Expanded(
+          child: SingleChildScrollView(
+            // 가사가 영역을 초과하면 스크롤 처리. (overflow 방지)
+            child: LyricsSection(
+              lyrics: widget.songDetailModel.lyrics,
+              currentPosition: currentPosition,
+            ),
+          ),
+        ),
         // 음정/박자 막대 표시
         Container(
-          height: 155.h,
+          height: 160.h,
           decoration: BoxDecoration(
             borderRadius: BorderRadiusDirectional.circular(10.r),
             color: AppColors.grayscale7,
@@ -350,21 +404,10 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
         ),
         SizedBox(height: 20.h),
         // 키 조절, 재생/일시정지 버튼 표시
-        SizedBox(
-          width: double.infinity,
-          height: 42.w,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _KeyControlButton(textContent: "Key -", onPressed: _decreaseKey),
-              // 재생/일시정지 버튼: 상태에 따라 다른 버튼 표시
-              (isRecording || _isPlaying)
-                  ? _PauseButton(onPressed: _togglePlayAndRecord)
-                  : _PlayButton(onPressed: _togglePlayAndRecord),
-              _KeyControlButton(textContent: "Key +", onPressed: _increaseKey),
-            ],
-          ),
-        ),
+        // 재생/일시정지 버튼: 상태에 따라 다른 버튼 표시
+        (isRecording || _isPlaying)
+            ? _PauseButton(onPressed: _togglePlayAndRecord)
+            : _PlayButton(onPressed: _togglePlayAndRecord),
       ],
     );
   }
@@ -404,34 +447,7 @@ class _PauseButton extends StatelessWidget {
       child: ImageIcon(
         AssetImage("assets/images/pause.png"),
         color: AppColors.grayscale3,
-        size: 20.w,
-      ),
-    );
-  }
-}
-
-// 키 조절 버튼 위젯: 추후 구현 예정
-class _KeyControlButton extends StatelessWidget {
-  final String textContent;
-  final VoidCallback onPressed;
-  const _KeyControlButton({required this.textContent, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 98.w,
-      height: 42.h,
-      child: CupertinoButton(
-        padding: EdgeInsets.zero,
-        onPressed: onPressed,
-        borderRadius: BorderRadius.circular(10.r),
-        color: AppColors.grayscale5,
-        minSize: 0.0,
-        child: Text(
-          textContent,
-          textAlign: TextAlign.center,
-          style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale3),
-        ),
+        size: 20.h,
       ),
     );
   }

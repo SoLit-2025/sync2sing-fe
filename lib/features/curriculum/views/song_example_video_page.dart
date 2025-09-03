@@ -1,0 +1,170 @@
+import 'dart:convert';
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
+import 'package:sync2sing/features/shared/logics/analysis_type.dart';
+import 'package:sync2sing/features/shared/logics/training_mode.dart';
+import 'package:sync2sing/features/onboarding/logics/watch_youtube_providers.dart';
+import 'package:sync2sing/features/onboarding/views/youtube_player_widget.dart';
+import 'package:sync2sing/features/shared/views/page_indicator.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+
+class SongExampleVideoPage extends ConsumerWidget {
+  final TrainingMode trainingMode;
+  final AnalysisType analysisType;
+  final int songId;
+  const SongExampleVideoPage({
+    super.key,
+    required this.trainingMode,
+    required this.analysisType,
+    required this.songId,
+  });
+
+  final String jsonStr = '''
+  
+  {
+    "status": 200,
+    "message": "솔로 트레이닝 원곡 조회에 성공했습니다.",
+    "data": {
+        "id": 1,
+        "title": "Do-Re-Mi",
+        "artist": "Richard Rodgers",
+        "voice_type": "SOPRANO",
+        "pitch_note_min": "C4",
+        "pitch_note_max": "D5",
+        "lyrics": [
+            {
+                "line_index": 0,
+                "text": "Doe(Do), a deer, a female deer",
+                "start_time": 0
+            },
+            {
+                "line_index": 1,
+                "text": "Ray(Re), a drop of golden sun",
+                "start_time": 7200
+            }
+        ],
+        "album_art_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+        "file_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/6875743e-3955-4067-abed-da1911a6aae1.mp3"
+    }
+  }
+''';
+  final String videoId = "Qy9cj-zwbVY";
+  final int videoStartSec = 42;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    Map<String, dynamic> decoded = jsonDecode(jsonStr);
+    Map<String, dynamic> data = decoded['data'] ?? {};
+    SongDetailModel songDetail = SongDetailModel.fromJson(data);
+    final bool isButtonEnabled = ref.watch(isOnboardingRecordingStartButtonEnabledProvider);
+
+    return Scaffold(
+      body: SafeArea(
+        child: Container(
+          alignment: Alignment(0.0, -1.0),
+          margin: EdgeInsets.fromLTRB(0, 12.h, 0, 40.h), // 상하 여백
+          child: SizedBox(
+            width: 327.w,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                (analysisType == AnalysisType.guest)
+                    ? PageIndicator(currentPage: 4, pageCount: 6)
+                    : PageIndicator(currentPage: 0, pageCount: 2), // 상단 페이지네이션 위젯
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 32.h, 0, 20.h),
+                        width: 327.w,
+                        alignment: Alignment(-1.0, -1.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              // 텍스트 필드 (글씨 안내)
+                              padding: EdgeInsets.symmetric(vertical: 4.h),
+                              child: Text(
+                                switch (analysisType) {
+                                  AnalysisType.guest => "마지막 과정이에요",
+                                  AnalysisType.pre => "훈련 전 진단을 시작합니다",
+                                  AnalysisType.post => "훈련 후 진단을 시작합니다",
+                                },
+                                textAlign: TextAlign.left,
+                                style: AppTextStyles.heading3Bold,
+                              ),
+                            ),
+
+                            Text(
+                              "아래 음원을 듣고 \n후렴구를 똑같이 따라 불러주세요",
+                              textAlign: TextAlign.left,
+                              style: AppTextStyles.heading4,
+                            ),
+                          ],
+                        ),
+                      ),
+                      // 유튜브 영상
+                      Container(
+                        width: 327.w,
+                        margin: EdgeInsets.symmetric(vertical: 20.h),
+                        child: YoutubePlayerWidget(
+                          videoId: videoId, // 도레미송 공식 가사 비디오
+                          // do a deer 부분에서 영상 시작, 자동 재생 금지
+                          flags: YoutubePlayerFlags(autoPlay: false, startAt: videoStartSec),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 시작하기 버튼
+                Container(
+                  width: double.infinity,
+                  height: 50.w,
+                  margin: EdgeInsets.only(top: 32.h),
+                  alignment: Alignment(0.0, 0.0),
+                  child: CupertinoButton(
+                    color: AppColors.primaryPink,
+                    disabledColor: AppColors.primaryPinkDisabled, // 비활성화 색
+                    borderRadius: BorderRadius.circular(10.r),
+                    padding: EdgeInsets.all(0),
+                    onPressed:
+                        isButtonEnabled
+                            ? () {
+                              context.go(
+                                "${AppRoutePaths.soloPreRecordingSong}/${analysisType.name}/$songId",
+                                extra: songDetail.id,
+                              );
+                            }
+                            : null,
+                    minSize: 0.0,
+                    child: Center(
+                      child: Text(
+                        "시작하기",
+                        style:
+                            isButtonEnabled
+                                ? AppTextStyles.body1BoldWhite
+                                : AppTextStyles.body1White,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

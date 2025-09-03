@@ -15,9 +15,9 @@ class SignupCompletePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppColors.grayscale8,
-      child: SafeArea(
+      body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
@@ -35,19 +35,11 @@ class SignupCompletePage extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 40.h),
-                  Text(
-                    '회원가입 완료',
-                    style: AppTextStyles.heading2Bold.copyWith(
-                      decoration: TextDecoration.none,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('회원가입 완료', style: AppTextStyles.heading2Bold, textAlign: TextAlign.center),
                   SizedBox(height: 16.h),
                   Text(
                     '지금부터 보컬 분석 리포트를\n저장할 수 있어요.\n맞춤형 보컬 트레이닝을 시작해보세요',
-                    style: AppTextStyles.body1.copyWith(
-                      decoration: TextDecoration.none,
-                    ),
+                    style: AppTextStyles.body1,
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -59,9 +51,7 @@ class SignupCompletePage extends StatelessWidget {
                   width: 327.w,
                   height: 50.h,
                   child: CupertinoTheme(
-                    data: CupertinoTheme.of(
-                      context,
-                    ).copyWith(primaryColor: AppColors.primaryPink),
+                    data: CupertinoTheme.of(context).copyWith(primaryColor: AppColors.primaryPink),
                     child: CupertinoButton.filled(
                       borderRadius: BorderRadius.circular(10.r),
                       padding: EdgeInsets.zero,

@@ -1,11 +1,14 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
+import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
+import 'package:sync2sing/features/vocal_analysis/views/widgets/music_content_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
@@ -13,52 +16,102 @@ import 'package:sync2sing/features/vocal_analysis/logics/providers/audio_recorde
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import 'dart:io';
 
-import '../widgets/music_content_player.dart';
+class SoloRecordingSongPage extends ConsumerStatefulWidget {
+  final AnalysisType analysisType; // 아마 analysisType 로 onboarding 역할 아예 대체 가능할 듯.
+  final int songId;
 
-/// 온보딩 과정의 녹음 페이지
-///
-/// 이 페이지의 역할:
-/// 1. 사용자에게 도레미송을 들려주고 따라 부르도록 안내
-/// 2. MusicContentPlayer를 통해 음정/박자 시각화 제공
-/// 3. 녹음 완료 후 보컬 분석 리포트 생성으로 이동
-///
-/// 페이지 구성:
-/// - 상단: 페이지 인디케이터 (현재 5/6 단계)
-/// - 중간: 음악 플레이어 및 시각화 영역
-/// - 하단: 보컬 분석 리포트 생성 버튼
-class OnboardingRecordingSongPage extends ConsumerStatefulWidget {
-  const OnboardingRecordingSongPage({super.key});
+  const SoloRecordingSongPage({required this.analysisType, required this.songId, super.key});
 
   @override
-  ConsumerState createState() => _OnboardingRecordingSongPageState();
+  ConsumerState createState() => _SoloRecordingSongPageState();
 }
 
-class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordingSongPage>
+class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
     with WidgetsBindingObserver {
   Key _playerKey = UniqueKey();
+
   bool _isButtonEnabled = false;
-  late final SongDetailModel _songDetailModel = SongDetailModel(
-    2,
-    "Do-Re-Mi Song",
-    "Richard Rodgers",
-    "SOPRANO",
-    "C4",
-    "D5",
-    [
-      TimedLyric(0, "(전주중)", 0),
-      TimedLyric(1, "Doe - a deer,", 2300),
-      TimedLyric(2, "a female deer", 4000),
-      TimedLyric(3, "Ray - a drop of golden sun", 6000),
-      TimedLyric(4, "Me, a name I call myself", 10000),
-    ],
-    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-    "assets/songs/audios/doremi_song_v3_mr.wav", // 백엔드에 저장된 파일과 음정 박자 파일 불일치 -> asset 사용. 다만 길이 조정 필요 (음악 끝나기 전까지 다음버튼 클릭 불가)
-  );
+  late final SongDetailModel _songDetailModel;
+  final String jsonStr = '''
+  {
+    "status": 200,
+    "message": "솔로 트레이닝 MR 곡 조회에 성공했습니다.",
+    "data": {
+        "id": 1,
+        "title": "Golden",
+        "artist": "HUNXR/X(EJAE, Audrey NUNA, REI AMI)",
+        "voice_type": "SOPRANO",
+        "pitch_note_min": "A3",
+        "pitch_note_max": "C4",
+        "lyrics": [
+        {
+                "line_index": 0,
+                "text": "I'm done hidin'",
+                "start_time": 200
+            },
+             {
+                "line_index": 1,
+                "text": "now I'm shinin'",
+                "start_time": 700
+            },
+             {
+                "line_index": 2,
+                "text": "like I'm born to be",
+                "start_time": 1200
+            },
+             {
+                "line_index": 3,
+                "text": "We dreamin' hard",
+                "start_time": 1700
+            },
+            {
+                "line_index": 4,
+                "text": "we came so far",
+                "start_time": 2000
+            },
+            {
+                "line_index": 5,
+                "text": "now I believe",
+                "start_time": 2500
+            }
+        ],
+        "album_art_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+        "file_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/mr/27e305f9-ca07-4f53-a15a-94f1b5b0cc89.mp3"
+    }
+}
+''';
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // if 문 임시 주석처리 : 어느 상항에서든 do re mi song.
+    // if (widget.analysisType == AnalysisType.guest) {
+    // guest -> 온보딩처럼 -> 걍 가져오기
+    // context.go(AppRoutePaths.onboardingRecordingSong);
+    _songDetailModel = SongDetailModel(
+      2,
+      "Do-Re-Mi Song",
+      "Richard Rodgers",
+      "SOPRANO",
+      "C4",
+      "D5",
+      [
+        TimedLyric(0, "(전주중)", 0),
+        TimedLyric(1, "Doe - a deer,", 2300),
+        TimedLyric(2, "a female deer", 4000),
+        TimedLyric(3, "Ray - a drop of golden sun", 6000),
+        TimedLyric(4, "Me, a name I call myself", 10000),
+      ],
+      "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+      "assets/songs/audios/doremi_song_v3_mr.wav",
+    );
+    // } else {
+    //   Map<String, dynamic> decoded = jsonDecode(jsonStr);
+    //   Map<String, dynamic> data = decoded['data'] ?? {};
+    //   _songDetailModel = SongDetailModel.fromJson(data);
+    // }
   }
 
   @override
@@ -86,7 +139,6 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
 
   Future<void> storeVocalAnalysisSubmit(ref) async {
     /// 파일 경로 및 정확도 저장
-    /// *** ref 를 dispose() 에서 사용할 수 없어서 여기서 저장하게 로직을 작성하였습니다. -> 나중에 리팩토링될 수 있음.
     final controller = ref.read(audioRecorderProvider.notifier);
     final pitchAccuracy = controller.pitchAccuracy;
 
@@ -108,7 +160,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
     debugPrint(
       "파일 경로 및 정확도 저장: ${vocalPitchData.wavFilePath} | ${vocalPitchData.pitchAccuracy} | ${vocalPitchData.rhythmAccuracy}",
     );
-    //
+
     // ★ 실제 파일 존재 및 크기 확인
     if (vocalPitchData.wavFilePath != null) {
       final file = File(vocalPitchData.wavFilePath!);
@@ -116,6 +168,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
       debugPrint('→ 실제 파일 크기: ${file.lengthSync()}바이트');
     }
 
+    // audioRecorderProvider 등록 해제
     ref.invalidate(audioRecorderProvider);
   }
 
@@ -131,10 +184,9 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              /// 상단 페이지 인디케이터
-              /// 현재 진행 상황을 사용자에게 시각적으로 표시
-              /// 5/6 단계: 거의 마지막 단계임을 알려줍니다
-              const PageIndicator(currentPage: 5, pageCount: 6),
+              (widget.analysisType == AnalysisType.guest)
+                  ? const PageIndicator(currentPage: 5, pageCount: 6) // onboarding 페이지처럼 보이게.
+                  : const PageIndicator(currentPage: 1, pageCount: 2),
 
               /// 위와 중간 사이 간격
               /// Spacer는 남은 공간을 균등하게 분배합니다
@@ -146,15 +198,10 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
                 width: 327.w,
                 height: 556.h,
                 padding: EdgeInsets.fromLTRB(16.h, 16.h, 16.h, 20.h),
-                // constraints: BoxConstraints(minHeight: 300.h),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.r),
-                  color: AppColors.grayscale6,
+                  color: AppColors.grayscale6, // 연한 회색 배경
                 ),
-
-                /// MusicContentPlayer: 음악 재생, 녹음, 시각화를 담당하는 핵심 위젯
-                /// 이 위젯에서 모든 음악 관련 기능이 처리됩니다
-                // child: MusicContentPlayer(key: _playerKey),
                 child: MusicContentPlayer(
                   _songDetailModel,
                   'assets/songs/datas/doremi_song_piano_v2.json',
@@ -188,13 +235,12 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
                                 // 데이터 저장
                                 await storeVocalAnalysisSubmit(ref);
                                 if (!context.mounted) return; // 반드시 위 함수가 실행된 후에 페이지를 이동하도록 함
-
-                                context.go("${AppRoutePaths.vocalAnalysisLoading}/solo/guest");
+                                context.go(
+                                  "${AppRoutePaths.vocalAnalysisLoading}/solo/${widget.analysisType.name}",
+                                );
                               }
                               : null,
                       // 비활성화 시 null (클릭 불가)
-                      /// 버튼 텍스트
-                      /// 활성화 상태에 따라 텍스트 스타일이 달라집니다
                       child: Text(
                         "보컬 분석 리포트 생성하기",
                         style:

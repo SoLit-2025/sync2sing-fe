@@ -1,5 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/features/report/views/vocal_analysis_loading_handler.dart';
+import 'package:sync2sing/features/shared/logics/analysis_type.dart';
+import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/vocal_analysis/views/pages/minimum_pitch_page.dart';
 import 'package:sync2sing/features/vocal_analysis/views/pages/onboarding_recording_song_page.dart';
 import 'package:sync2sing/features/vocal_analysis/views/pages/voice_sample_page.dart';
@@ -52,8 +54,16 @@ final List<GoRoute> onboardingRoutes = [
     builder: (context, state) => const OnboardingRecordingSongPage(),
   ),
   GoRoute(
-    path: AppRoutePaths.vocalAnalysisLoading,
+    path: "${AppRoutePaths.vocalAnalysisLoading}/:trainingMode/:analysisType",
     name: AppRouteNames.analysisLoading,
-    builder: (context, state) => const VocalAnalysisLoadingHandler(),
+    builder: (context, state) {
+      final trainingMode = TrainingMode.values.firstWhere(
+        (e) => e.name == state.pathParameters['trainingMode'],
+      );
+      final analysisType = AnalysisType.values.firstWhere(
+        (e) => e.name == state.pathParameters['analysisType'],
+      );
+      return VocalAnalysisLoadingHandler(trainingMode: trainingMode, analysisType: analysisType);
+    },
   ),
 ];
