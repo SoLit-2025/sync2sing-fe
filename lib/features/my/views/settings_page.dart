@@ -62,6 +62,20 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       Expanded(
                         child: TextButton(
+                          style: ButtonStyle(
+                            // 클릭 시 그림자가 원형 x, 부모 전체를 차지하게
+                            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                              const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                            ),
+                            overlayColor: WidgetStateProperty.resolveWith<Color?>((
+                              Set<WidgetState> states,
+                            ) {
+                              if (states.contains(WidgetState.pressed)) {
+                                return AppColors.grayscale1.withValues(alpha: 0.2); // 눌렸을 때 배경색
+                              }
+                              return null; // 기본값
+                            }),
+                          ),
                           onPressed: () {
                             Navigator.of(context).pop();
                             // todo: 1:1 문의 연결
@@ -78,6 +92,20 @@ class _SettingsPageState extends State<SettingsPage> {
                       Container(width: 0.7, height: double.infinity, color: AppColors.grayscale4),
                       Expanded(
                         child: TextButton(
+                          style: ButtonStyle(
+                            // 클릭 시 그림자가 원형 x, 부모 전체를 차지하게
+                            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                              const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                            ),
+                            overlayColor: WidgetStateProperty.resolveWith<Color?>((
+                              Set<WidgetState> states,
+                            ) {
+                              if (states.contains(WidgetState.pressed)) {
+                                return AppColors.grayscale1.withValues(alpha: 0.2); // 눌렸을 때 배경색
+                              }
+                              return null; // 기본값
+                            }),
+                          ),
                           onPressed: () {
                             // todo: 회원탈퇴 api 연결
                             Navigator.of(context).pop();
