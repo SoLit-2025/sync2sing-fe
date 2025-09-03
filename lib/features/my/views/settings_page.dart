@@ -31,36 +31,32 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+          backgroundColor: AppColors.grayscale8,
           child: SizedBox(
-            width: 270.w,
-            height: 142.h,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
-                  padding: EdgeInsets.all(16.w),
+                  padding: EdgeInsets.symmetric(vertical: 16.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
                         '모든 성장 기록이 함께 삭제돼요',
-                        style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale1),
+                        style: AppTextStyles.body1Bold,
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: 8.h),
                       Text(
                         '탈퇴시 보컬 분석 리포트 기록을 영구적으로 삭제합니다\n불편한 점이 있으시다면 언제든 의견을 들려주세요',
-                        style: AppTextStyles.body6.copyWith(
-                          color: AppColors.grayscale2,
-                          height: 1.5,
-                        ),
+                        style: AppTextStyles.body6.copyWith(color: AppColors.grayscale1),
                         textAlign: TextAlign.center,
                       ),
                     ],
                   ),
                 ),
-                Divider(height: 1, thickness: 1, color: AppColors.grayscale5),
+                Divider(height: 0.7, thickness: 0.7, color: AppColors.grayscale4),
                 IntrinsicHeight(
                   child: Row(
                     children: [
@@ -79,17 +75,18 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                         ),
                       ),
-                      Container(width: 1, height: double.infinity, color: AppColors.grayscale5),
+                      Container(width: 0.7, height: double.infinity, color: AppColors.grayscale4),
                       Expanded(
                         child: TextButton(
                           onPressed: () {
+                            // todo: 회원탈퇴 api 연결
                             Navigator.of(context).pop();
                             context.go(AppRoutePaths.login);
                           },
                           child: Center(
                             child: Text(
                               '탈퇴하기',
-                              style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale1),
+                              style: AppTextStyles.body1,
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -157,7 +154,10 @@ class _SettingsPageState extends State<SettingsPage> {
               iconHeight: 30.h,
               title: '로그아웃',
               titleTextStyle: AppTextStyles.heading4.copyWith(color: AppColors.grayscale1),
-              onTap: () => context.go(AppRoutePaths.login),
+              onTap: () {
+                // todo: 로그아웃 api 연결
+                context.go(AppRoutePaths.login);
+              },
             ),
             _divider(),
             _buildSettingItem(
@@ -165,7 +165,7 @@ class _SettingsPageState extends State<SettingsPage> {
               iconWidth: 28.w,
               iconHeight: 30.h,
               title: '회원탈퇴',
-              titleTextStyle: AppTextStyles.heading4.copyWith(color: AppColors.grayscale1),
+              titleTextStyle: AppTextStyles.heading4,
               onTap: _showLeaveDialog,
             ),
             _divider(),
@@ -174,7 +174,7 @@ class _SettingsPageState extends State<SettingsPage> {
               iconWidth: 30.w,
               iconHeight: 30.h,
               title: '1:1 문의',
-              titleTextStyle: AppTextStyles.heading4.copyWith(color: AppColors.grayscale1),
+              titleTextStyle: AppTextStyles.heading4,
               onTap: () {
                 // todo: 1:1 문의 연결
               },
@@ -185,9 +185,9 @@ class _SettingsPageState extends State<SettingsPage> {
               iconWidth: 30.w,
               iconHeight: 30.w,
               title: '라이센스 정보',
-              titleTextStyle: AppTextStyles.heading4.copyWith(color: AppColors.grayscale1),
-              onTap: (){
-                  context.push(AppRoutePaths.license);
+              titleTextStyle: AppTextStyles.heading4,
+              onTap: () {
+                context.push(AppRoutePaths.license);
               },
             ),
           ],
@@ -226,11 +226,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         Icon(Icons.error, color: Colors.red, size: iconHeight),
               )
             else if (iconData != null)
-              Icon(
-                iconData,
-                size: iconWidth,
-                color: AppColors.grayscale3,
-              ),
+              Icon(iconData, size: iconWidth, color: AppColors.grayscale3),
             SizedBox(width: 16.w),
             Expanded(
               child: Text(
