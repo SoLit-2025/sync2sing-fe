@@ -23,7 +23,6 @@ dependencies:
   just_audio: ^0.9.36
   flutter_sound: ^9.28.0
   path_provider: ^2.0.15
-  http: ^1.2.1
   http_parser: ^4.0.2
   flutter_secure_storage: ^9.0.0
   dio: ^5.0.4
