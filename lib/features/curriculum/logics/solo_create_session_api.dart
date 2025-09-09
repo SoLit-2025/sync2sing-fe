@@ -9,16 +9,11 @@ class SoloTrainingService {
   Future<Map<String, dynamic>> createSoloTrainingSession({
     required int songId,
     required int trainingDays,
-    int keyAdjustment = 0, // 하드코딩된 기본값
   }) async {
     try {
       final response = await dioFactory.post(
         '/solo-training/session',
-        data: {
-          'song_id': songId,
-          'key_adjustment': keyAdjustment,
-          'training_days': trainingDays,
-        },
+        data: {'song_id': songId, 'training_days': trainingDays},
       );
       return response.data;
     } catch (e) {

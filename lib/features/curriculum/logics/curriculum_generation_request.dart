@@ -8,7 +8,6 @@ class CurriculumGenerationRequest {
   final TrainingGrade pitch;
   final TrainingGrade rhythm;
   final TrainingGrade pronunciation;
-  final TrainingGrade breath;
   final int trainingDays;
 
   CurriculumGenerationRequest({
@@ -16,7 +15,6 @@ class CurriculumGenerationRequest {
     required this.pitch,
     required this.rhythm,
     required this.pronunciation,
-    required this.breath,
     required this.trainingDays,
   });
 
@@ -26,7 +24,6 @@ class CurriculumGenerationRequest {
       pitch: json['pitch'],
       rhythm: json['rhythm'],
       pronunciation: json['pronunciation'],
-      breath: json['breath'],
       trainingDays: json['training_days'],
     );
   }
@@ -38,7 +35,6 @@ class CurriculumGenerationRequest {
       "pitch": pitch.name.toUpperCase(),
       "rhythm": rhythm.name.toUpperCase(),
       "pronunciation": pronunciation.name.toUpperCase(),
-      "breath": breath.name.toUpperCase(),
       "training_days": trainingDays,
     };
   }

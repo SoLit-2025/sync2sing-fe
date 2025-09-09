@@ -53,7 +53,6 @@ class AnalysisResult {
   final int pitchScore;
   final int beatScore;
   final int pronunciationScore;
-  final int breathScore;
   final String overallReviewTitle;
   final String overallReviewContent;
   final DateTime? createdAt;
@@ -68,7 +67,6 @@ class AnalysisResult {
     required this.pitchScore,
     required this.beatScore,
     required this.pronunciationScore,
-    required this.breathScore,
     required this.overallReviewTitle,
     required this.overallReviewContent,
     this.createdAt,
@@ -84,7 +82,6 @@ class AnalysisResult {
     'pitch_score': pitchScore,
     'beat_score': beatScore,
     'pronunciation_score': pronunciationScore,
-    'breath_score': breathScore,
     'overall_review_title': overallReviewTitle,
     'overall_review_content': overallReviewContent,
     'created_at': createdAt?.toIso8601String() ?? '',
@@ -104,7 +101,6 @@ class AnalysisResult {
       pitchScore: json['pitch_score'] as int? ?? 0,
       beatScore: json['beat_score'] as int? ?? 0,
       pronunciationScore: json['pronunciation_score'] as int? ?? 0,
-      breathScore: json['breath_score'] as int? ?? 0,
       overallReviewTitle: json['overall_review_title'] as String? ?? '',
       overallReviewContent: json['overall_review_content'] as String? ?? '',
       createdAt:

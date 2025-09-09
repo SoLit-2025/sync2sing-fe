@@ -319,7 +319,6 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
                   ref.read(selectedSongProvider.notifier).setTrainingDays(_selectedDays!);
                   final data = {
                     "song_id": ref.read(selectedSongProvider).id,
-                    "key_adjustment": 0,
                     "training_days": ref.read(selectedSongProvider).trainingDays,
                   };
                   final response = await DioFactory(
@@ -332,10 +331,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
                     _showError("설정 실패! 다시 확인해주세요.");
                     return;
                   }
-                  // debugPrint
-                  context.go(
-                    "${AppRoutePaths.songExampleVideo}/solo/pre/${ref.watch(selectedSongProvider).id}",
-                  );
+                  context.go(AppRoutePaths.soloTrainingHome);
                 }
                 : null,
         style: ElevatedButton.styleFrom(
