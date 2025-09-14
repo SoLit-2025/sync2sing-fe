@@ -1,4 +1,5 @@
-// import 'dart:convert';
+import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,7 +26,7 @@ class SoloTrainingHomePage extends StatefulWidget {
 class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
   late final DioFactory dioFactory;
   late final List<TrainingItem> items;
-  final String nickname = "노래하는 해파리";
+  final String nickname = "노래하는해파리";
   late final Future<Map<String, dynamic>> responseData;
   late final int totalProgress;
   late final TrainingSessionStatus trainingSessionStatus;
@@ -46,20 +47,22 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
 
   Future<Map<String, dynamic>> _fetchSessionInfo() async {
     dioFactory = DioFactory(SecureStorage());
-    final response = await dioFactory.get('/solo-training/session');
 
-    debugPrint("soloHOme: response - ${response.data}");
-    if (response.statusCode == 200) {
+    try {
+      final response = await dioFactory.get('/solo-training/session');
+
+      debugPrint("soloHome: response - ${response.data}");
       trainingSessionStatus = _getDataFromResponse(response.data['data']);
 
       return response.data['data'];
-    } else {
-      throw Exception('API 요청 실패');
+    } on DioException catch (e) {
+      debugPrint("error2: ${e.response}");
+      throw Exception(e.response);
     }
   }
 
   TrainingSessionStatus _getDataFromResponse(Map<String, dynamic> responseBody) {
-    debugPrint("responseBody - data: ${responseBody}");
+    debugPrint("responseBody - data: $responseBody");
     var tTrainingSessionStatus = getTrainingStatusFromJson(responseBody);
     switch (tTrainingSessionStatus) {
       case TrainingSessionStatus.beforeSession:
@@ -110,11 +113,26 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
         child: FutureBuilder(
           future: responseData,
           builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.hasData == false) {
+            if (snapshot.hasError) {
+              final errorString = snapshot.error.toString();
+
+              try {
+                final Map<String, dynamic> errorJson = jsonDecode(
+                  errorString.replaceFirst('Exception: ', '').trim(),
+                );
+
+                final status = errorJson['status']?.toString() ?? 'Unknown status';
+
+                if (status == "403") {
+                  return Text("로그인 해주세요!");
+                }
+                return Text('알 수 없는 오류가 발생했습니다.');
+              } catch (e) {
+                return Text('알 수 없는 오류가 발생했습니다.');
+              }
+            } else if (snapshot.hasData == false) {
               // 응답이 오지 않았으면
               return CustomLoading();
-            } else if (snapshot.hasError) {
-              return Text("오류: 정보를 조회하지 못했습니다. ${snapshot.data['message']}");
             } else {
               // 응답이 정상적으로 온 경우
               return SingleChildScrollView(
@@ -364,7 +382,6 @@ class SessionOptionCard extends StatelessWidget {
             // mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _trainingCardTop(),
-
               SizedBox(height: 3.h),
               RichText(
                 text: TextSpan(
