@@ -76,10 +76,10 @@ class _MainHomePageState extends State<MainHomePage> {
         child: FutureBuilder<Map<String, dynamic>>(
           future: _trainingData,
           builder: (context, snapshot) {
-            if (snapshot.hasData == false) {
-              return CustomLoading();
-            } else if (snapshot.hasError) {
+            if (snapshot.hasError) {
               return _buildErrorWidget(snapshot.error.toString());
+            } else if (snapshot.hasData == false) {
+              return CustomLoading();
             } else {
               final data = snapshot.data!;
               final soloData = data['solo'] as Map<String, dynamic>;
