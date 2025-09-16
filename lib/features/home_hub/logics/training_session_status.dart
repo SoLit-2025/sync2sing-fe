@@ -72,7 +72,7 @@ List<TrainingItem> parseCurriculumItemsInOrderAndPostCompletedLast(
       final t = TrainingItem(
         id: item['id'],
         title: item['title'],
-        category: _categoryKr[key] ?? key,
+        category: categoryKr[key] ?? key,
         description: item['description'],
         grade: item['grade'],
         trainingMinutes: item['training_minutes'],
@@ -95,7 +95,7 @@ List<TrainingItem> parseCurriculumItemsInOrderAndPostCompletedLast(
   return [...preList, ...completed];
 }
 
-const Map<String, String> _categoryKr = {
+const Map<String, String> categoryKr = {
   // category 항목의 영어를 한글로 변환
   'pitch': '음정',
   'rhythm': '박자',
