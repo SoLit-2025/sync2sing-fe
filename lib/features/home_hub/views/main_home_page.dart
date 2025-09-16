@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -33,15 +34,22 @@ class _MainHomePageState extends State<MainHomePage> {
   }
 
   Future<Map<String, dynamic>> _fetchTrainingData() async {
-    dioFactory = DioFactory(SecureStorage());
-    final response = await dioFactory.get('/training/trainings/in-progress');
+    try{
+      dioFactory = DioFactory(SecureStorage());
+      final response = await dioFactory.get('/training/trainings/in-progress');
 
-    debugPrint("MainHome: response - ${response.data}");
-    if (response.statusCode == 200) {
+      debugPrint("MainHome: response - ${response.data}");
+
       return response.data['data'];
-    } else {
-      throw Exception('API 요청 실패: ${response.data['message']}');
+    } on DioException catch (e) {
+      debugPrint("DioException: ${e.response?.data}");
+      debugPrint("Error message: ${e.message}");
+      debugPrint("Status code: ${e.response?.statusCode}");
+
+      throw Exception(e.response?.data ?? e.message);
+
     }
+
   }
 
   // 솔로 트레이닝 상태 확인
