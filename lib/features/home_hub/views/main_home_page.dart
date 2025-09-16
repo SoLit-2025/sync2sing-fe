@@ -25,7 +25,7 @@ class _MainHomePageState extends State<MainHomePage> {
   late final DioFactory dioFactory;
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  final List<String> _categoryOrder = ['PITCH', 'RHYTHM', 'PRONUNCIATION', 'BREATH']; // 카테고리 순서 정의
+  final List<String> _categoryOrder = ['PITCH', 'RHYTHM', 'PRONUNCIATION']; // 카테고리 순서 정의
 
   @override
   void initState() {
