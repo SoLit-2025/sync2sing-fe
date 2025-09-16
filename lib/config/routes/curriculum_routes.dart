@@ -4,13 +4,18 @@ import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/features/curriculum/logics/curriculum_generation_request.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/curriculum/views/duet_song_detail_page.dart';
+import 'package:sync2sing/features/curriculum/views/duet_training_setting_page.dart';
 import 'package:sync2sing/features/curriculum/views/song_example_video_page.dart';
 import 'package:sync2sing/features/curriculum/views/solo_song_detail_page.dart';
 import 'package:sync2sing/features/curriculum/views/solo_training_setting_page.dart';
 import 'package:sync2sing/features/curriculum/views/song_list_page.dart';
 import 'package:sync2sing/features/curriculum/views/training_generation_loading_page.dart';
+import 'package:sync2sing/features/curriculum/views/training_guide_page.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
+import 'package:sync2sing/features/vocal_analysis/views/pages/pitch_training_page.dart';
+import 'package:sync2sing/features/vocal_analysis/views/pages/pronunciation_training_page.dart';
+import 'package:sync2sing/features/vocal_analysis/views/pages/rhythm_training_page.dart';
 import 'package:sync2sing/features/vocal_analysis/views/pages/solo_recording_song_page.dart';
 
 final List<GoRoute> curriculumRoutes = [
@@ -18,6 +23,11 @@ final List<GoRoute> curriculumRoutes = [
     path: AppRoutePaths.soloTrainingSetting,
     name: AppRouteNames.soloTrainingSetting,
     builder: (context, state) => const SoloTrainingSettingPage(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.duetTrainingSetting,
+    name: AppRouteNames.duetTrainingSetting,
+    builder: (context, state) => const DuetTrainingSettingPage(),
   ),
   GoRoute(
     path: "${AppRoutePaths.songList}/:trainingMode",
@@ -107,5 +117,25 @@ final List<GoRoute> curriculumRoutes = [
         (context, state) => TrainingGenerationLoadingPage(
           curriculumGenerationRequest: state.extra as CurriculumGenerationRequest,
         ), // extra로 정보 전달 시
+  ),
+  GoRoute(
+    path: AppRoutePaths.trainingGuide,
+    name: AppRouteNames.trainingGuide,
+    builder: (context, state) => const TrainingGuidePage(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.pitchTraining,
+    name: AppRouteNames.pitchTraining,
+    builder: (context, state) => const PitchTrainingPage(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.rhythmTraining,
+    name: AppRouteNames.rhythmTraining,
+    builder: (context, state) => const RhythmTrainingPage(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.pronunciationTraining,
+    name: AppRouteNames.pronunciationTraining,
+    builder: (context, state) => const PronunciationTrainingPage(),
   ),
 ];

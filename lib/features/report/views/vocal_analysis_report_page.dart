@@ -103,14 +103,14 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     final pitchScore = (reportData['pitch_score'] as num? ?? 0).toDouble();
     final beatScore = (reportData['beat_score'] as num? ?? 0).toDouble();
     final pronunciationScore = (reportData['pronunciation_score'] as num? ?? 0).toDouble();
-    final breathScore = (reportData['breath_score'] as num? ?? 0).toDouble();
+    final breathScore = 70; // todo: 삭제 필요
 
     return [
       pitchScore / 100.0, // 음정
       beatScore / 100.0, // 박자
       pronunciationScore / 100.0, // 발음
-      breathScore / 100.0, // 호흡
-      ((pitchScore + beatScore + pronunciationScore + breathScore) / 4) / 100.0, // 완성도
+      breathScore / 100.0, // todo: 삭제 필요
+      ((pitchScore + beatScore + pronunciationScore) / 3) / 100.0, // 완성도
     ];
   }
 
@@ -422,7 +422,6 @@ class VocalAnalysisReportPage extends ConsumerWidget {
                 pitch: _getGradeFromScore(reportData['pitch_score'] as int),
                 rhythm: _getGradeFromScore(reportData['beat_score'] as int),
                 pronunciation: _getGradeFromScore(reportData['pronunciation_score'] as int),
-                breath: _getGradeFromScore(reportData['breath_score'] as int),
                 trainingDays: trainingDays as int,
               );
               context.go(

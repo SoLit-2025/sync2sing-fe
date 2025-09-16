@@ -49,19 +49,17 @@ TrainingSessionStatus getTrainingStatusFromJson(Map<String, dynamic> decodedJson
   }
 }
 
-// pitch-rhythm-pronunciation-breath 인터리브 + 완료 항목 마지막으로 이동
+// pitch-rhythm-pronunciation 인터리브 + 완료 항목 마지막으로 이동
 List<TrainingItem> parseCurriculumItemsInOrderAndPostCompletedLast(
   Map<String, dynamic> curriculum,
 ) {
   final List pitch = curriculum['pitch'] ?? [];
   final List rhythm = curriculum['rhythm'] ?? [];
   final List pronunciation = curriculum['pronunciation'] ?? [];
-  final List breath = curriculum['breath'] ?? [];
   int maxLen = [
     pitch.length,
     rhythm.length,
     pronunciation.length,
-    breath.length,
   ].reduce((a, b) => a > b ? a : b);
 
   List<TrainingItem> preList = [];
@@ -89,7 +87,6 @@ List<TrainingItem> parseCurriculumItemsInOrderAndPostCompletedLast(
     if (i < pitch.length) add(pitch[i], 'pitch');
     if (i < rhythm.length) add(rhythm[i], 'rhythm');
     if (i < pronunciation.length) add(pronunciation[i], 'pronunciation');
-    if (i < breath.length) add(breath[i], 'breath');
   }
 
   return [...preList, ...completed];
@@ -100,5 +97,4 @@ const Map<String, String> categoryKr = {
   'pitch': '음정',
   'rhythm': '박자',
   'pronunciation': '발음',
-  'breath': '호흡',
 };
