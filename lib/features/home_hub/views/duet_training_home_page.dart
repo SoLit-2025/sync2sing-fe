@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
@@ -12,6 +13,7 @@ import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
 
 import '../../shared/logics/secure_storage.dart';
+import '../logics/nickname_get_provider.dart';
 import '../logics/room_item.dart';
 import '../logics/training_session_status.dart';
 import '../logics/training_item.dart';
@@ -29,7 +31,6 @@ class DuetTrainingHomePage extends StatefulWidget {
 class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
   late final DioFactory dioFactory;
   late final List<TrainingItem> items;
-  final String nickname = "노래하는해파리";
   late final Future<Map<String, dynamic>> responseData;
   late final int totalProgress;
   late final TrainingSessionStatus trainingSessionStatus;
@@ -354,7 +355,16 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildMainHeader(), // 상단 배너
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final nickname = ref.watch(nicknameGetProvider);
+                        return nickname.when(
+                          data: (data) => _buildMainHeader(data), // nickname이 존재하면
+                          error: (e, stackTrace) => _buildMainHeader("error"), // 불러오는데 실패하면
+                          loading: () => _buildMainHeader(""), // 불러오는 중이면
+                        );
+                      },
+                    ),
                     Padding(
                       padding: EdgeInsets.fromLTRB(31.w, 5.4.h, 31.w, 10.h),
                       child: Column(
@@ -403,7 +413,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
     );
   }
 
-  Widget _buildMainHeader() {
+  Widget _buildMainHeader(String nickname) {
     // 상단 배너
     return Container(
       color: AppColors.grayscale8,

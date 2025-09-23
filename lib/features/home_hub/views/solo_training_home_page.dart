@@ -1,12 +1,16 @@
+// import 'dart:convert';
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:sync2sing/features/home_hub/logics/nickname_get_provider.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
@@ -26,7 +30,6 @@ class SoloTrainingHomePage extends StatefulWidget {
 class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
   late final DioFactory dioFactory;
   late final List<TrainingItem> items;
-  final String nickname = "노래하는해파리";
   late final Future<Map<String, dynamic>> responseData;
   late final int totalProgress;
   late final TrainingSessionStatus trainingSessionStatus;
@@ -47,7 +50,6 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
 
   Future<Map<String, dynamic>> _fetchSessionInfo() async {
     dioFactory = DioFactory(SecureStorage());
-
     try {
       final response = await dioFactory.get('/solo-training/session');
 
@@ -139,7 +141,16 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildMainHeader(), // 상단 배너
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final nickname = ref.watch(nicknameGetProvider);
+                        return nickname.when(
+                          data: (data) => _buildMainHeader(data), // nickname이 존재하면
+                          error: (e, stackTrace) => _buildMainHeader("error"), // 불러오는데 실패하면
+                          loading: () => _buildMainHeader(""), // 불러오는 중이면
+                        );
+                      },
+                    ),
                     Padding(
                       padding: EdgeInsets.fromLTRB(31.w, 5.4.h, 31.w, 10.h),
                       child: Column(
@@ -254,7 +265,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
     );
   }
 
-  Widget _buildMainHeader() {
+  Widget _buildMainHeader(String nickname) {
     // 상단 배너
     return Container(
       color: AppColors.grayscale8,
@@ -382,6 +393,7 @@ class SessionOptionCard extends StatelessWidget {
             // mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _trainingCardTop(),
+
               SizedBox(height: 3.h),
               RichText(
                 text: TextSpan(
