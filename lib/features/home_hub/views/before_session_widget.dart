@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:sync2sing/features/curriculum/views/duet_room_detail_page.dart';
 import 'package:sync2sing/features/home_hub/views/duet_song_section.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
@@ -83,13 +84,20 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
         "partner_part": {
           "part_number": 0,
           "part_name": "영희",
-          "voice_type": "SOPRANO",
+          "voice_type": "BARITONE",
           "pitch_note_min": "C4",
           "pitch_note_max": "D5",
         },
       },
       "room_list": [],
     },
+  };
+
+  static const Map<String, dynamic> emptyRoomJson = // 내 방이 있을 경우 (내 방은 room_list에서 조회되지 않음)
+      {
+    "status": 200,
+    "message": "듀엣 트레이닝 방 목록 조회에 성공했습니다.",
+    "data": {"my_room": null, "room_list": []},
   };
 
   static const Map<String, dynamic> noMyRoomJson = // 내 방이 없을 경우
@@ -112,14 +120,14 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
           },
           "host_part": {
             "part_number": 1,
-            "part_name": "철수",
-            "voice_type": "SOPRANO",
+            "part_name": "영희",
+            "voice_type": "BARITONE",
             "pitch_note_min": "C4",
             "pitch_note_max": "D5",
           },
           "partner_part": {
             "part_number": 0,
-            "part_name": "영희",
+            "part_name": "철수",
             "voice_type": "SOPRANO",
             "pitch_note_min": "C4",
             "pitch_note_max": "D5",
@@ -146,7 +154,7 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
           "partner_part": {
             "part_number": 0,
             "part_name": "영희",
-            "voice_type": "SOPRANO",
+            "voice_type": "BARITONE",
             "pitch_note_min": "C4",
             "pitch_note_max": "D5",
           },
@@ -172,7 +180,7 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
           "partner_part": {
             "part_number": 0,
             "part_name": "영희",
-            "voice_type": "SOPRANO",
+            "voice_type": "BARITONE",
             "pitch_note_min": "C4",
             "pitch_note_max": "D5",
           },
@@ -187,7 +195,7 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
     try {
       final partnerSentResponse = partnerListJson;
       final dataList = partnerSentResponse['data']['application_list'] as List<dynamic>;
-      final roomListResponse = noMyRoomJson; // noMyRoomJson; // roomsJson;
+      final roomListResponse = noMyRoomJson; // noMyRoomJson; // roomsJson; emptyRoomJson
 
       final roomIdList = dataList.map((e) => e['room_id'] as int).toList();
       final roomDataList = roomListResponse['data']['room_list'] as List;
@@ -331,7 +339,10 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
         GestureDetector(
           onTap: () async {
             if (mounted) {
-              context.push('${AppRoutePaths.duetRoomDetail}/true', extra: hostRoom);
+              context.push(
+                AppRoutePaths.duetRoomDetail,
+                extra: {'roomPosition': RoomPosition.host, 'room': hostRoom},
+              );
             }
           },
           child: _buildRoomField(
@@ -381,9 +392,13 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
             GestureDetector(
               onTap: () async {
                 await context.push(
-                  '${AppRoutePaths.duetRoomDetail}/false', // true/false: 방장 여부
-                  extra: waitingRooms[idx],
+                  AppRoutePaths.duetRoomDetail,
+                  extra: {'roomPosition': RoomPosition.partner, 'room': waitingRooms[idx]},
                 );
+                // await context.push(
+                //   '${AppRoutePaths.duetRoomDetail}/false', // true/false: 방장 여부
+                //   extra: waitingRooms[idx],
+                // );
               },
 
               child: _buildRoomField(
@@ -445,7 +460,11 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
           padding: EdgeInsets.symmetric(vertical: 16.h),
           child: GestureDetector(
             onTap: () async {
-              await context.push('${AppRoutePaths.duetRoomDetail}/false', extra: totalRooms[idx]);
+              await context.push(
+                AppRoutePaths.duetRoomDetail,
+                extra: {'roomPosition': RoomPosition.viewer, 'room': totalRooms[idx]},
+              );
+              // await context.push('${AppRoutePaths.duetRoomDetail}/false', extra: totalRooms[idx]);
             },
             child: _buildRoomField(
               song,

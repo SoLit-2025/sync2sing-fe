@@ -25,7 +25,6 @@ class Room {
       date = null;
     }
 
-    final hostPart = DuetPart.fromJson(json['host_part']);
     return Room(
       id: json['id'] as int? ?? 0,
       trainingDays: json['training_days'] as int? ?? 0,

@@ -149,19 +149,31 @@ final List<GoRoute> curriculumRoutes = [
   ),
 
   GoRoute(
-    path: '${AppRoutePaths.duetRoomDetail}/:isHost',
+    path: AppRoutePaths.duetRoomDetail,
     name: AppRouteNames.duetRoomDetail,
     redirect: (context, state) {
-      final extra = state.extra;
-      if (extra == null || extra is! Room) {
-        debugPrint("duetRoomDetail -잘못된 extra 파라미터 : ${extra.runtimeType}");
+      final extras = state.extra;
+      if (extras == null || extras is! Map<String, dynamic>) {
+        debugPrint("duetSongDetail -잘못된 extra 파라미터:  ${extras.runtimeType}");
+        return '/';
       }
-      return null;
+      final roomPosition = extras['roomPosition'];
+      final room = extras['room'];
+
+      if (roomPosition == null || roomPosition is! RoomPosition || room == null || room is! Room) {
+        debugPrint(
+          "duetSongDetail -잘못된 extra 파라미터:  ${roomPosition.runtimeType} |  ${room.runtimeType}",
+        );
+        return '/';
+      }
+      return null; // 정상
     },
-    builder:
-        (context, state) => DuetRoomDetailPage(
-          isHost: state.pathParameters['isHost'] == 'true',
-          room: state.extra as Room,
-        ),
+    builder: (context, state) {
+      final extras = state.extra as Map<String, dynamic>;
+      final roomPosition = extras['roomPosition'] as RoomPosition;
+      final room = extras['room'] as Room;
+
+      return DuetRoomDetailPage(roomPosition: roomPosition, room: room);
+    },
   ),
 ];
