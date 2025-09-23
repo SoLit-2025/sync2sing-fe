@@ -21,12 +21,11 @@ class DuetTrainingSettingPage extends ConsumerStatefulWidget {
 
 class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPage> {
   int? _selectedDays;
-  final List<int> _options = [3, 7, 14];
 
   @override
   Widget build(BuildContext context) {
     // 선택된 노래 정보 감지
-    final selectedSong = ref.watch(selectedDuetSongProvider);
+    final SelectedDuetSong selectedSong = ref.watch(selectedDuetSongProvider);
 
     // 선택된 노래가 유효한지 확인
     final bool isSongSelected =
@@ -75,7 +74,7 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => context.go(AppRoutePaths.duetTrainingHome),
+            onTap: () => context.pop(),
             child: Image.asset(
               'assets/images/left_arrow_icon.png',
               width: 14.w,
@@ -97,7 +96,7 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
   }
 
   // 연습곡 선택 영역 = '연습곡 선택' 소제목 + 연습곡 정보 카드
-  Widget _buildSongSection(selectedSong, bool isSongSelected) {
+  Widget _buildSongSection(SelectedDuetSong selectedSong, bool isSongSelected) {
     return SizedBox(
       width: 327.w,
       child: Column(
@@ -108,7 +107,7 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
-              context.push("${AppRoutePaths.songList}/duet");
+              context.push(AppRoutePaths.duetSongList);
             },
             child: _buildSongCard(selectedSong, isSongSelected),
           ),
@@ -118,7 +117,7 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
   }
 
   // 노래 정보 카드 = 앨범아트 + 노래 정보
-  Widget _buildSongCard(selectedSong, bool isSongSelected) {
+  Widget _buildSongCard(SelectedDuetSong selectedSong, bool isSongSelected) {
     return SizedBox(
       width: 327.w,
       height: 80.h,
@@ -171,7 +170,7 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
   }
 
   // 노래 정보 = 노래 제목 + 가수 이름 + 성부 칩
-  Widget _buildSongInfoColumn(bool isSelected, selectedSong) {
+  Widget _buildSongInfoColumn(bool isSelected, SelectedDuetSong selectedSong) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -189,7 +188,7 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
   }
 
   // 노래 제목 & 가수 이름 로직
-  Widget _buildSongInfo(bool isSelected, selectedSong) {
+  Widget _buildSongInfo(bool isSelected, SelectedDuetSong selectedSong) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -215,12 +214,9 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
   }
 
   // 성부 칩 로직
-  Widget _buildVoiceTypeChip(bool isSelected, selectedSong) {
+  Widget _buildVoiceTypeChip(bool isSelected, SelectedDuetSong selectedSong) {
     if (isSelected && selectedSong.voiceType != null && selectedSong.voiceType != '') {
       debugPrint("selected voiceType: [${selectedSong.voiceType}]");
-      debugPrint(
-        "selected voiceType korean: [${SongDetailModel.convertVoiceTypeEng2Kor(selectedSong.voiceType)})]",
-      );
       return Container(
         height: 20.h,
         width: 60.w,
@@ -250,19 +246,17 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
 
   Widget _buildPartNameChip(bool isSelected, selectedSong) {
     if (isSelected && selectedSong.partName != null && selectedSong.partName != '') {
-      debugPrint("selected voiceType: [${selectedSong.partName}]");
       return Container(
         height: 20.h,
-        width: 60.w,
+        width: 70.w,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.grayscale3,
+          color: AppColors.grayscale6,
           borderRadius: BorderRadius.circular(12.w),
         ),
         child: Text(
           selectedSong.partName,
-          // SongDetailModel.convertVoiceTypeEng2Kor(selectedSong.partName!),
-          style: AppTextStyles.body6.copyWith(color: AppColors.grayscale8),
+          style: AppTextStyles.body6.copyWith(color: AppColors.grayscale3),
         ),
       );
     } else {
@@ -371,7 +365,9 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
                     _showError("설정 실패! 다시 확인해주세요.");
                     return;
                   }
-                  context.go(AppRoutePaths.duetTrainingHome);
+                  if (mounted) {
+                    context.go(AppRoutePaths.duetTrainingHome);
+                  }
                 }
                 : null,
         style: ElevatedButton.styleFrom(
