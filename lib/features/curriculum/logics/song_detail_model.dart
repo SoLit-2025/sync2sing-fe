@@ -4,6 +4,7 @@ class SongDetailModel {
   final int id;
   final String title;
   final String artist;
+  final String youtubeLink;
   final String voiceType;
   final String pitchNoteMin;
   final String pitchNoteMax;
@@ -15,6 +16,7 @@ class SongDetailModel {
     this.id,
     this.title,
     this.artist,
+    this.youtubeLink,
     this.voiceType,
     this.pitchNoteMin,
     this.pitchNoteMax,
@@ -29,6 +31,7 @@ class SongDetailModel {
       data['id'] ?? 0,
       data['title'] ?? '',
       data['artist'] ?? '',
+      data['youtube_link'] ?? '',
       data['voice_type'] ?? '',
       data['pitch_note_min'] ?? '',
       data['pitch_note_max'] ?? '',

@@ -20,50 +20,45 @@ class SongExampleVideoPage extends ConsumerWidget {
   final TrainingMode trainingMode;
   final AnalysisType analysisType;
   final int songId;
-  const SongExampleVideoPage({
+  SongExampleVideoPage({
     super.key,
     required this.trainingMode,
     required this.analysisType,
     required this.songId,
   });
 
-  final String jsonStr = '''
-  
-  {
+  final Map<String, dynamic> json = {
     "status": 200,
     "message": "솔로 트레이닝 원곡 조회에 성공했습니다.",
     "data": {
-        "id": 1,
-        "title": "Do-Re-Mi",
-        "artist": "Richard Rodgers",
-        "voice_type": "SOPRANO",
-        "pitch_note_min": "C4",
-        "pitch_note_max": "D5",
-        "lyrics": [
-            {
-                "line_index": 0,
-                "text": "Doe(Do), a deer, a female deer",
-                "start_time": 0
-            },
-            {
-                "line_index": 1,
-                "text": "Ray(Re), a drop of golden sun",
-                "start_time": 7200
-            }
-        ],
-        "album_art_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-        "file_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/6875743e-3955-4067-abed-da1911a6aae1.mp3"
-    }
-  }
-''';
-  final String videoId = "Qy9cj-zwbVY";
+      "id": 1,
+      "title": "Do-Re-Mi",
+      "artist": "Richard Rodgers",
+      'youtube_link': 'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
+      "voice_type": "SOPRANO",
+      "pitch_note_min": "C4",
+      "pitch_note_max": "D5",
+      "lyrics": [
+        {"line_index": 0, "text": "Doe(Do), a deer, a female deer", "start_time": 0},
+        {"line_index": 1, "text": "Ray(Re), a drop of golden sun", "start_time": 7200},
+      ],
+      "album_art_url":
+          "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+      "file_url":
+          "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/6875743e-3955-4067-abed-da1911a6aae1.mp3",
+    },
+  };
   final int videoStartSec = 42;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    Map<String, dynamic> decoded = jsonDecode(jsonStr);
+    Map<String, dynamic> decoded = json; // jsonDecode(jsonStr);
     Map<String, dynamic> data = decoded['data'] ?? {};
     SongDetailModel songDetail = SongDetailModel.fromJson(data);
+    final String url = songDetail.youtubeLink;
+    // final String videoId = url.split('/').last;
+    String videoId = url.substring(url.lastIndexOf('/') + 1, url.indexOf('?'));
+    debugPrint("videoId: $videoId");
     final bool isButtonEnabled = ref.watch(isOnboardingRecordingStartButtonEnabledProvider);
 
     return Scaffold(
