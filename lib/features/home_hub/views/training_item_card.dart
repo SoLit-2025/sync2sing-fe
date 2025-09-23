@@ -9,13 +9,18 @@ class TrainingItemCard extends StatelessWidget {
   final TrainingItem trainingItem;
   final int sessionId;
   final bool showButton;
-  final bool isMicReq; // 마이크가 필요한지 여부, 기본값: true
+  final bool isMicReq;
+  final Color? backGroundColor;
+
+  /// [isMicReq] 마이크가 필요한지 여부, 기본값: [true]
+  /// [backGroundColor] 기본값: [AppColors.grayscale8]
   const TrainingItemCard({
     super.key,
     required this.trainingItem,
     required this.sessionId,
     required this.showButton,
     this.isMicReq = true,
+    this.backGroundColor = AppColors.grayscale8,
   });
 
   Widget _trainingCardTop() {
@@ -54,7 +59,7 @@ class TrainingItemCard extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(12.w, 5.h, 12.w, 5.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.r),
-            color: AppColors.grayscale8,
+            color: backGroundColor,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -2,8 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/features/curriculum/logics/curriculum_generation_request.dart';
+import 'package:sync2sing/features/curriculum/logics/duet_song_model.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
+import 'package:sync2sing/features/curriculum/views/duet_room_detail_page.dart';
 import 'package:sync2sing/features/curriculum/views/duet_song_detail_page.dart';
+import 'package:sync2sing/features/curriculum/views/duet_song_list_page.dart';
 import 'package:sync2sing/features/curriculum/views/duet_training_setting_page.dart';
 import 'package:sync2sing/features/curriculum/views/song_example_video_page.dart';
 import 'package:sync2sing/features/curriculum/views/solo_song_detail_page.dart';
@@ -11,6 +14,7 @@ import 'package:sync2sing/features/curriculum/views/solo_training_setting_page.d
 import 'package:sync2sing/features/curriculum/views/song_list_page.dart';
 import 'package:sync2sing/features/curriculum/views/training_generation_loading_page.dart';
 import 'package:sync2sing/features/curriculum/views/training_guide_page.dart';
+import 'package:sync2sing/features/home_hub/logics/room_item.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/vocal_analysis/views/pages/pitch_training_page.dart';
@@ -30,14 +34,16 @@ final List<GoRoute> curriculumRoutes = [
     builder: (context, state) => const DuetTrainingSettingPage(),
   ),
   GoRoute(
-    path: "${AppRoutePaths.songList}/:trainingMode",
+    path: AppRoutePaths.songList,
     name: AppRouteNames.songList,
     builder: (context, state) {
-      final trainingMode = TrainingMode.values.firstWhere(
-        (e) => e.name == state.pathParameters['trainingMode'],
-      );
-      return SongListPage(trainingMode: trainingMode);
+      return SongListPage();
     },
+  ),
+  GoRoute(
+    path: AppRoutePaths.duetSongList,
+    name: AppRouteNames.duetSongList,
+    builder: (context, state) => const DuetSongListPage(),
   ),
   GoRoute(
     path: AppRoutePaths.soloSongDetail,
@@ -56,25 +62,28 @@ final List<GoRoute> curriculumRoutes = [
     path: AppRoutePaths.duetSongDetail,
     name: AppRouteNames.duetSongDetail,
     redirect: (context, state) {
-      final extraData = state.extra;
-
-      // 타입 체크
-      if (extraData is! ({SongDetailModel songDetailModel, List<DuetPart> duetParts})) {
-        debugPrint("duetSongDetail - 잘못된 extra 파라미터: ${extraData.runtimeType}");
-        return '/'; // /error?message=${Uri.encodeComponent("잘못된 페이지 접근입니다")}
+      final extras = state.extra;
+      if (extras == null || extras is! Map<String, dynamic>) {
+        debugPrint("duetSongDetail -잘못된 extra 파라미터:  ${extras.runtimeType}");
+        return '/';
       }
+      final song = extras['song'];
+      final isSelectFirst = extras['isSelectFirst'];
 
+      if (song == null || song is! DuetSongModel || isSelectFirst is! bool) {
+        debugPrint(
+          "duetSongDetail -잘못된 extra 파라미터:  ${song.runtimeType} |  ${isSelectFirst.runtimeType}",
+        );
+        return '/';
+      }
       return null; // 정상
     },
     builder: (context, state) {
-      // redirect에서 이미 검증했으므로 안전하게 캐스팅
-      final extraData =
-          state.extra as ({SongDetailModel songDetailModel, List<DuetPart> duetParts});
+      final extras = state.extra as Map<String, dynamic>;
+      final song = extras['song'] as DuetSongModel;
+      final isSelectFirst = extras['isSelectFirst'] as bool;
 
-      return DuetSongDetailPage(
-        songDetailModel: extraData.songDetailModel,
-        duetParts: extraData.duetParts,
-      );
+      return DuetSongDetailPage(duetSongModel: song, isSelectFirst: isSelectFirst);
     },
   ),
   GoRoute(
@@ -137,5 +146,22 @@ final List<GoRoute> curriculumRoutes = [
     path: AppRoutePaths.pronunciationTraining,
     name: AppRouteNames.pronunciationTraining,
     builder: (context, state) => const PronunciationTrainingPage(),
+  ),
+
+  GoRoute(
+    path: '${AppRoutePaths.duetRoomDetail}/:isHost',
+    name: AppRouteNames.duetRoomDetail,
+    redirect: (context, state) {
+      final extra = state.extra;
+      if (extra == null || extra is! Room) {
+        debugPrint("duetRoomDetail -잘못된 extra 파라미터 : ${extra.runtimeType}");
+      }
+      return null;
+    },
+    builder:
+        (context, state) => DuetRoomDetailPage(
+          isHost: state.pathParameters['isHost'] == 'true',
+          room: state.extra as Room,
+        ),
   ),
 ];

@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -11,8 +14,8 @@ import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
 
 class SongListPage extends StatefulWidget {
-  final TrainingMode trainingMode;
-  const SongListPage({Key? key, required this.trainingMode}) : super(key: key);
+  final TrainingMode trainingMode = TrainingMode.solo;
+  const SongListPage({super.key});
 
   @override
   State<SongListPage> createState() => _SongListPageState();
@@ -26,15 +29,20 @@ class _SongListPageState extends State<SongListPage> {
   late final List<Map<String, dynamic>> songList;
 
   Future<Map<String, dynamic>> _fetchSongsInfo() async {
-    final dioFactory = DioFactory(SecureStorage());
-    debugPrint('/${widget.trainingMode.apiBasePath}/songs?type=original');
-    final response = await dioFactory.get(
-      '/${widget.trainingMode.apiBasePath}/songs?type=original',
-    );
-    if (response.statusCode == 200) {
-      return response.data;
-    } else {
-      throw Exception('API 요청 실패');
+    try {
+      final dioFactory = DioFactory(SecureStorage());
+      debugPrint('/${TrainingMode.solo.apiBasePath}/songs?type=original');
+      final response = await dioFactory.get(
+        '/${TrainingMode.solo.apiBasePath}/songs?type=original',
+      );
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception('API 요청 실패');
+      }
+    } on DioException catch (e) {
+      debugPrint("error2: ${e.response}");
+      throw Exception(e.response);
     }
   }
 
@@ -69,11 +77,24 @@ class _SongListPageState extends State<SongListPage> {
         child: FutureBuilder(
           future: responseData,
           builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.hasData == false) {
+            if (snapshot.hasError) {
+              final errorString = snapshot.error.toString();
+              debugPrint("결과: ${snapshot.error.toString()}");
+
+              try {
+                final Map<String, dynamic> errorJson = jsonDecode(
+                  errorString.replaceFirst('Exception: ', '').trim(),
+                );
+
+                // final status = errorJson['status']?.toString() ?? 'Unknown status';
+                return Text(errorJson['message']);
+              } catch (e) {
+                return Text('알 수 없는 오류가 발생했습니다.');
+              }
+              // return Text("오류 발생: ${snapshot.error.['message']}");
+            } else if (snapshot.hasData == false) {
               // api 응답 대기 중
               return CustomLoading();
-            } else if (snapshot.hasError) {
-              return Text("오류 발생: ${snapshot.data['message']}");
             } else {
               // api 응답 완료:
               debugPrint("responseData: ${snapshot.data}");

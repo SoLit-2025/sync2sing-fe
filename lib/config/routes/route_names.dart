@@ -29,11 +29,14 @@ abstract class AppRouteNames {
   static const soloTrainingSetting = 'soloTrainingSetting';
   static const duetTrainingSetting = 'duetTrainingSetting';
   static const songList = 'songList';
+  static const duetSongList = 'duetSongList';
   static const soloSongDetail = 'soloSongDetail';
   static const duetSongDetail = 'duetSongDetail';
   static const songExampleVideo = 'songExampleVideo';
   static const soloPreRecordingSong = 'soloPreRecordingSong';
   static const trainingGenerationLoading = 'trainingGenerationLoading';
+
+  static const duetRoomDetail = 'duetRoomDetail';
 
   // training
   static const trainingGuide = 'trainingGuide'; // 트레이닝 시 카드뉴스 or 유튜브 영상을 보여주는 페이지
@@ -70,13 +73,16 @@ abstract class AppRoutePaths {
 
   // curriculum 라우트 주소 변경 예정 (다음 스프린트를 위해 임시로 지음)
   static const soloTrainingSetting = '/solo_training/setting';
-  static const duetTrainingSetting = '/duet_training/setting';
-  static const songList = '/songs';
+  static const songList = '/songs/solo';
   static const soloSongDetail = '/songs/solo/detail';
-  static const duetSongDetail = '/songs/duet/detail';
   static const songExampleVideo = '/curriculum/example_video';
   static const soloPreRecordingSong = '/solo_training/pre_recording_song';
   static const trainingGenerationLoading = '/curriculum/trainingGenerationLoading';
+
+  static const duetTrainingSetting = '/duet_training/setting';
+  static const duetSongList = '/songs/duet';
+  static const duetRoomDetail = '/duet/room/detail';
+  static const duetSongDetail = '/songs/duet/detail';
 
   // training
   static const trainingGuide = '/training/guide'; // 트레이닝 시 카드뉴스 or 유튜브 영상을 보여주는 페이지
