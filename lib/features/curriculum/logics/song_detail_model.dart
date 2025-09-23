@@ -71,19 +71,3 @@ class SongDetailModel {
     }
   }
 }
-
-class DuetPart {
-  final int partNumber; // 파트 번호
-  final String partName; // 파트 이름
-  final List<int> lyricsIndexes; // 해당 파트에서 사용하는 가사 인덱스 목록
-
-  DuetPart({required this.partNumber, required this.partName, required this.lyricsIndexes});
-
-  factory DuetPart.fromJson(Map<String, dynamic> json) {
-    return DuetPart(
-      partNumber: json['part_number'],
-      partName: json['part_name'],
-      lyricsIndexes: (json['lyrics_indexes'] as List).map((e) => e as int).toList(),
-    );
-  }
-}
