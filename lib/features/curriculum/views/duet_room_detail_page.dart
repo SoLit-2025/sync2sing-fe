@@ -80,14 +80,14 @@ class DuetRoomDetailPage extends StatefulWidget {
           "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/5aeb553f-2e9f-4975-adc7-74d985e4e6e2.wav",
       "duet_parts": [
         {
-          "part_number": 1,
+          "part_number": 0,
           "part_name": "영희",
           "voice_type": "BARITONE",
           "pitch_note_min": "C4",
           "pitch_note_max": "D5",
         },
         {
-          "part_number": 0,
+          "part_number": 1,
           "part_name": "철수",
           "voice_type": "SOPRANO",
           "pitch_note_min": "C4",

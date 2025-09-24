@@ -119,14 +119,14 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
                 "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/363161ac-62ed-4154-8577-3ff2245c7d0b.jpg",
           },
           "host_part": {
-            "part_number": 1,
+            "part_number": 0,
             "part_name": "영희",
             "voice_type": "BARITONE",
             "pitch_note_min": "C4",
             "pitch_note_max": "D5",
           },
           "partner_part": {
-            "part_number": 0,
+            "part_number": 1,
             "part_name": "철수",
             "voice_type": "SOPRANO",
             "pitch_note_min": "C4",
@@ -195,7 +195,7 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
     try {
       final partnerSentResponse = partnerListJson;
       final dataList = partnerSentResponse['data']['application_list'] as List<dynamic>;
-      final roomListResponse = noMyRoomJson; // noMyRoomJson; // roomsJson; emptyRoomJson
+      final roomListResponse = roomsJson; // noMyRoomJson; // roomsJson; emptyRoomJson
 
       final roomIdList = dataList.map((e) => e['room_id'] as int).toList();
       final roomDataList = roomListResponse['data']['room_list'] as List;

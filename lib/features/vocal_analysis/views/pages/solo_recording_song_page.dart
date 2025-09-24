@@ -94,6 +94,7 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
       2,
       "Do-Re-Mi Song",
       "Richard Rodgers",
+      'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
       "SOPRANO",
       "C4",
       "D5",
