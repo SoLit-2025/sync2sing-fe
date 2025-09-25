@@ -28,137 +28,6 @@ class DuetRoomDetailPage extends StatefulWidget {
 
   @override
   State<DuetRoomDetailPage> createState() => _DuetRoomDetailPageState();
-
-  final Map<String, dynamic> applicationListJson = {
-    "status": 200,
-    "message": "받은 파트너 신청 목록 조회에 성공했습니다.",
-    "data": {
-      "application_list": [
-        {
-          "id": 1,
-          "applicant_id": 5,
-          "applicant_nickname": "호박",
-          "requested_at": "2025-09-06T02:22:59",
-        },
-        {
-          "id": 9,
-          "applicant_id": 90,
-          "applicant_nickname": "리듬타는김바덕",
-          "requested_at": "2025-09-06T02:22:59",
-        },
-
-        {
-          "id": 12,
-          "applicant_id": 10,
-          "applicant_nickname": "가오리",
-          "requested_at": "2025-09-06T02:22:59",
-        },
-      ],
-    },
-  };
-
-  final Map<String, dynamic> songJson = {
-    "status": 200,
-    "message": "듀엣 트레이닝 원곡 조회에 성공했습니다.",
-    "data": {
-      "id": 9,
-      "title": "Do-Re-Mi Duet Dong",
-      "artist": "Richard Rodgers",
-      "youtube_link": "https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT",
-      "lyrics": [
-        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
-        {
-          "line_index": 1,
-          "text": "Ray, a drop of golden sun",
-          "start_time": 7200,
-          "part_number": 1,
-        },
-        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
-        {
-          "line_index": 1,
-          "text": "Ray, a drop of golden sun",
-          "start_time": 7200,
-          "part_number": 1,
-        },
-        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
-        {
-          "line_index": 1,
-          "text": "Ray, a drop of golden sun",
-          "start_time": 7200,
-          "part_number": 1,
-        },
-        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
-        {
-          "line_index": 1,
-          "text": "Ray, a drop of golden sun",
-          "start_time": 7200,
-          "part_number": 1,
-        },
-        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
-        {
-          "line_index": 1,
-          "text": "Ray, a drop of golden sun",
-          "start_time": 7200,
-          "part_number": 1,
-        },
-        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
-        {
-          "line_index": 1,
-          "text": "Ray, a drop of golden sun",
-          "start_time": 7200,
-          "part_number": 1,
-        },
-        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
-        {
-          "line_index": 1,
-          "text": "Ray, a drop of golden sun",
-          "start_time": 7200,
-          "part_number": 1,
-        },
-        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
-        {
-          "line_index": 1,
-          "text": "Ray, a drop of golden sun",
-          "start_time": 7200,
-          "part_number": 1,
-        },
-        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
-        {
-          "line_index": 1,
-          "text": "Ray, a drop of golden sun",
-          "start_time": 7200,
-          "part_number": 1,
-        },
-        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
-        {
-          "line_index": 1,
-          "text": "Ray, a drop of golden sun",
-          "start_time": 7200,
-          "part_number": 1,
-        },
-      ],
-      "album_art_url":
-          "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/272d3a5c-9679-4c11-bc13-b4bde7f5870a.jpg",
-      "file_url":
-          "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/5aeb553f-2e9f-4975-adc7-74d985e4e6e2.wav",
-      "duet_parts": [
-        {
-          "part_number": 0,
-          "part_name": "영희",
-          "voice_type": "BARITONE",
-          "pitch_note_min": "C4",
-          "pitch_note_max": "D5",
-        },
-        {
-          "part_number": 1,
-          "part_name": "철수",
-          "voice_type": "SOPRANO",
-          "pitch_note_min": "C4",
-          "pitch_note_max": "D5",
-        },
-      ],
-    },
-  };
 }
 
 class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
@@ -172,8 +41,6 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
     final response = await dio.get('/duet-training/songs/$songId?type=original');
     final DuetSongModel song = DuetSongModel.fromJson(response.data['data']);
 
-    // await Future.delayed(Duration(milliseconds: 5)); //
-    // final DuetSongModel song = DuetSongModel.fromJson(widget.songJson['data']);
     return song;
   }
 
@@ -181,20 +48,10 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
     final response = await dio.get('/duet-training/rooms/$roomId/applications');
     final applicationDataList = response.data['data']['application_list'] as List;
 
-    // await Future.delayed(Duration(milliseconds: 5)); //
-    // final applicationDataList = widget.applicationListJson['data']['application_list'] as List;
     final List<ApplicationModel> applicationList =
         applicationDataList.map((json) => ApplicationModel.fromJson(json)).toList();
 
     return applicationList;
-  }
-
-  void _reFetchApplicationList() {
-    final DioFactory dio = DioFactory(SecureStorage());
-    debugPrint("_reFetchApplicationList");
-    setState(() {
-      applications = _fetchApplications(dio, widget.room.id);
-    });
   }
 
   @override
@@ -510,9 +367,7 @@ class _ApplicationListSectionState extends State<ApplicationListSection> {
     return SizedBox(
       height: 110.w,
       child: ListView.separated(
-        // shrinkWrap: true,
-        physics: ClampingScrollPhysics(), // 리스트뷰 내의 스크롤 방지
-
+        physics: ClampingScrollPhysics(),
         itemBuilder: (context, idx) {
           return GestureDetector(
             onTap: () {

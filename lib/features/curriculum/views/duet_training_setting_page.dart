@@ -367,8 +367,6 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
                   }
                   if (mounted) {
                     context.replace(AppRoutePaths.duetTrainingHome);
-                    // context.pop();
-                    // context.go(AppRoutePaths.duetTrainingHome);
                   }
                 }
                 : null,
