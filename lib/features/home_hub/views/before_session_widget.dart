@@ -195,15 +195,15 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
     try {
       // final partnerSentResponse = partnerListJson;
       // final dataList = partnerSentResponse['data']['application_list'] as List<dynamic>;
-      // final roomListResponse = emptyRoomJson; // noMyRoomJson; // roomsJson; emptyRoomJson
+      // final roomListResponse = roomsJson; // noMyRoomJson; // roomsJson; emptyRoomJson
       //
       // final roomIdList = dataList.map((e) => e['room_id'] as int).toList();
       // final roomDataList = roomListResponse['data']['room_list'] as List;
-
-      // final Room? hostRoomTemp =
-      // roomListResponse['data']['my_room'] != null
-      //     ? Room.fromJson(roomListResponse['data']['my_room'])
-      //     : null;
+      //
+      // final Room? hostRoom =
+      //     roomListResponse['data']['my_room'] != null
+      //         ? Room.fromJson(roomListResponse['data']['my_room'])
+      //         : null;
 
       final partnerSentResponse = await dio.get('/duet-training/applications/sent');
       debugPrint("partnerRooms: response - ${partnerSentResponse.data}");
@@ -291,18 +291,18 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
               ),
               (lists.totalRooms.isNotEmpty)
                   ? _buildWaitingRoomList(snapshot.data.totalRooms)
-                  : (lists.hostRoom == null)
-                  ? Container(
+                  : Container(
                     // 방을 만들지 않은 경우에만 연습실 만들어보세요 항목 노출
                     alignment: Alignment(0, 0),
                     padding: EdgeInsets.only(top: 100.h),
                     child: Text(
-                      "대기중인 연습실이 없어요 \n새로운 연습실을 만들어보세요",
+                      (lists.hostRoom == null)
+                          ? "대기중인 연습실이 없어요 \n새로운 연습실을 만들어보세요"
+                          : "대기중인 연습실이 없어요",
                       style: AppTextStyles.body1.copyWith(color: AppColors.grayscale4),
                       textAlign: TextAlign.center,
                     ),
-                  )
-                  : SizedBox.shrink(),
+                  ),
             ],
           );
         }

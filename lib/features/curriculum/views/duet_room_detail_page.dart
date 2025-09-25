@@ -73,6 +73,69 @@ class DuetRoomDetailPage extends StatefulWidget {
           "start_time": 7200,
           "part_number": 1,
         },
+        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
+        {
+          "line_index": 1,
+          "text": "Ray, a drop of golden sun",
+          "start_time": 7200,
+          "part_number": 1,
+        },
+        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
+        {
+          "line_index": 1,
+          "text": "Ray, a drop of golden sun",
+          "start_time": 7200,
+          "part_number": 1,
+        },
+        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
+        {
+          "line_index": 1,
+          "text": "Ray, a drop of golden sun",
+          "start_time": 7200,
+          "part_number": 1,
+        },
+        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
+        {
+          "line_index": 1,
+          "text": "Ray, a drop of golden sun",
+          "start_time": 7200,
+          "part_number": 1,
+        },
+        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
+        {
+          "line_index": 1,
+          "text": "Ray, a drop of golden sun",
+          "start_time": 7200,
+          "part_number": 1,
+        },
+        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
+        {
+          "line_index": 1,
+          "text": "Ray, a drop of golden sun",
+          "start_time": 7200,
+          "part_number": 1,
+        },
+        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
+        {
+          "line_index": 1,
+          "text": "Ray, a drop of golden sun",
+          "start_time": 7200,
+          "part_number": 1,
+        },
+        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
+        {
+          "line_index": 1,
+          "text": "Ray, a drop of golden sun",
+          "start_time": 7200,
+          "part_number": 1,
+        },
+        {"line_index": 0, "text": "Doe, a deer, a female deer", "start_time": 0, "part_number": 0},
+        {
+          "line_index": 1,
+          "text": "Ray, a drop of golden sun",
+          "start_time": 7200,
+          "part_number": 1,
+        },
       ],
       "album_art_url":
           "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/272d3a5c-9679-4c11-bc13-b4bde7f5870a.jpg",
@@ -109,7 +172,7 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
     final response = await dio.get('/duet-training/songs/$songId?type=original');
     final DuetSongModel song = DuetSongModel.fromJson(response.data['data']);
 
-    // await Future.delayed(Duration(milliseconds: 5));//
+    // await Future.delayed(Duration(milliseconds: 5)); //
     // final DuetSongModel song = DuetSongModel.fromJson(widget.songJson['data']);
     return song;
   }
@@ -118,7 +181,7 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
     final response = await dio.get('/duet-training/rooms/$roomId/applications');
     final applicationDataList = response.data['data']['application_list'] as List;
 
-    // await Future.delayed(Duration(milliseconds: 5));//
+    // await Future.delayed(Duration(milliseconds: 5)); //
     // final applicationDataList = widget.applicationListJson['data']['application_list'] as List;
     final List<ApplicationModel> applicationList =
         applicationDataList.map((json) => ApplicationModel.fromJson(json)).toList();
@@ -427,28 +490,30 @@ class _ApplicationListSectionState extends State<ApplicationListSection> {
   }
 
   Widget _buildPartnerList(List<ApplicationModel> applicationList) {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(), // 리스트뷰 내의 스크롤 방지
+    return SizedBox(
+      height: 110.w,
+      child: ListView.separated(
+        physics: ClampingScrollPhysics(), // 리스트뷰 내의 스크롤 방지
 
-      itemBuilder: (context, idx) {
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              selectedIdx = idx;
-            });
-          },
-          child: _buildPartnerSent(applicationList[idx], (idx == selectedIdx)),
-        );
-      },
-      separatorBuilder:
-          (context, idx) => Container(
-            color: AppColors.grayscale6,
-            width: double.infinity,
-            height: 1,
-            child: Divider(color: AppColors.grayscale6),
-          ),
-      itemCount: applicationList.length,
+        itemBuilder: (context, idx) {
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedIdx = idx;
+              });
+            },
+            child: _buildPartnerSent(applicationList[idx], (idx == selectedIdx)),
+          );
+        },
+        separatorBuilder:
+            (context, idx) => Container(
+              color: AppColors.grayscale6,
+              width: double.infinity,
+              height: 1,
+              child: Divider(color: AppColors.grayscale6),
+            ),
+        itemCount: applicationList.length,
+      ),
     );
   }
 
@@ -486,7 +551,7 @@ class _ApplicationListSectionState extends State<ApplicationListSection> {
           ),
           onPressed: () async {
             try {
-              dio.post('duet-training/rooms/${widget.roomId}/applications/$applicationId');
+              dio.post('/duet-training/rooms/${widget.roomId}/applications/$applicationId');
             } catch (e) {
               _showError("수락에 실패했습니다. 다시 시도해주세요.");
             }
@@ -507,7 +572,7 @@ class _ApplicationListSectionState extends State<ApplicationListSection> {
           ),
           onPressed: () {
             try {
-              dio.delete('duet-training/rooms/${widget.roomId}/applications/$applicationId');
+              dio.delete('/duet-training/rooms/${widget.roomId}/applications/$applicationId');
             } catch (e) {
               _showError("파트너 거절이 실패했습니다. 다시 시도해주세요");
             }
