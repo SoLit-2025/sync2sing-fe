@@ -102,7 +102,6 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
   late final Future<List<ApplicationModel>> applications;
   late final Future<DuetSongModel> songDetailModel;
   late final int userPartNumber;
-  late final bool isSelectedFirst;
   late final DuetPart userDuetPart;
   late final bool isHost;
 
@@ -184,12 +183,6 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
                         } else {
                           // 응답이 정상적으로 온 경우
                           final DuetSongModel song = snapshot.data;
-                          isSelectedFirst =
-                              (isHost)
-                                  ? widget.room.hostPart.partNumber ==
-                                      song.duetParts.first.partNumber
-                                  : widget.room.partnerPart.partNumber ==
-                                      song.duetParts.first.partNumber;
 
                           final bool isFirstPart =
                               song.duetParts.first.partNumber == userPartNumber;
@@ -297,9 +290,6 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
                 VoiceRangeDisplay.noteToNumber(song.duetParts.last.pitchNoteMax))
             ? song.duetParts.first.pitchNoteMax
             : song.duetParts.last.pitchNoteMax;
-    //
-    // bool isUserPartFirst = (song.duetParts.first.partNumber == userPartNumber);
-    // VoiceRangeColor first = VoiceRangeColor.pink;
 
     return Column(
       children: [
@@ -361,6 +351,7 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
         borderRadius: BorderRadius.circular(10.r),
       ),
       child: ListView.builder(
+        physics: const ClampingScrollPhysics(), // 자식 크기가 부모 미만 -> 스크롤 불가 (액션 x)
         itemCount: lyrics.length,
         itemBuilder: (context, index) {
           final lyric = lyrics[index];

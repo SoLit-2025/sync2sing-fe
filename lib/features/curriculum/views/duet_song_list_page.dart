@@ -7,12 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/curriculum/logics/duet_song_model.dart';
-import 'package:sync2sing/features/curriculum/logics/selected_song_provider.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/home_hub/views/duet_song_section.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
-import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
 
@@ -73,6 +71,84 @@ class _DuetSongListPageState extends State<DuetSongListPage> {
                   "start_time": 7200,
                   "part_number": 1,
                 },
+                {
+                  "line_index": 2,
+                  "text": "Doe, a deer, a female deer",
+                  "start_time": 0,
+                  "part_number": 0,
+                },
+                {
+                  "line_index": 3,
+                  "text": "Ray, a drop of golden sun",
+                  "start_time": 7200,
+                  "part_number": 1,
+                },
+                {
+                  "line_index": 4,
+                  "text": "Doe, a deer, a female deer",
+                  "start_time": 0,
+                  "part_number": 0,
+                },
+                {
+                  "line_index": 5,
+                  "text": "Ray, a drop of golden sun",
+                  "start_time": 7200,
+                  "part_number": 1,
+                },
+                {
+                  "line_index": 6,
+                  "text": "Doe, a deer, a female deer",
+                  "start_time": 0,
+                  "part_number": 0,
+                },
+                {
+                  "line_index": 7,
+                  "text": "Ray, a drop of golden sun",
+                  "start_time": 7200,
+                  "part_number": 1,
+                },
+                {
+                  "line_index": 7,
+                  "text": "Ray, a drop of golden sun",
+                  "start_time": 7200,
+                  "part_number": 1,
+                },
+                {
+                  "line_index": 7,
+                  "text": "Ray, a drop of golden sun",
+                  "start_time": 7200,
+                  "part_number": 1,
+                },
+                {
+                  "line_index": 7,
+                  "text": "Ray, a drop of golden sun",
+                  "start_time": 7200,
+                  "part_number": 1,
+                },
+                {
+                  "line_index": 7,
+                  "text": "Ray, a drop of golden sun",
+                  "start_time": 7200,
+                  "part_number": 1,
+                },
+                {
+                  "line_index": 7,
+                  "text": "Ray, a drop of golden sun",
+                  "start_time": 7200,
+                  "part_number": 1,
+                },
+                {
+                  "line_index": 7,
+                  "text": "Ray, a drop of golden sun",
+                  "start_time": 7200,
+                  "part_number": 1,
+                },
+                {
+                  "line_index": 7,
+                  "text": "Ray, a drop of golden sun",
+                  "start_time": 7200,
+                  "part_number": 1,
+                },
               ],
               "album_art_url":
                   "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/272d3a5c-9679-4c11-bc13-b4bde7f5870a.jpg",
@@ -82,14 +158,14 @@ class _DuetSongListPageState extends State<DuetSongListPage> {
                 {
                   "part_number": 0,
                   "part_name": "영희",
-                  "voice_type": "SOPRANO",
+                  "voice_type": "BARITONE",
                   "pitch_note_min": "C4",
                   "pitch_note_max": "D5",
                 },
                 {
                   "part_number": 1,
                   "part_name": "철수",
-                  "voice_type": "BARITONE",
+                  "voice_type": "SOPRANO",
                   "pitch_note_min": "C4",
                   "pitch_note_max": "D5",
                 },
@@ -149,7 +225,6 @@ class _DuetSongListPageState extends State<DuetSongListPage> {
               } catch (e) {
                 return Text('알 수 없는 오류가 발생했습니다.');
               }
-              // return Text("오류 발생: ${snapshot.data['message']}");
             } else if (snapshot.hasData == false) {
               // api 응답 대기 중
               return CustomLoading();

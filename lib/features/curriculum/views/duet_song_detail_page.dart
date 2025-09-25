@@ -36,24 +36,22 @@ class _DuetSongDetailPageState extends ConsumerState<DuetSongDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SimpleAppBar(),
-            Expanded(
-              child: SizedBox(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SimpleAppBar(),
+              SizedBox(
                 width: 327.w,
                 child: Column(
                   children: [
                     _buildSongInfo(widget.duetSongModel),
                     SizedBox(height: 32.h),
-                    Expanded(
-                      child: _buildLyricsField(
-                        widget.duetSongModel.lyrics,
-                        isSelectFirstPart
-                            ? widget.duetSongModel.duetParts.first.partNumber
-                            : widget.duetSongModel.duetParts.last.partNumber,
-                      ),
+                    _buildLyricsField(
+                      widget.duetSongModel.lyrics,
+                      isSelectFirstPart
+                          ? widget.duetSongModel.duetParts.first.partNumber
+                          : widget.duetSongModel.duetParts.last.partNumber,
                     ),
 
                     SizedBox(height: 32.h),
@@ -95,8 +93,8 @@ class _DuetSongDetailPageState extends ConsumerState<DuetSongDetailPage> {
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -169,13 +167,14 @@ class _DuetSongDetailPageState extends ConsumerState<DuetSongDetailPage> {
   Widget _buildLyricsField(List<TimedLyric> lyrics, int selectedNumber) {
     return Container(
       width: double.infinity,
-      height: 400.h,
+      height: 450.h,
       padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 19.w),
       decoration: BoxDecoration(
         color: AppColors.grayscale7,
         borderRadius: BorderRadius.circular(10.r),
       ),
       child: ListView.builder(
+        physics: ClampingScrollPhysics(), // 자식 크기가 부모 미만 -> 스크롤 불가 (액션 x)
         itemCount: lyrics.length,
         itemBuilder: (context, index) {
           final lyric = lyrics[index];
@@ -185,7 +184,7 @@ class _DuetSongDetailPageState extends ConsumerState<DuetSongDetailPage> {
               color:
                   lyric.partNumber == selectedNumber ? AppColors.primaryPink : AppColors.grayscale3,
             ),
-            textAlign: lyric.partNumber == 0 ? TextAlign.left : TextAlign.right,
+            textAlign: TextAlign.center,
           );
         },
       ),
