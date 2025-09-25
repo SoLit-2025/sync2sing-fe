@@ -221,36 +221,36 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
   }
 
   Future<Map<String, dynamic>> _fetchSessionInfo() async {
-    await Future.delayed(Duration(milliseconds: 5));
-    final Map<String, dynamic> data =
-        beforeSessionJson; //beforeTrainingJson; beforeSessionJson trainingInProgressJson
-
-    final Map<String, dynamic> jsonData = data['data'] as Map<String, dynamic>;
-    debugPrint("jsonData type: ${jsonData.runtimeType}");
-    trainingSessionStatus = _getDataFromResponse(jsonData); // TrainingSessionStatus
-
-    debugPrint("trainingSessionStatus: $trainingSessionStatus}");
-    if (trainingSessionStatus != TrainingSessionStatus.beforeSession) {
-      room =
-          jsonData['duet_training_room'] != null
-              ? Room.fromJson(jsonData['duet_training_room'])
-              : null;
-    }
-    return jsonData;
-
-    // dioFactory = DioFactory(SecureStorage());
+    // await Future.delayed(Duration(milliseconds: 5));
+    // final Map<String, dynamic> data =
+    //     beforeSessionJson; //beforeTrainingJson; beforeSessionJson trainingInProgressJson
     //
-    // try {
-    //   final response = await dioFactory.get('/duet-training/session');
+    // final Map<String, dynamic> jsonData = data['data'] as Map<String, dynamic>;
+    // debugPrint("jsonData type: ${jsonData.runtimeType}");
+    // trainingSessionStatus = _getDataFromResponse(jsonData); // TrainingSessionStatus
     //
-    //   debugPrint("duetHome: response - ${response.data}");
-    //   trainingSessionStatus = _getDataFromResponse(response.data['data']);
-    //
-    //   return response.data['data'];
-    // } on DioException catch (e) {
-    //   debugPrint("error2: ${e.response}");
-    //   throw Exception(e.response);
+    // debugPrint("trainingSessionStatus: $trainingSessionStatus}");
+    // if (trainingSessionStatus != TrainingSessionStatus.beforeSession) {
+    //   room =
+    //       jsonData['duet_training_room'] != null
+    //           ? Room.fromJson(jsonData['duet_training_room'])
+    //           : null;
     // }
+    // return jsonData;
+
+    dioFactory = DioFactory(SecureStorage());
+
+    try {
+      final response = await dioFactory.get('/duet-training/session');
+
+      debugPrint("duetHome: response - ${response.data}");
+      trainingSessionStatus = _getDataFromResponse(response.data['data']);
+
+      return response.data['data'];
+    } on DioException catch (e) {
+      debugPrint("error2: ${e.response}");
+      throw Exception(e.response);
+    }
   }
 
   TrainingSessionStatus _getDataFromResponse(Map<String, dynamic> responseBody) {
@@ -361,7 +361,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
                         return nickname.when(
                           data: (data) => _buildMainHeader(data), // nickname이 존재하면
                           error: (e, stackTrace) => _buildMainHeader("error"), // 불러오는데 실패하면
-                          loading: () => _buildMainHeader(""), // 불러오는 중이면
+                          loading: () => _buildMainHeader(""), // 불러오는 중이면 비어보이게 둠
                         );
                       },
                     ),
@@ -372,7 +372,9 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
                         children: [
                           SizedBox(height: 12.h),
                           (trainingSessionStatus == TrainingSessionStatus.beforeSession)
-                              ? BeforeSessionWidget(isRoomHost: _isRoomHost) // 콜백함수 전달
+                              ? BeforeSessionWidget(
+                                isRoomHost: _isRoomHost,
+                              ) // 콜백함수 전달 / 방 정보 보여주는 위젯
                               : (trainingSessionStatus == TrainingSessionStatus.beforeTraining)
                               ? _buildBeforeTraining(room, dateTime!, userPartName!)
                               : _buildExistSessionHome(),
@@ -547,12 +549,8 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
         );
   }
 
-  // Widget _buildBeforeTraining(Map<String, dynamic> responseData) {
   Widget _buildBeforeTraining(Room? room, DateTime recordingDueDate, String userPartName) {
     if (room == null) return Text("연습실 정보를 불러오지 못했습니다");
-    // Room room = Room.fromJson(roomJson);
-    // DateTime recordingDueDate = DateTime.parse(responseData['pre_recording_due_date']);
-    // final String userPartName = responseData['song']['user_part_name'];
 
     final bool isHostPart = (userPartName == room.hostPart.partName);
 

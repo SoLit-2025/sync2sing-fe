@@ -12,6 +12,7 @@ import 'package:sync2sing/features/home_hub/views/duet_song_section.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
 
 class DuetSongListPage extends StatefulWidget {
@@ -29,155 +30,155 @@ class _DuetSongListPageState extends State<DuetSongListPage> {
   late final List<Map<String, dynamic>> songList;
 
   Future<Map<String, dynamic>> _fetchSongsInfo() async {
-    // try {
-    //   final dioFactory = DioFactory(SecureStorage());
-    //   debugPrint('/${TrainingMode.duet.apiBasePath}/songs?type=original');
-    //   final response = await dioFactory.get(
-    //     '/${TrainingMode.duet.apiBasePath}/songs?type=original',
-    //   );
-    //   if (response.statusCode == 200) {
-    //     return response.data;
-    //   } else {
-    //     throw Exception('API 요청 실패');
-    //   }
-    // } on DioException catch (e) {
-    //   debugPrint("error2: ${e.response}");
-    //   throw Exception(e.response);
-    // }
-
     try {
-      await Future.delayed(Duration(milliseconds: 5));
-
-      final Map<String, dynamic> json = {
-        "status": 200,
-        "message": "듀엣 트레이닝 원곡 목록 조회에 성공했습니다.",
-        "data": {
-          "song_list": [
-            {
-              "id": 9,
-              "title": "Do-Re-Mi Duet Dong",
-              "artist": "Richard Rodgers",
-              "youtube_link": "https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT",
-              "lyrics": [
-                {
-                  "line_index": 0,
-                  "text": "Doe, a deer, a female deer",
-                  "start_time": 0,
-                  "part_number": 0,
-                },
-                {
-                  "line_index": 1,
-                  "text": "Ray, a drop of golden sun",
-                  "start_time": 7200,
-                  "part_number": 1,
-                },
-                {
-                  "line_index": 2,
-                  "text": "Doe, a deer, a female deer",
-                  "start_time": 0,
-                  "part_number": 0,
-                },
-                {
-                  "line_index": 3,
-                  "text": "Ray, a drop of golden sun",
-                  "start_time": 7200,
-                  "part_number": 1,
-                },
-                {
-                  "line_index": 4,
-                  "text": "Doe, a deer, a female deer",
-                  "start_time": 0,
-                  "part_number": 0,
-                },
-                {
-                  "line_index": 5,
-                  "text": "Ray, a drop of golden sun",
-                  "start_time": 7200,
-                  "part_number": 1,
-                },
-                {
-                  "line_index": 6,
-                  "text": "Doe, a deer, a female deer",
-                  "start_time": 0,
-                  "part_number": 0,
-                },
-                {
-                  "line_index": 7,
-                  "text": "Ray, a drop of golden sun",
-                  "start_time": 7200,
-                  "part_number": 1,
-                },
-                {
-                  "line_index": 7,
-                  "text": "Ray, a drop of golden sun",
-                  "start_time": 7200,
-                  "part_number": 1,
-                },
-                {
-                  "line_index": 7,
-                  "text": "Ray, a drop of golden sun",
-                  "start_time": 7200,
-                  "part_number": 1,
-                },
-                {
-                  "line_index": 7,
-                  "text": "Ray, a drop of golden sun",
-                  "start_time": 7200,
-                  "part_number": 1,
-                },
-                {
-                  "line_index": 7,
-                  "text": "Ray, a drop of golden sun",
-                  "start_time": 7200,
-                  "part_number": 1,
-                },
-                {
-                  "line_index": 7,
-                  "text": "Ray, a drop of golden sun",
-                  "start_time": 7200,
-                  "part_number": 1,
-                },
-                {
-                  "line_index": 7,
-                  "text": "Ray, a drop of golden sun",
-                  "start_time": 7200,
-                  "part_number": 1,
-                },
-                {
-                  "line_index": 7,
-                  "text": "Ray, a drop of golden sun",
-                  "start_time": 7200,
-                  "part_number": 1,
-                },
-              ],
-              "album_art_url":
-                  "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/272d3a5c-9679-4c11-bc13-b4bde7f5870a.jpg",
-              "file_url":
-                  "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/5aeb553f-2e9f-4975-adc7-74d985e4e6e2.wav",
-              "duet_parts": [
-                {
-                  "part_number": 0,
-                  "part_name": "영희",
-                  "voice_type": "BARITONE",
-                  "pitch_note_min": "C4",
-                  "pitch_note_max": "D5",
-                },
-                {
-                  "part_number": 1,
-                  "part_name": "철수",
-                  "voice_type": "SOPRANO",
-                  "pitch_note_min": "C4",
-                  "pitch_note_max": "D5",
-                },
-              ],
-            },
-          ],
-        },
-      };
-      return json;
-    } on Exception catch (a, e) {
-      throw Exception("error 발생");
+      final dioFactory = DioFactory(SecureStorage());
+      debugPrint('/${TrainingMode.duet.apiBasePath}/songs?type=original');
+      final response = await dioFactory.get(
+        '/${TrainingMode.duet.apiBasePath}/songs?type=original',
+      );
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception('API 요청 실패');
+      }
+    } on DioException catch (e) {
+      debugPrint("error2: ${e.response}");
+      throw Exception(e.response);
     }
+
+    // try {
+    //   await Future.delayed(Duration(milliseconds: 5));
+    //
+    //   final Map<String, dynamic> json = {
+    //     "status": 200,
+    //     "message": "듀엣 트레이닝 원곡 목록 조회에 성공했습니다.",
+    //     "data": {
+    //       "song_list": [
+    //         {
+    //           "id": 9,
+    //           "title": "Do-Re-Mi Duet Dong",
+    //           "artist": "Richard Rodgers",
+    //           "youtube_link": "https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT",
+    //           "lyrics": [
+    //             {
+    //               "line_index": 0,
+    //               "text": "Doe, a deer, a female deer",
+    //               "start_time": 0,
+    //               "part_number": 0,
+    //             },
+    //             {
+    //               "line_index": 1,
+    //               "text": "Ray, a drop of golden sun",
+    //               "start_time": 7200,
+    //               "part_number": 1,
+    //             },
+    //             {
+    //               "line_index": 2,
+    //               "text": "Doe, a deer, a female deer",
+    //               "start_time": 0,
+    //               "part_number": 0,
+    //             },
+    //             {
+    //               "line_index": 3,
+    //               "text": "Ray, a drop of golden sun",
+    //               "start_time": 7200,
+    //               "part_number": 1,
+    //             },
+    //             {
+    //               "line_index": 4,
+    //               "text": "Doe, a deer, a female deer",
+    //               "start_time": 0,
+    //               "part_number": 0,
+    //             },
+    //             {
+    //               "line_index": 5,
+    //               "text": "Ray, a drop of golden sun",
+    //               "start_time": 7200,
+    //               "part_number": 1,
+    //             },
+    //             {
+    //               "line_index": 6,
+    //               "text": "Doe, a deer, a female deer",
+    //               "start_time": 0,
+    //               "part_number": 0,
+    //             },
+    //             {
+    //               "line_index": 7,
+    //               "text": "Ray, a drop of golden sun",
+    //               "start_time": 7200,
+    //               "part_number": 1,
+    //             },
+    //             {
+    //               "line_index": 7,
+    //               "text": "Ray, a drop of golden sun",
+    //               "start_time": 7200,
+    //               "part_number": 1,
+    //             },
+    //             {
+    //               "line_index": 7,
+    //               "text": "Ray, a drop of golden sun",
+    //               "start_time": 7200,
+    //               "part_number": 1,
+    //             },
+    //             {
+    //               "line_index": 7,
+    //               "text": "Ray, a drop of golden sun",
+    //               "start_time": 7200,
+    //               "part_number": 1,
+    //             },
+    //             {
+    //               "line_index": 7,
+    //               "text": "Ray, a drop of golden sun",
+    //               "start_time": 7200,
+    //               "part_number": 1,
+    //             },
+    //             {
+    //               "line_index": 7,
+    //               "text": "Ray, a drop of golden sun",
+    //               "start_time": 7200,
+    //               "part_number": 1,
+    //             },
+    //             {
+    //               "line_index": 7,
+    //               "text": "Ray, a drop of golden sun",
+    //               "start_time": 7200,
+    //               "part_number": 1,
+    //             },
+    //             {
+    //               "line_index": 7,
+    //               "text": "Ray, a drop of golden sun",
+    //               "start_time": 7200,
+    //               "part_number": 1,
+    //             },
+    //           ],
+    //           "album_art_url":
+    //               "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/272d3a5c-9679-4c11-bc13-b4bde7f5870a.jpg",
+    //           "file_url":
+    //               "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/5aeb553f-2e9f-4975-adc7-74d985e4e6e2.wav",
+    //           "duet_parts": [
+    //             {
+    //               "part_number": 0,
+    //               "part_name": "영희",
+    //               "voice_type": "BARITONE",
+    //               "pitch_note_min": "C4",
+    //               "pitch_note_max": "D5",
+    //             },
+    //             {
+    //               "part_number": 1,
+    //               "part_name": "철수",
+    //               "voice_type": "SOPRANO",
+    //               "pitch_note_min": "C4",
+    //               "pitch_note_max": "D5",
+    //             },
+    //           ],
+    //         },
+    //       ],
+    //     },
+    //   };
+    //   return json;
+    // } on Exception catch (a, e) {
+    //   throw Exception("error 발생");
+    // }
   }
 
   String getVoiceTypeEnglish(String korean) {
@@ -332,7 +333,7 @@ class _DuetSongListPageState extends State<DuetSongListPage> {
                             partName: SongDetailModel.convertVoiceTypeEng2Kor(
                               songDetailModel.duetParts.last.voiceType,
                             ),
-                            isSelectedHost: (isFirstVoiceTypeSelected),
+                            isLeftColored: (isFirstVoiceTypeSelected),
                           ),
                         );
                       },

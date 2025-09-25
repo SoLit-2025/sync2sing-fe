@@ -24,12 +24,12 @@ class DuetSongDetailPage extends ConsumerStatefulWidget {
 }
 
 class _DuetSongDetailPageState extends ConsumerState<DuetSongDetailPage> {
-  late bool isSelectFirstPart;
+  late bool isSelectFirstPart; // 파트 중 처음 부분 (duetParts[0])을 선택했는지 여부
 
   @override
   void initState() {
     super.initState();
-    isSelectFirstPart = widget.isSelectFirst;
+    isSelectFirstPart = widget.isSelectFirst; // 처음 색칠되어 보이는 영역: 선택된 파트
   }
 
   @override
@@ -81,7 +81,7 @@ class _DuetSongDetailPageState extends ConsumerState<DuetSongDetailPage> {
                                 partName: selectedDuetPart.partName,
                               );
                           context.pop();
-                          context.pop();
+                          context.pop(); // settingPage로 이동
                         },
                         child: Text(
                           "파트 선택하기",
@@ -101,6 +101,7 @@ class _DuetSongDetailPageState extends ConsumerState<DuetSongDetailPage> {
   }
 
   Widget _buildSongInfo(DuetSongModel song) {
+    // 가사를 제외한 노래 정보 위젯들
     final String totalPitchMin =
         (VoiceRangeDisplay.noteToNumber(song.duetParts.first.pitchNoteMin) <
                 VoiceRangeDisplay.noteToNumber(song.duetParts.last.pitchNoteMin))
@@ -120,7 +121,7 @@ class _DuetSongDetailPageState extends ConsumerState<DuetSongDetailPage> {
           albumArtUrl: song.albumArtUrl,
           artist: song.artist,
           voiceType: song.duetParts.first.voiceType,
-          isSelectedHost: isSelectFirstPart,
+          isLeftColored: isSelectFirstPart,
           partName: SongDetailModel.convertVoiceTypeEng2Kor(song.duetParts.last.voiceType),
           fileUrl: song.fileUrl,
         ),
@@ -134,6 +135,7 @@ class _DuetSongDetailPageState extends ConsumerState<DuetSongDetailPage> {
 
         SizedBox(height: 16.h),
         GestureDetector(
+          // 파트 전환 버튼
           onTap: () {
             setState(() {
               isSelectFirstPart = true;
@@ -148,6 +150,7 @@ class _DuetSongDetailPageState extends ConsumerState<DuetSongDetailPage> {
         ),
         SizedBox(height: 16.h),
         GestureDetector(
+          // 파트 전환 버튼
           onTap: () {
             setState(() {
               isSelectFirstPart = false;

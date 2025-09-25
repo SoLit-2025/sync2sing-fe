@@ -15,11 +15,12 @@ class DuetSongSection extends StatefulWidget {
   final String voiceType;
   final String? partName;
   final String? fileUrl;
-  final bool isSelectedHost;
+  final bool isLeftColored;
 
+  /// [isLeftColored]: 왼쪽 칩이 색칠되어보이는지 여부 (false: 오른쪽 위젯이 색이 더 진함)
   const DuetSongSection({
     super.key,
-    this.isSelectedHost = true,
+    this.isLeftColored = true,
     required this.id,
     required this.title,
     required this.albumArtUrl,
@@ -33,13 +34,6 @@ class DuetSongSection extends StatefulWidget {
 }
 
 class _DuetSongSectionState extends State<DuetSongSection> {
-  // @override
-  // void initState() {
-  //   debugPrint("DuetSongSumSection initState");
-  //   // TODO: implement initState
-  //   super.initState();
-  // }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -48,7 +42,7 @@ class _DuetSongSectionState extends State<DuetSongSection> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          (widget.fileUrl == null)
+          (widget.fileUrl == null) // 노래 파일 있음 -> 노래 재생 가능한 위젯 (재생/중지버튼 보임)
               ? _buildAlbumArt(widget.albumArtUrl)
               : MusicPlayerCover(songFileUrl: widget.fileUrl!, albumArtUrl: widget.albumArtUrl),
           SizedBox(width: 15.w),
@@ -150,20 +144,20 @@ class _DuetSongSectionState extends State<DuetSongSection> {
       width: 60.w,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: widget.isSelectedHost ? AppColors.grayscale3 : AppColors.grayscale6,
+        color: widget.isLeftColored ? AppColors.grayscale3 : AppColors.grayscale6,
         borderRadius: BorderRadius.circular(12.w),
       ),
       child: Text(
         SongDetailModel.convertVoiceTypeEng2Kor(voiceType),
         style: AppTextStyles.body6.copyWith(
-          color: widget.isSelectedHost ? AppColors.grayscale8 : AppColors.grayscale3,
+          color: widget.isLeftColored ? AppColors.grayscale8 : AppColors.grayscale3,
         ),
       ),
     );
   }
 
   Widget _buildPartNameChip(String partName) {
-    final bool isSelected = !widget.isSelectedHost;
+    final bool isSelected = !widget.isLeftColored;
     return Container(
       height: 20.h,
       width: 70.w,
@@ -200,7 +194,6 @@ class _MusicPlayerCoverState extends State<MusicPlayerCover> {
   @override
   void initState() {
     super.initState();
-    debugPrint("MusicPlayerCover initState");
 
     // 플레이어 상태 스트림 구독
     _playerStateSub = _audioPlayer.playerStateStream.listen((state) async {

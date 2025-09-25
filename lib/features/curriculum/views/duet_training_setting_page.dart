@@ -357,7 +357,7 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
                   };
                   final response = await DioFactory(
                     SecureStorage(),
-                  ).post('/duet-training/session', data: jsonEncode(data));
+                  ).post('/duet-training/rooms', data: jsonEncode(data));
 
                   debugPrint("커리큘럼 생성 확인: ${response.data}");
 
@@ -366,6 +366,7 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
                     return;
                   }
                   if (mounted) {
+                    context.pop();
                     context.go(AppRoutePaths.duetTrainingHome);
                   }
                 }

@@ -5,6 +5,7 @@ import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 
 class SimpleAppBar extends StatelessWidget {
+  // 이전 버튼이 있는 간단한 앱바
   final String? text;
   const SimpleAppBar({super.key, this.text});
 

@@ -19,7 +19,7 @@ import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
 import 'package:sync2sing/features/shared/views/simple_app_bar.dart';
 import 'package:sync2sing/features/shared/views/voice_range_display.dart';
 
-enum RoomPosition { viewer, host, partner }
+enum RoomPosition { viewer, host, partner } // '대기중인 연습실' 로 들어온 사람 / 방 주인 / 파트너 신청을 넣은 사람
 
 class DuetRoomDetailPage extends StatefulWidget {
   final RoomPosition roomPosition;
@@ -105,17 +105,21 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
   late final DuetPart userDuetPart;
   late final bool isHost;
 
-  Future<DuetSongModel> _fetchSongData() async {
-    await Future.delayed(Duration(milliseconds: 5));
+  Future<DuetSongModel> _fetchSongData(DioFactory dio, int songId) async {
+    final response = await dio.get('/duet-training/songs/$songId?type=original');
+    final DuetSongModel song = DuetSongModel.fromJson(response.data['data']);
 
-    final DuetSongModel song = DuetSongModel.fromJson(widget.songJson['data']);
+    // await Future.delayed(Duration(milliseconds: 5));//
+    // final DuetSongModel song = DuetSongModel.fromJson(widget.songJson['data']);
     return song;
   }
 
-  Future<List<ApplicationModel>> _fetchApplications() async {
-    await Future.delayed(Duration(milliseconds: 5));
+  Future<List<ApplicationModel>> _fetchApplications(DioFactory dio, int roomId) async {
+    final response = await dio.get('/duet-training/rooms/$roomId/applications');
+    final applicationDataList = response.data['data']['application_list'] as List;
 
-    final applicationDataList = widget.applicationListJson['data']['application_list'] as List;
+    // await Future.delayed(Duration(milliseconds: 5));//
+    // final applicationDataList = widget.applicationListJson['data']['application_list'] as List;
     final List<ApplicationModel> applicationList =
         applicationDataList.map((json) => ApplicationModel.fromJson(json)).toList();
 
@@ -125,12 +129,14 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
   @override
   void initState() {
     super.initState();
-    isHost = (widget.roomPosition == RoomPosition.host);
+    final DioFactory dio = DioFactory(SecureStorage());
+
+    isHost = (widget.roomPosition == RoomPosition.host); // 호스트인지 여부
     userPartNumber =
         (isHost) ? widget.room.hostPart.partNumber : widget.room.partnerPart.partNumber;
-    userDuetPart = (isHost) ? widget.room.hostPart : widget.room.partnerPart;
-    applications = _fetchApplications();
-    songDetailModel = _fetchSongData();
+    userDuetPart = (isHost) ? widget.room.hostPart : widget.room.partnerPart; // 사용자에게 색칠되어 보이는 파트
+    applications = _fetchApplications(dio, widget.room.id);
+    songDetailModel = _fetchSongData(dio, widget.room.song.id);
   }
 
   @override
@@ -171,9 +177,8 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
                             return Text('알 수 없는 오류가 발생했습니다.');
                           }
                         } else if (snapshot.hasData == false) {
-                          // 응답이 오지 않았으면
+                          // 응답이 오지 않았으면 -> 노래 재생 불가능한 노래 정보 영역
                           return DuetSongSection(
-                            // 재생 버튼 없는 Row Section
                             id: widget.room.song.id,
                             title: widget.room.song.title,
                             albumArtUrl: widget.room.song.albumArtUrl,
@@ -185,7 +190,8 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
                           final DuetSongModel song = snapshot.data;
 
                           final bool isFirstPart =
-                              song.duetParts.first.partNumber == userPartNumber;
+                              song.duetParts.first.partNumber ==
+                              userPartNumber; // duetParts 에서 처음 항목이 색칠되어 보이는지 여부
                           return Column(
                             children: [
                               _buildSongInfo(song, isFirstPart),
@@ -245,9 +251,9 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
                         onPressed: () async {
                           if (widget.roomPosition == RoomPosition.viewer) {
                             try {
-                              // await DioFactory(
-                              //   SecureStorage(),
-                              // ).post('/duet-training/rooms/${widget.room.id}/applications');
+                              await DioFactory(
+                                SecureStorage(),
+                              ).post('/duet-training/rooms/${widget.room.id}/applications');
                             } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -260,6 +266,8 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
                             }
                           } else {
                             context.pop();
+                            context.pop();
+                            context.go(AppRouteNames.duetTrainingHome);
                           }
                         },
                         child: Text(
@@ -301,7 +309,7 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
           voiceType: song.duetParts.first.voiceType,
           partName: SongDetailModel.convertVoiceTypeEng2Kor(song.duetParts.last.voiceType),
           fileUrl: song.fileUrl,
-          isSelectedHost: isFirstPart, // 강조 색이 첫번째에 들어가는지
+          isLeftColored: isFirstPart, // 강조 색이 첫번째에 들어가는지
         ),
         SizedBox(height: 16.h),
 

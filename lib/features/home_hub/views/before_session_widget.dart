@@ -193,39 +193,44 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
     final dio = DioFactory(SecureStorage());
 
     try {
-      final partnerSentResponse = partnerListJson;
-      final dataList = partnerSentResponse['data']['application_list'] as List<dynamic>;
-      final roomListResponse = roomsJson; // noMyRoomJson; // roomsJson; emptyRoomJson
+      // final partnerSentResponse = partnerListJson;
+      // final dataList = partnerSentResponse['data']['application_list'] as List<dynamic>;
+      // final roomListResponse = emptyRoomJson; // noMyRoomJson; // roomsJson; emptyRoomJson
+      //
+      // final roomIdList = dataList.map((e) => e['room_id'] as int).toList();
+      // final roomDataList = roomListResponse['data']['room_list'] as List;
+
+      // final Room? hostRoomTemp =
+      // roomListResponse['data']['my_room'] != null
+      //     ? Room.fromJson(roomListResponse['data']['my_room'])
+      //     : null;
+
+      final partnerSentResponse = await dio.get('/duet-training/applications/sent');
+      debugPrint("partnerRooms: response - ${partnerSentResponse.data}");
+      final dataList =
+          partnerSentResponse.data['data']['application_list'] as List<dynamic>; // 보낸 파트너 신청 목록
+      final roomListResponse = await dio.get('/duet-training/rooms');
+
+      debugPrint("rooms: response - ${roomListResponse.data}");
+      final roomDataList = roomListResponse.data['data']['room_list'] as List;
 
       final roomIdList = dataList.map((e) => e['room_id'] as int).toList();
-      final roomDataList = roomListResponse['data']['room_list'] as List;
 
-      // final partnerSentResponse = await dio.get('/duet-training/applications/sent');
-      // debugPrint("partnerRooms: response - ${partnerSentResponse.data}");
-      // final dataList =
-      //     partnerSentResponse.data['data']['application_list'] as List<dynamic>;
-      // final roomListResponse = await dio.get('/duet-training/rooms'); ;
-      // debugPrint("rooms: response - ${roomListResponse.data}");
-      // final roomDataList = roomListResponse.data['data']['room_list'] as List;
-
-      final Room? hostRoomTemp =
-          roomListResponse['data']['my_room'] != null
-              ? Room.fromJson(roomListResponse['data']['my_room'])
+      final Room? hostRoom =
+          roomListResponse.data['data']['my_room'] != null
+              ? Room.fromJson(roomListResponse.data['data']['my_room'])
               : null;
 
-      final Room? hostRoom = hostRoomTemp;
       if (hostRoom == null) {
-        debugPrint("no MyRoom");
         widget.isRoomHost(false);
       } else {
-        debugPrint("exist MyRoom");
         widget.isRoomHost(true);
       }
 
       final List<Room> roomList =
           roomDataList.isNotEmpty ? roomDataList.map((json) => Room.fromJson(json)).toList() : [];
 
-      final List<Room> partnerSentList = [];
+      final List<Room> partnerSentList = []; // 보낸 신청 요청의 방 정보를 저장
       for (var i = 0; i < roomIdList.length; i++) {
         for (var r in roomList) {
           if (r.id == roomIdList[i]) {
@@ -233,8 +238,6 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
           }
         }
       }
-
-      debugPrint("return _BothRoomList");
 
       return _BothRoomList(totalRooms: roomList, partnerRooms: partnerSentList, hostRoom: hostRoom);
     } on DioException catch (e) {
@@ -280,7 +283,7 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildEnterRoomList(lists.hostRoom, lists.partnerRooms), // 참여중인 연습실
+              _buildEnterRoomList(lists.hostRoom, lists.partnerRooms), // 참여 대기중인 연습실
               if (lists.hostRoom != null || lists.partnerRooms.isNotEmpty) SizedBox(height: 48.h),
               Text(
                 "대기중인 연습실",
@@ -332,6 +335,7 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
   }
 
   Widget _buildMyRoom(Room hostRoom) {
+    // 내가 방 주인인 연습실
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
@@ -372,6 +376,7 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
   }
 
   Widget _buildPartnerRooms(List<Room> waitingRooms) {
+    // 파트너 신청을 넣은 연습실 목록
     return ListView.separated(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(), // 리스트뷰 내의 스크롤 방지
@@ -385,7 +390,7 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
             child: Divider(color: AppColors.grayscale6),
           ),
       itemBuilder: (context, idx) {
-        final song = waitingRooms[idx].song; // song;
+        final song = waitingRooms[idx].song;
 
         return Column(
           children: [
@@ -395,10 +400,6 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
                   AppRoutePaths.duetRoomDetail,
                   extra: {'roomPosition': RoomPosition.partner, 'room': waitingRooms[idx]},
                 );
-                // await context.push(
-                //   '${AppRoutePaths.duetRoomDetail}/false', // true/false: 방장 여부
-                //   extra: waitingRooms[idx],
-                // );
               },
 
               child: _buildRoomField(
@@ -436,7 +437,6 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
       voiceType: voiceType,
       albumArtUrl: song.albumArtUrl,
       partName: partName,
-      // ),
     );
   }
 
@@ -454,7 +454,7 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
             height: 1,
           ),
       itemBuilder: (context, idx) {
-        final song = totalRooms[idx].song; // song;
+        final song = totalRooms[idx].song;
 
         return Padding(
           padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -464,7 +464,6 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
                 AppRoutePaths.duetRoomDetail,
                 extra: {'roomPosition': RoomPosition.viewer, 'room': totalRooms[idx]},
               );
-              // await context.push('${AppRoutePaths.duetRoomDetail}/false', extra: totalRooms[idx]);
             },
             child: _buildRoomField(
               song,
