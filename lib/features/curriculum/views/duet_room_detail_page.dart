@@ -162,7 +162,7 @@ class DuetRoomDetailPage extends StatefulWidget {
 }
 
 class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
-  late final Future<List<ApplicationModel>> applications;
+  late Future<List<ApplicationModel>> applications;
   late final Future<DuetSongModel> songDetailModel;
   late final int userPartNumber;
   late final DuetPart userDuetPart;
@@ -187,6 +187,14 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
         applicationDataList.map((json) => ApplicationModel.fromJson(json)).toList();
 
     return applicationList;
+  }
+
+  void _reFetchApplicationList() {
+    final DioFactory dio = DioFactory(SecureStorage());
+    debugPrint("_reFetchApplicationList");
+    setState(() {
+      applications = _fetchApplications(dio, widget.room.id);
+    });
   }
 
   @override
@@ -297,6 +305,13 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
                             applicationList: snapshot.data,
                             isHost: isHost,
                             roomId: widget.room.id,
+                            refreshCond: () {
+                              final DioFactory dio = DioFactory(SecureStorage());
+                              debugPrint("_reFetchApplicationList");
+                              setState(() {
+                                applications = _fetchApplications(dio, widget.room.id);
+                              });
+                            },
                           );
                         }
                       },
@@ -448,11 +463,13 @@ class ApplicationListSection extends StatefulWidget {
   final List<ApplicationModel> applicationList;
   final bool isHost;
   final int roomId;
+  final VoidCallback refreshCond;
   const ApplicationListSection({
     super.key,
     required this.applicationList,
     required this.isHost,
     required this.roomId,
+    required this.refreshCond,
   });
 
   @override
@@ -493,6 +510,7 @@ class _ApplicationListSectionState extends State<ApplicationListSection> {
     return SizedBox(
       height: 110.w,
       child: ListView.separated(
+        // shrinkWrap: true,
         physics: ClampingScrollPhysics(), // 리스트뷰 내의 스크롤 방지
 
         itemBuilder: (context, idx) {
@@ -552,6 +570,8 @@ class _ApplicationListSectionState extends State<ApplicationListSection> {
           onPressed: () async {
             try {
               dio.post('/duet-training/rooms/${widget.roomId}/applications/$applicationId');
+              widget.refreshCond();
+              // debugPrint("수락");
             } catch (e) {
               _showError("수락에 실패했습니다. 다시 시도해주세요.");
             }
@@ -570,9 +590,11 @@ class _ApplicationListSectionState extends State<ApplicationListSection> {
             ),
             child: Text("거절", style: AppTextStyles.body6.copyWith(color: AppColors.grayscale3)),
           ),
-          onPressed: () {
+          onPressed: () async {
             try {
-              dio.delete('/duet-training/rooms/${widget.roomId}/applications/$applicationId');
+              await dio.delete('/duet-training/rooms/${widget.roomId}/applications/$applicationId');
+              widget.refreshCond();
+              debugPrint("파트너 거절");
             } catch (e) {
               _showError("파트너 거절이 실패했습니다. 다시 시도해주세요");
             }
