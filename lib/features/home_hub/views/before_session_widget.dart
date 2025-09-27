@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -34,7 +33,7 @@ class _BothRoomList {
 
 class BeforeSessionWidget extends StatefulWidget {
   final ValueChanged<bool> isRoomHost;
-  const BeforeSessionWidget({super.key, required this.isRoomHost}); // , required this.isRoomHost
+  const BeforeSessionWidget({super.key, required this.isRoomHost});
 
   @override
   State<BeforeSessionWidget> createState() => _BeforeSessionWidgetState();
@@ -52,13 +51,13 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
 
     try {
       final partnerSentResponse = await dio.get('/duet-training/applications/sent');
-      final dataList =
+      final applyPartnerList =
           partnerSentResponse.data['data']['application_list'] as List<dynamic>; // 보낸 파트너 신청 목록
       final roomListResponse = await dio.get('/duet-training/rooms');
 
       final roomDataList = roomListResponse.data['data']['room_list'] as List;
 
-      final roomIdList = dataList.map((e) => e['room_id'] as int).toList();
+      final roomIdList = applyPartnerList.map((e) => e['room_id'] as int).toList();
 
       final Room? hostRoom =
           roomListResponse.data['data']['my_room'] != null
@@ -75,15 +74,25 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
           roomDataList.isNotEmpty ? roomDataList.map((json) => Room.fromJson(json)).toList() : [];
 
       final List<Room> partnerSentList = []; // 보낸 신청 요청의 방 정보를 저장
-      for (var i = 0; i < roomIdList.length; i++) {
-        for (var r in roomList) {
-          if (r.id == roomIdList[i]) {
-            partnerSentList.add(r);
+      final List<Room> pendingRooms = []; // 참ㅊ여 대기중인 연습실 x, 대기중인 연습실
+
+      for (var waitingRoom in roomList) {
+        bool flag = false;
+        for (var myRoomId in roomIdList) {
+          if (myRoomId == waitingRoom.id) {
+            partnerSentList.add(waitingRoom);
+            flag = true;
+            break;
           }
         }
+        if (!flag) pendingRooms.add(waitingRoom);
       }
 
-      return _BothRoomList(totalRooms: roomList, partnerRooms: partnerSentList, hostRoom: hostRoom);
+      return _BothRoomList(
+        totalRooms: pendingRooms,
+        partnerRooms: partnerSentList,
+        hostRoom: hostRoom,
+      );
     } on DioException catch (e) {
       debugPrint("error2: ${e.response}");
       throw Exception(e.response);
@@ -104,7 +113,7 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
         if (snapshot.hasError) {
           final errorString = snapshot.error.toString();
 
-          debugPrint("widget 오류 발생: ${errorString}");
+          debugPrint("widget 오류 발생: $errorString");
           try {
             final Map<String, dynamic> errorJson = jsonDecode(
               errorString.replaceFirst('Exception: ', '').trim(),
