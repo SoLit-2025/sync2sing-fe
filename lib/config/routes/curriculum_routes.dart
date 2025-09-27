@@ -76,7 +76,7 @@ final List<GoRoute> curriculumRoutes = [
         );
         return '/';
       }
-      return null; // 정상
+      return null;
     },
     builder: (context, state) {
       final extras = state.extra as Map<String, dynamic>;
@@ -121,11 +121,10 @@ final List<GoRoute> curriculumRoutes = [
   GoRoute(
     path: AppRoutePaths.trainingGenerationLoading,
     name: AppRouteNames.trainingGenerationLoading,
-    // builder: (context, state) => TrainingGenerationLoadingPage(),
     builder:
         (context, state) => TrainingGenerationLoadingPage(
           curriculumGenerationRequest: state.extra as CurriculumGenerationRequest,
-        ), // extra로 정보 전달 시
+        ),
   ),
   GoRoute(
     path: AppRoutePaths.trainingGuide,
@@ -166,7 +165,7 @@ final List<GoRoute> curriculumRoutes = [
         );
         return '/';
       }
-      return null; // 정상
+      return null;
     },
     builder: (context, state) {
       final extras = state.extra as Map<String, dynamic>;

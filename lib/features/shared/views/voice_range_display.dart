@@ -25,13 +25,6 @@ enum VoiceRangeColor {
   const VoiceRangeColor(this.borderColor, this.textColor, this.barColor);
 }
 
-class CustomVoiceRangeColors extends Color {
-  CustomVoiceRangeColors(super.value);
-
-  static const customPink = AppColors.primaryPink;
-  static const customGreen = AppColors.primaryGreen;
-}
-
 class VoiceRangeDisplay extends StatelessWidget {
   final String pitchNoteMin;
   final String pitchNoteMax;

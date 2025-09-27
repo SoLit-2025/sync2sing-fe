@@ -39,47 +39,22 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
   bool _isButtonEnabled = false;
   late final SongDetailModel _songDetailModel = SongDetailModel(
     2,
-    "SODA POP",
-    "사자 보이즈",
+    "Do-Re-Mi Song",
+    "Richard Rodgers",
     'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
-    "ALTO",
+    "SOPRANO",
     "C4",
     "D5",
     [
       TimedLyric(0, "(전주중)", 0),
-      TimedLyric(1, "지금 당장 날 봐, \n시간 없잖아", 1400),
-      TimedLyric(2, "넌 내꺼야, \n이미 알고 있잖아", 4000),
-      TimedLyric(3, "'Cause I need you to need me", 8240),
-      TimedLyric(4, "I'm empty, you feed me, so refreshin'", 9870),
-      TimedLyric(5, "My little soda pop", 14000),
-      TimedLyric(6, "", 16400),
-      TimedLyric(7, "You're all I can think of,", 15010),
-      TimedLyric(8, "every drop I drink up", 18000),
-      TimedLyric(9, "You're my soda pop, my little soda pop", 20360),
-      TimedLyric(10, "Cool me down, you're so hot", 23820),
-      TimedLyric(11, "pour me up, I won't stop", 25800),
-      TimedLyric(12, "You're my soda pop, my little soda pop", 27700),
+      TimedLyric(1, "Doe - a deer,", 2300),
+      TimedLyric(2, "a female deer", 4000),
+      TimedLyric(3, "Ray - a drop of golden sun", 6000),
+      TimedLyric(4, "Me, a name I call myself", 10000),
     ],
     "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-    "assets/songs/audios/soda_pop_mr_v1.wav", // 백엔드에 저장된 파일과 음정 박자 파일 불일치 -> asset 사용. 다만 길이 조정 필요 (음악 끝나기 전까지 다음버튼 클릭 불가)
+    "assets/songs/audios/doremi_song_v3_mr.wav", // 백엔드에 저장된 파일과 음정 박자 파일 불일치 -> asset 사용. 다만 길이 조정 필요 (음악 끝나기 전까지 다음버튼 클릭 불가)
   );
-  // SongDetailModel(
-  //   2,
-  //   "Do-Re-Mi Song",
-  //   "Richard Rodgers",
-  //   "SOPRANO",
-  //   "C4",
-  //   "D5",
-  //   [
-  //     TimedLyric(0, "(전주중)", 0),
-  //     TimedLyric(1, "Doe - a deer,", 2300),
-  //     TimedLyric(2, "a female deer", 4000),
-  //     TimedLyric(3, "Ray - a drop of golden sun", 6000),
-  //     TimedLyric(4, "Me, a name I call myself", 10000),
-  //   ],
-  //   "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-  //   "assets/songs/audios/soda_pop_mr_v1.wav", //"assets/songs/audios/doremi_song_v3_mr.wav", // 백엔드에 저장된 파일과 음정 박자 파일 불일치 -> asset 사용. 다만 길이 조정 필요 (음악 끝나기 전까지 다음버튼 클릭 불가)
-  // );
 
   @override
   void initState() {
@@ -180,10 +155,9 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
 
                 /// MusicContentPlayer: 음악 재생, 녹음, 시각화를 담당하는 핵심 위젯
                 /// 이 위젯에서 모든 음악 관련 기능이 처리됩니다
-                // child: MusicContentPlayer(key: _playerKey),
                 child: MusicContentPlayer(
                   _songDetailModel,
-                  'assets/songs/datas/soda_pop_v20.json',
+                  'assets/songs/datas/doremi_song_piano_v2.json',
                   onChildBoolChanged,
                   key: _playerKey,
                 ),

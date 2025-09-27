@@ -267,7 +267,6 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
               textAlign: TextAlign.right,
             ),
           ),
-          // ),
         ],
       ),
     );
@@ -326,7 +325,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
               },
             ),
           ],
-        }, // Training 진행 현황
+        },
       ],
     );
   }

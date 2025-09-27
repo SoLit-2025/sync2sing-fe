@@ -32,7 +32,6 @@ class _DuetSongListPageState extends State<DuetSongListPage> {
   Future<Map<String, dynamic>> _fetchSongsInfo() async {
     try {
       final dioFactory = DioFactory(SecureStorage());
-      debugPrint('/${TrainingMode.duet.apiBasePath}/songs?type=original');
       final response = await dioFactory.get(
         '/${TrainingMode.duet.apiBasePath}/songs?type=original',
       );
@@ -96,8 +95,6 @@ class _DuetSongListPageState extends State<DuetSongListPage> {
               return CustomLoading();
             } else {
               // api 응답 완료:
-              debugPrint("responseData: ${snapshot.data}");
-
               songs = [];
               snapshot.data['data']['song_list'].forEach((e) {
                 songs.add(DuetSongModel.fromJson(e));
@@ -182,7 +179,6 @@ class _DuetSongListPageState extends State<DuetSongListPage> {
 
                         return GestureDetector(
                           onTap: () {
-                            debugPrint("DuetSongSumSection clicked: ${song.title}");
                             context.push(
                               AppRoutePaths.duetSongDetail,
                               extra: {'song': song, 'isSelectFirst': isFirstVoiceTypeSelected},

@@ -31,7 +31,6 @@ class _SongListPageState extends State<SongListPage> {
   Future<Map<String, dynamic>> _fetchSongsInfo() async {
     try {
       final dioFactory = DioFactory(SecureStorage());
-      debugPrint('/${TrainingMode.solo.apiBasePath}/songs?type=original');
       final response = await dioFactory.get(
         '/${TrainingMode.solo.apiBasePath}/songs?type=original',
       );
@@ -86,19 +85,15 @@ class _SongListPageState extends State<SongListPage> {
                   errorString.replaceFirst('Exception: ', '').trim(),
                 );
 
-                // final status = errorJson['status']?.toString() ?? 'Unknown status';
                 return Text(errorJson['message']);
               } catch (e) {
                 return Text('알 수 없는 오류가 발생했습니다.');
               }
-              // return Text("오류 발생: ${snapshot.error.['message']}");
             } else if (snapshot.hasData == false) {
               // api 응답 대기 중
               return CustomLoading();
             } else {
               // api 응답 완료:
-              debugPrint("responseData: ${snapshot.data}");
-
               songs = [];
               snapshot.data['data']['song_list'].forEach((e) {
                 songs.add(SongDetailModel.fromJson(e));
@@ -207,7 +202,6 @@ class _SongListPageState extends State<SongListPage> {
                                     children: [
                                       Text(
                                         song.title,
-                                        // song['title']!, //
                                         style: AppTextStyles.body1Bold,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -215,7 +209,6 @@ class _SongListPageState extends State<SongListPage> {
                                       SizedBox(height: 5.h),
                                       Text(
                                         song.artist,
-                                        // song['artist']!,
                                         style: AppTextStyles.body2.copyWith(
                                           color: AppColors.grayscale3,
                                         ),

@@ -138,7 +138,6 @@ class _DuetSongSectionState extends State<DuetSongSection> {
 
   // 성부 칩 로직
   Widget _buildVoiceTypeChip(String voiceType) {
-    // final bool isSelected = (setPartNumber == null || setPartNumber == 0);
     return Container(
       height: 20.h,
       width: 60.w,

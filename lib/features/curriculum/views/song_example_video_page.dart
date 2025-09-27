@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,13 +50,11 @@ class SongExampleVideoPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    Map<String, dynamic> decoded = json; // jsonDecode(jsonStr);
+    Map<String, dynamic> decoded = json;
     Map<String, dynamic> data = decoded['data'] ?? {};
     SongDetailModel songDetail = SongDetailModel.fromJson(data);
     final String url = songDetail.youtubeLink;
-    // final String videoId = url.split('/').last;
     String videoId = url.substring(url.lastIndexOf('/') + 1, url.indexOf('?'));
-    debugPrint("videoId: $videoId");
     final bool isButtonEnabled = ref.watch(isOnboardingRecordingStartButtonEnabledProvider);
 
     return Scaffold(

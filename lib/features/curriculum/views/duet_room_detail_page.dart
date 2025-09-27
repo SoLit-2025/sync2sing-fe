@@ -24,7 +24,7 @@ enum RoomPosition { viewer, host, partner } // '대기중인 연습실' 로 들�
 class DuetRoomDetailPage extends StatefulWidget {
   final RoomPosition roomPosition;
   final Room room;
-  DuetRoomDetailPage({super.key, required this.room, required this.roomPosition});
+  const DuetRoomDetailPage({super.key, required this.room, required this.roomPosition});
 
   @override
   State<DuetRoomDetailPage> createState() => _DuetRoomDetailPageState();
@@ -164,7 +164,6 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
                             roomId: widget.room.id,
                             refreshCond: () {
                               final DioFactory dio = DioFactory(SecureStorage());
-                              debugPrint("_reFetchApplicationList");
                               setState(() {
                                 applications = _fetchApplications(dio, widget.room.id);
                               });
@@ -426,7 +425,6 @@ class _ApplicationListSectionState extends State<ApplicationListSection> {
             try {
               dio.post('/duet-training/rooms/${widget.roomId}/applications/$applicationId');
               widget.refreshCond();
-              // debugPrint("수락");
             } catch (e) {
               _showError("수락에 실패했습니다. 다시 시도해주세요.");
             }
@@ -449,7 +447,6 @@ class _ApplicationListSectionState extends State<ApplicationListSection> {
             try {
               await dio.delete('/duet-training/rooms/${widget.roomId}/applications/$applicationId');
               widget.refreshCond();
-              debugPrint("파트너 거절");
             } catch (e) {
               _showError("파트너 거절이 실패했습니다. 다시 시도해주세요");
             }

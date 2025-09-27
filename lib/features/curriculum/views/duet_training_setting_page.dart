@@ -216,7 +216,6 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
   // 성부 칩 로직
   Widget _buildVoiceTypeChip(bool isSelected, SelectedDuetSong selectedSong) {
     if (isSelected && selectedSong.voiceType != null && selectedSong.voiceType != '') {
-      debugPrint("selected voiceType: [${selectedSong.voiceType}]");
       return Container(
         height: 20.h,
         width: 60.w,
@@ -358,8 +357,6 @@ class _DuetTrainingSettingPageState extends ConsumerState<DuetTrainingSettingPag
                   final response = await DioFactory(
                     SecureStorage(),
                   ).post('/duet-training/rooms', data: jsonEncode(data));
-
-                  debugPrint("커리큘럼 생성 확인: ${response.data}");
 
                   if (response.statusCode != 201) {
                     _showError("설정 실패! 다시 확인해주세요.");
