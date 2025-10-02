@@ -99,21 +99,6 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     }
   }
 
-  List<double> getRadarData(Map<String, dynamic> reportData) {
-    final pitchScore = (reportData['pitch_score'] as num? ?? 0).toDouble();
-    final beatScore = (reportData['beat_score'] as num? ?? 0).toDouble();
-    final pronunciationScore = (reportData['pronunciation_score'] as num? ?? 0).toDouble();
-    final breathScore = 70; // todo: 삭제 필요
-
-    return [
-      pitchScore / 100.0, // 음정
-      beatScore / 100.0, // 박자
-      pronunciationScore / 100.0, // 발음
-      breathScore / 100.0, // todo: 삭제 필요
-      ((pitchScore + beatScore + pronunciationScore) / 3) / 100.0, // 완성도
-    ];
-  }
-
   TrainingGrade _getGradeFromScore(int score) {
     switch (score) {
       case >= 70:
@@ -151,7 +136,6 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     }
 
     return Scaffold(
-      // backgroundColor: AppColors.grayscale8,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -180,11 +164,20 @@ class VocalAnalysisReportPage extends ConsumerWidget {
                       SizedBox(height: 16.h),
                       _buildAccuracySection(reportData['pitch_score'], reportData['beat_score']),
                       SizedBox(height: 40.h),
-                      _buildRadarChart(reportData),
+                      _buildAccuracyBarSection(
+                        reportData['pitch_score'],
+                        reportData['beat_score'],
+                        reportData['pronunciation_score'],
+                        reportData['pre_pitch_score'],
+                        reportData['pre_beat_score'],
+                        reportData['pre_pronunciation_score'],
+                      ),
                       SizedBox(height: 32.h),
                       _buildAnalysisDescription(reportData),
                       SizedBox(height: 14.h),
-                      _buildRecommendationSection(reportData),
+                      (analysisType == AnalysisType.post)
+                          ? _buildFeedbackSection(reportData)
+                          : _buildRecommendationSection(reportData),
                       SizedBox(height: 40.h),
                       _buildCurriculumButton(context, reportData),
                       SizedBox(height: 40.h),
@@ -219,10 +212,10 @@ class VocalAnalysisReportPage extends ConsumerWidget {
         Align(
           alignment: Alignment.topCenter,
           child: Text(
-            //./
             text,
-            style: AppTextStyles.body1.copyWith(color: AppColors.grayscale1),
+            style: AppTextStyles.body1,
             textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -301,7 +294,6 @@ class VocalAnalysisReportPage extends ConsumerWidget {
   Widget _buildTitleValueSection(String title, String desc) {
     return Container(
       height: 70.h,
-      // alignment: Alignment.center,
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.grayscale6, width: 1),
         borderRadius: BorderRadius.circular(10.r),
@@ -319,14 +311,6 @@ class VocalAnalysisReportPage extends ConsumerWidget {
           Text(desc, style: AppTextStyles.heading4Bold, textAlign: TextAlign.center),
         ],
       ),
-    );
-  }
-
-  Widget _buildRadarChart(Map<String, dynamic> reportData) {
-    return SizedBox(
-      width: double.infinity,
-      height: 280.h, // radarChart를 그리기 위해  height를 높게 설정했습니다.
-      child: CustomPaint(painter: RadarChartPainter(getRadarData(reportData))),
     );
   }
 
@@ -353,7 +337,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
   }
 
   Widget _buildRecommendationSection(Map<String, dynamic> reportData) {
-    final causeContent = reportData['cause_content'] as String? ?? '';
+    final causeContent = reportData['cause_content'] ?? reportData['cause_content'] ?? '';
     final proposalContent = reportData['proposal_content'] as String? ?? '';
 
     return IntrinsicHeight(
@@ -401,6 +385,28 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     );
   }
 
+  Widget _buildFeedbackSection(Map<String, dynamic> reportData) {
+    final title = reportData['feedback_title'] ?? '';
+    final content = reportData['feedback_content'] as String? ?? '';
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.grayscale6),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(title, style: AppTextStyles.body4Bold, textAlign: TextAlign.center),
+          SizedBox(height: 12.h),
+          Text(content, style: AppTextStyles.body6, textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCurriculumButton(BuildContext context, Map<String, dynamic> reportData) {
     return Consumer(
       builder: (BuildContext context, WidgetRef ref, Widget? child) {
@@ -429,7 +435,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
                 extra: curriculumGenerationRequest,
               );
             } else {
-              context.go(AppRoutePaths.soloTrainingHome);
+              context.go(AppRoutePaths.mainHome);
             }
           },
           child: Container(
@@ -451,111 +457,116 @@ class VocalAnalysisReportPage extends ConsumerWidget {
       },
     );
   }
-}
 
-class RadarChartPainter extends CustomPainter {
-  final List<double> values;
-
-  RadarChartPainter(this.values);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.height / 2 - 20;
-
-    // 배경 그리드 그리기
-    final gridPaint =
-        Paint()
-          ..color = AppColors.grayscale4.withValues(alpha: 0.3)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1;
-
-    // 5각형 그리드
-    for (int i = 1; i <= 5; i++) {
-      final currentRadius = radius * i / 5;
-      final path = Path();
-
-      for (int j = 0; j < 5; j++) {
-        final angle = (j * 2 * math.pi / 5) - math.pi / 2;
-        final x = center.dx + currentRadius * math.cos(angle);
-        final y = center.dy + currentRadius * math.sin(angle);
-
-        if (j == 0) {
-          path.moveTo(x, y);
-        } else {
-          path.lineTo(x, y);
-        }
-      }
-      path.close();
-      canvas.drawPath(path, gridPaint);
-    }
-
-    // 축 선 그리기
-    final axisPaint =
-        Paint()
-          ..color = AppColors.grayscale4.withValues(alpha: 0.5)
-          ..strokeWidth = 1;
-
-    for (int i = 0; i < 5; i++) {
-      final angle = (i * 2 * math.pi / 5) - math.pi / 2;
-      final x = center.dx + radius * math.cos(angle);
-      final y = center.dy + radius * math.sin(angle);
-      canvas.drawLine(center, Offset(x, y), axisPaint);
-    }
-
-    // 데이터 영역 그리기
-    final dataPaint =
-        Paint()
-          ..color = AppColors.primaryPink.withValues(alpha: 0.2)
-          ..style = PaintingStyle.fill;
-
-    final dataPath = Path();
-    for (int i = 0; i < 5; i++) {
-      final angle = (i * 2 * math.pi / 5) - math.pi / 2;
-      final currentRadius = radius * (values.length > i ? values[i] : 0.0);
-      final x = center.dx + currentRadius * math.cos(angle);
-      final y = center.dy + currentRadius * math.sin(angle);
-
-      if (i == 0) {
-        dataPath.moveTo(x, y);
-      } else {
-        dataPath.lineTo(x, y);
-      }
-    }
-    dataPath.close();
-    canvas.drawPath(dataPath, dataPaint);
-
-    // 데이터 경계선
-    final dataBorderPaint =
-        Paint()
-          ..color = AppColors.primaryPink
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1;
-    canvas.drawPath(dataPath, dataBorderPaint);
-
-    // 레이블 그리기
-    final labels = ["음정", "박자", "발음", "호흡", "완성도"];
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
-    for (int i = 0; i < 5; i++) {
-      final angle = (i * 2 * math.pi / 5) - math.pi / 2;
-      final labelRadius = radius + 25;
-      final x = center.dx + labelRadius * math.cos(angle);
-      var y = center.dy + labelRadius * math.sin(angle);
-
-      // 박자(인덱스 1)와 완성도(인덱스 4)만 y 좌표를 아래로 조금 이동
-      if (i == 1 || i == 4) {
-        y += 8;
-      }
-
-      textPainter.text = TextSpan(text: labels[i], style: AppTextStyles.body4);
-      textPainter.layout();
-
-      // 텍스트 중앙 정렬
-      final offset = Offset(x - textPainter.width / 2, y - textPainter.height / 2);
-      textPainter.paint(canvas, offset);
-    }
+  Widget _buildAccuracyBarSection(
+    int pitchAcc,
+    int beatAcc,
+    int pronAcc,
+    int? prePitchAcc,
+    int? preBeatAcc,
+    int? prePronAcc,
+  ) {
+    return Column(
+      children: [
+        _buildAccuracyBarRow("음정", pitchAcc, prePitchAcc),
+        SizedBox(height: (prePitchAcc == null) ? 25.h : 15.h),
+        _buildAccuracyBarRow("박자", beatAcc, preBeatAcc),
+        SizedBox(height: (prePitchAcc == null) ? 25.h : 15.h),
+        _buildAccuracyBarRow("발음", pronAcc, prePronAcc),
+        if (prePitchAcc != null)
+          Padding(padding: EdgeInsets.only(top: 20.h), child: _buildChartLegend())
+        else
+          SizedBox(height: 15.h),
+      ],
+    );
   }
 
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  Widget _buildAccuracyBarRow(String desc, int acc, int? preAcc) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text("$desc $acc", style: AppTextStyles.body4Bold),
+        Spacer(),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (preAcc != null)
+              Padding(
+                padding: EdgeInsets.only(bottom: 4.h),
+                child: _buildAccuracyBar(preAcc, AppColors.primaryGreen),
+              ),
+            _buildAccuracyBar(acc, AppColors.primaryPink),
+          ],
+        ),
+        // ),
+      ],
+    );
+  }
+
+  Widget _buildAccuracyBar(int accuracy, Color barColor) {
+    final double clampedAccuracy = accuracy.toDouble().clamp(0, 100);
+    final double totalWidth = 263.w;
+    final double progressWidth = totalWidth * (clampedAccuracy / 100);
+
+    return Container(
+      height: 10.h,
+      width: totalWidth,
+      decoration: BoxDecoration(
+        color: AppColors.grayscale6,
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: <Widget>[
+          Container(
+            width: progressWidth,
+            height: 10.h,
+            decoration: BoxDecoration(color: barColor, borderRadius: BorderRadius.circular(10.r)),
+          ),
+          Positioned(
+            left: totalWidth / 3 - 1,
+            top: 0,
+            bottom: 0,
+            child: Container(width: 2.0, color: AppColors.grayscale8),
+          ),
+          Positioned(
+            left: totalWidth * 2 / 3 - 1,
+            top: 0,
+            bottom: 0,
+            child: Container(width: 2.0, color: AppColors.grayscale8),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChartLegend() {
+    // 차트 범례
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text("훈련 전", style: AppTextStyles.body6),
+        SizedBox(width: 10.w),
+        Container(
+          width: 12.r,
+          height: 12.r,
+          decoration: BoxDecoration(
+            color: AppColors.primaryGreen,
+            borderRadius: BorderRadius.circular(2.r),
+          ),
+        ),
+        SizedBox(width: 20.w),
+        Text("훈련 후", style: AppTextStyles.body6),
+        SizedBox(width: 10.w),
+        Container(
+          width: 12.r,
+          height: 12.r,
+          decoration: BoxDecoration(
+            color: AppColors.primaryPink,
+            borderRadius: BorderRadius.circular(2.r),
+          ),
+        ),
+      ],
+    );
+  }
 }
