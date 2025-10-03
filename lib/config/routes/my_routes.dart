@@ -3,6 +3,7 @@ import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/features/my/views/license_page.dart';
 import 'package:sync2sing/features/my/views/my_page.dart';
 import 'package:sync2sing/features/my/views/settings_page.dart';
+import 'package:sync2sing/features/report/views/detail_vocal_analyssis_report_page.dart';
 import 'package:sync2sing/features/report/views/vocal_analysis_report_page.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
@@ -32,8 +33,20 @@ final List<GoRoute> myRoutes = [
     },
   ),
   GoRoute(
+    path: "${AppRoutePaths.detailReportPage}/:id",
+    name: AppRouteNames.detailReportPage,
+    builder: (context, state) {
+      final trainingMode = TrainingMode.values.firstWhere(
+        (e) => e.name == state.uri.queryParameters['trainingMode'],
+      );
+      final reportIdStr = state.pathParameters['id'];
+      final reportId = int.tryParse(reportIdStr!);
+      return DetailVocalAnalysisReportPage(reportId: reportId!, trainingMode: trainingMode);
+    },
+  ),
+  GoRoute(
     path: AppRoutePaths.license,
     name: AppRouteNames.license,
-    builder: (Context,state) => const LicensePage(),
-  )
+    builder: (context, state) => const LicensePage(),
+  ),
 ];
