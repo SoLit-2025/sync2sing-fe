@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
@@ -45,11 +44,10 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
         "pitch_note_max": "D5",
         "album_cover_url":
             'https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/39f14afc-704b-453a-b481-474728491780.jpg',
-        // 'https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/39f14afc-704b-453a-b481-474728491780.jpg',
       },
-      "pitch_score": 65,
-      "beat_score": 90,
-      "pronunciation_score": 11,
+      "pitch_score": 70,
+      "beat_score": 100,
+      "pronunciation_score": 51,
       "overall_review_title": "발음 교정이 필요해요",
       "overall_review_content":
           "음정과 박자는 안정적이나 발음이 크게 부족해서 노래 전달력이 떨어져요. 훈련 후 변화가 없어서 지속적인 개선이 필요해요. 발성과 발음 연습을 꾸준히 하면서 발음 교정에 집중해봐요.",
@@ -88,39 +86,13 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
       "proposal_content": "매일 10분 동안 발음 교정 연습을 하세요. 혀와 입술을 이용한 소리 명확히 하기, 슬로우하게 발음하면서 연습해요.",
     };
 
-    final nowJson = preJson;
+    final nowJson = postJson;
 
     setState(() {
       appBarTitle = nowJson['title'];
     });
 
     return nowJson;
-
-    // final state = GoRouterState.of(context);
-    // try {
-    //   if (state.extra == null) {
-    //     debugPrint('⚠️ state.extra가 null입니다.');
-    //     return {};
-    //   }
-    //
-    //   // Null-safe 객체 처리
-    //   final dynamic extra = state.extra!;
-    //
-    //   if (extra is Map<String, dynamic>) {
-    //     return extra;
-    //   } else if (extra is String) {
-    //     final decoded = jsonDecode(extra);
-    //     return decoded is Map<String, dynamic> ? decoded : {};
-    //   } else if (extra is AnalysisResult || extra is Song) {
-    //     return extra.toJson();
-    //   } else {
-    //     debugPrint('⚠️ 알 수 없는 데이터 타입: ${extra.runtimeType}');
-    //     return {};
-    //   }
-    // } catch (e) {
-    //   debugPrint('❌ 데이터 파싱 오류: $e');
-    //   return {};
-    // }
   }
 
   Map<String, dynamic> getSongData(Map<String, dynamic> reportData) =>
@@ -210,10 +182,6 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
                         final Map<String, dynamic> reportData = snapshot.data;
                         final songData = getSongData(reportData);
 
-                        final AnalysisType analysisType = AnalysisType.values.firstWhere(
-                          (e) => e.apiValue == (reportData['analysis_type'] ?? 'PRE'),
-                        );
-
                         final voiceTypeData = songData['voice_type'];
                         final pitchNoteMin = songData['pitch_note_min'] ?? "";
                         final pitchNoteMax = songData['pitch_note_max'] ?? "";
@@ -248,9 +216,12 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
                             SizedBox(height: 32.h),
                             _buildAnalysisDescription(reportData),
                             SizedBox(height: 14.h),
-                            (analysisType == AnalysisType.post)
-                                ? _buildFeedbackSection(reportData)
-                                : _buildRecommendationSection(reportData),
+                            if (reportData['feedback_title'] != null &&
+                                reportData['feedback_content'] != null)
+                              _buildFeedbackSection(reportData),
+                            if (reportData['cause_content'] != null &&
+                                reportData['proposal_content'] != null)
+                              _buildRecommendationSection(reportData),
                             SizedBox(height: 40.h),
                             _buildCurriculumButton(context, reportData),
                             SizedBox(height: 40.h),
