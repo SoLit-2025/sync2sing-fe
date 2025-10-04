@@ -369,9 +369,19 @@ class _MyPageState extends State<MyPage> {
               _pressedReportMode = mode;
             });
           },
-          onTapUp: (_) {
+          onTapUp: (_) async {
+            String voiceType = await _userData.then((value) => value['voice_type']);
+            String pitchNoteMin = await _userData.then((value) => value['pitch_note_min']);
+            String pitchNoteMax = await _userData.then((value) => value['pitch_note_max']);
             setState(() {
-              context.push('${AppRoutePaths.detailReportPage}/$reportId?trainingMode=${mode.name}');
+              context.push(
+                '${AppRoutePaths.detailReportPage}/$reportId?trainingMode=${mode.name}',
+                extra: {
+                  'voiceType': voiceType,
+                  'pitchNoteMin': pitchNoteMin,
+                  'pitchNoteMax': pitchNoteMax,
+                },
+              );
               _pressedReportIndex = null;
               _pressedReportMode = null;
             });

@@ -4,12 +4,21 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
 import 'package:sync2sing/features/shared/views/voice_range_display.dart';
 import 'dart:convert';
+
+class _UserVoiceInfo {
+  String voiceType;
+  String pitchNoteMin;
+  String pitchNoteMax;
+
+  _UserVoiceInfo({required this.voiceType, required this.pitchNoteMin, required this.pitchNoteMax});
+}
 
 class DetailVocalAnalysisReportPage extends StatefulWidget {
   final int reportId;
@@ -28,9 +37,66 @@ class DetailVocalAnalysisReportPage extends StatefulWidget {
 class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisReportPage> {
   late final Future<Map<String, dynamic>> reportJson;
   String appBarTitle = '';
+  late _UserVoiceInfo _userVoiceInfo;
+
+  _UserVoiceInfo getUserVoiceInfo() {
+    final state = GoRouterState.of(context);
+    // Null-safe 객체 처리
+    final dynamic extra = state.extra!;
+    debugPrint("extra: $extra");
+    try {
+      if (state.extra == null) {
+        debugPrint('⚠️ state.extra가 null입니다.');
+        return _UserVoiceInfo(voiceType: '', pitchNoteMin: '', pitchNoteMax: '');
+      }
+
+      if (extra is Map<String, dynamic>) {
+        return _UserVoiceInfo(
+          voiceType: extra['voiceType'],
+          pitchNoteMin: extra['pitchNoteMin'],
+          pitchNoteMax: extra['pitchNoteMax'],
+        );
+      } else {
+        debugPrint('⚠️ 알 수 없는 데이터 타입: ${extra.runtimeType}');
+        return _UserVoiceInfo(voiceType: '', pitchNoteMin: '', pitchNoteMax: '');
+      }
+    } catch (e) {
+      debugPrint('❌ 데이터 파싱 오류: $e');
+      return _UserVoiceInfo(voiceType: '', pitchNoteMin: '', pitchNoteMax: '');
+    }
+  }
 
   Future<Map<String, dynamic>> _fetchReportData() async {
     Future.delayed(Duration(milliseconds: 4));
+
+    Map<String, dynamic> guestJson = // 비로그인 보컬 분석 리포트 (GUEST)
+        {
+      "report_id": 10,
+      "analysis_type": "GUEST",
+      "title": "2025-09-06 Do-Re-Mi",
+      "song": {
+        "song_id": 1,
+        "title": "Do-Re-Mi",
+        "artist": "Richard Rodgers",
+        "voice_type": "SOPRANO",
+        "pitch_note_min": "C4",
+        "pitch_note_max": "D5",
+        "album_cover_url":
+            'https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/39f14afc-704b-453a-b481-474728491780.jpg',
+      },
+      "pitch_score": 65,
+      "beat_score": 90,
+      "pronunciation_score": 94,
+      "overall_review_title": "음정 조절 연습으로 자신감 높이기",
+      "overall_review_content":
+          "음정 점수가 낮아 음정 조절 능력을 향상시키는 것이 필요해요. 박자와 발음이 좋은 상태이지만, 음정이 불안정하면 노래의 안정감이 떨어질 수 있어요. 이 원인을 개선하면 전체적인 노래 실력이 향상될 거예요.",
+      "created_at": "2025-09-06T00:25:18.332294367",
+      "cause_content":
+          "음정 조절에 어려움을 겪는 것이 낮은 점수의 주 원인일 가능성이 높아요. 발성 태그 중 lip_trill이 주요 특징으로 나타나는데, 이는 음정 안정성을 키우는 데 도움이 될 수 있어요.",
+      "proposal_content":
+          "매일 10분씩 음정 연습을 해보세요. 피아노나 튜터와 함께 기본 음정 연습(5분), 가사에 맞춰 간단한 노래 연습(5분)을 해요. 무리하지 말고 꾸준히 연습하는 것이 중요해요.",
+    };
+
     Map<String, dynamic> postJson = {
       "report_id": 12,
       "analysis_type": "POST",
@@ -145,6 +211,8 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
 
   @override
   Widget build(BuildContext context) {
+    _userVoiceInfo = getUserVoiceInfo();
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -182,9 +250,22 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
                         final Map<String, dynamic> reportData = snapshot.data;
                         final songData = getSongData(reportData);
 
-                        final voiceTypeData = songData['voice_type'];
-                        final pitchNoteMin = songData['pitch_note_min'] ?? "";
-                        final pitchNoteMax = songData['pitch_note_max'] ?? "";
+                        final AnalysisType analysisType = AnalysisType.values.firstWhere(
+                          (e) => e.apiValue == (reportData['analysis_type'] ?? 'PRE'),
+                        );
+
+                        final voiceTypeData =
+                            (AnalysisType.guest == analysisType)
+                                ? _userVoiceInfo.voiceType
+                                : songData['voice_type'];
+                        final pitchNoteMin =
+                            (AnalysisType.guest == analysisType)
+                                ? _userVoiceInfo.pitchNoteMin
+                                : songData['pitch_note_min'] ?? "";
+                        final pitchNoteMax =
+                            (AnalysisType.guest == analysisType)
+                                ? _userVoiceInfo.pitchNoteMax
+                                : songData['pitch_note_max'] ?? "";
 
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -192,12 +273,14 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
                             SizedBox(height: 46.h),
                             _buildSongOverView(songData),
                             SizedBox(height: 16.h),
-                            _buildVoiceTypeBadge(voiceTypeData),
+                            (analysisType == AnalysisType.guest)
+                                ? _buildVoiceTypeSection(voiceTypeData) // guest 모드인 경우 타입 설명 포함
+                                : _buildVoiceTypeBadge(voiceTypeData),
                             SizedBox(height: 16.h),
                             VoiceRangeDisplay(
                               pitchNoteMin: pitchNoteMin,
                               pitchNoteMax: pitchNoteMax,
-                              title: "노래 음역대",
+                              title: (analysisType == AnalysisType.guest) ? "나의 음역대" : "노래 음역대",
                             ),
                             SizedBox(height: 16.h),
                             _buildAccuracySection(
@@ -301,19 +384,19 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
     );
   }
 
-  // Widget _buildVoiceTypeSection(String voiceType) {
-  //   return Column(
-  //     children: [
-  //       _buildVoiceTypeBadge(voiceType),
-  //       SizedBox(height: 20.h),
-  //       Text(
-  //         getVoiceTypeDescription(voiceType.toUpperCase()),
-  //         style: AppTextStyles.body2.copyWith(color: AppColors.grayscale2),
-  //         textAlign: TextAlign.center,
-  //       ),
-  //     ],
-  //   );
-  // }
+  Widget _buildVoiceTypeSection(String voiceType) {
+    return Column(
+      children: [
+        _buildVoiceTypeBadge(voiceType),
+        SizedBox(height: 20.h),
+        Text(
+          getVoiceTypeDescription(voiceType.toUpperCase()),
+          style: AppTextStyles.body2.copyWith(color: AppColors.grayscale2),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
 
   Widget _buildVoiceTypeBadge(String voiceType) {
     return Container(
@@ -482,6 +565,11 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
     int? preBeatAcc,
     int? prePronAcc,
   ) {
+    int? preTotalScore =
+        (prePitchAcc != null && preBeatAcc != null && prePronAcc != null)
+            ? ((prePitchAcc + preBeatAcc + prePronAcc) / 3).toInt()
+            : null;
+
     return Column(
       children: [
         _buildAccuracyBarRow("음정", pitchAcc, prePitchAcc),
@@ -489,6 +577,13 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
         _buildAccuracyBarRow("박자", beatAcc, preBeatAcc),
         SizedBox(height: (prePitchAcc == null) ? 25.h : 15.h),
         _buildAccuracyBarRow("발음", pronAcc, prePronAcc),
+        SizedBox(height: (prePitchAcc == null) ? 25.h : 15.h),
+        _buildAccuracyBarRow(
+          "총점",
+          ((pronAcc + pitchAcc + beatAcc) / 3).toInt(),
+          preTotalScore,
+          isTotal: true,
+        ),
         if (prePitchAcc != null)
           Padding(padding: EdgeInsets.only(top: 20.h), child: _buildChartLegend())
         else
@@ -497,7 +592,7 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
     );
   }
 
-  Widget _buildAccuracyBarRow(String desc, int acc, int? preAcc) {
+  Widget _buildAccuracyBarRow(String desc, int acc, int? preAcc, {bool isTotal = false}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -511,7 +606,10 @@ class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisRepor
                 padding: EdgeInsets.only(bottom: 4.h),
                 child: _buildAccuracyBar(preAcc, AppColors.primaryGreen),
               ),
-            _buildAccuracyBar(acc, AppColors.primaryPink),
+            _buildAccuracyBar(
+              acc,
+              (isTotal && preAcc == null) ? AppColors.primaryGreen : AppColors.primaryPink,
+            ),
           ],
         ),
       ],
