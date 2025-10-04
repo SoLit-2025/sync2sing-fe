@@ -1,9 +1,27 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
+import 'package:sync2sing/features/shared/logics/dio_factory.dart';
+import 'package:sync2sing/features/shared/logics/secure_storage.dart';
+import 'package:sync2sing/features/shared/logics/training_mode.dart';
+import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
+import 'package:sync2sing/features/shared/views/voice_range_display.dart';
+
+class _ReportOverviewData {
+  String title;
+  int id;
+  _ReportOverviewData({required this.id, required this.title});
+
+  factory _ReportOverviewData.fromJson(Map<String, dynamic> json) {
+    return _ReportOverviewData(id: json['report_id'] ?? -1, title: json['title'] ?? '');
+  }
+}
 
 class MyPage extends StatefulWidget {
   const MyPage({super.key});
@@ -14,23 +32,92 @@ class MyPage extends StatefulWidget {
 
 class _MyPageState extends State<MyPage> {
   int? _pressedReportIndex;
-  String? _pressedReportType;
+  TrainingMode? _pressedReportMode;
+  late final Future<Map<String, dynamic>> _userData;
+  List<_ReportOverviewData> _soloReports = [];
+  List<_ReportOverviewData> _duetReports = [];
 
-  // 보컬 분석 리포트 mock 데이터
-  final List<Map<String, String>> _soloReports = [
-    {'date': '2025-07-15', 'title': 'Golden (From \'K-POP Demon H...'},
-    {'date': '2025-06-15', 'title': 'Goodbye (From \'Catch Me If You Can\')'},
-    {'date': '2025-04-15', 'title': 'Defying Gravity (From \'Wicked\')'},
-    {'date': '2025-03-15', 'title': 'What is This Feeling? (From \'Wicked\')'},
-  ];
+  Future<Map<String, dynamic>> _fetchUserData() async {
+    final response = await DioFactory(SecureStorage()).get('/user');
+    return response.data['data'];
 
-  final List<Map<String, String>> _duetReports = [
-    {'date': '2025-07-15', 'title': 'Golden (From \'K-POP Demon H...)'},
-    {'date': '2025-06-15', 'title': 'Goodbye (From \'Catch Me If You Can\')'},
-    {'date': '2025-04-15', 'title': 'Defying Gravity (From \'Wicked\')'},
-    {'date': '2025-03-15', 'title': 'What is This Feeling? (From \'Wicked\')'},
-    {'date': '2025-02-15', 'title': 'Popular (From \'Wicked\')'},
-  ];
+    // 보분리 api 요청까지도 완료 후 아래 삭제 예정
+    // await Future.delayed(Duration(milliseconds: 5));
+    // final Map<String, dynamic> userJson = {
+    //   // 듀엣 패널티가 없을 경우
+    //   "status": "200",
+    //   "message": "회원 정보 조회 성공",
+    //   "data": {
+    //     "username": "user@example.com",
+    //     "nickname": "노래하는 해파리",
+    //     "gender": "FEMALE",
+    //     "age": 26,
+    //     "pitch_note_min": "C3",
+    //     "pitch_note_max": "G5",
+    //     "voice_type": "SOPRANO",
+    //     "duet_penalty_count": 0,
+    //     "duet_penalty_until": null,
+    //     "total_training_minutes": 30, // 총 훈련한 시간(연습량)
+    //     "total_training_count": 12, // 총 훈련 개수(훈련 개수)
+    //   },
+    // };
+    // return userJson['data'];
+  }
+
+  Future<List<_ReportOverviewData>> _fetchSoloReportData() async {
+    // final response = await DioFactory(SecureStorage()).get('/user/reports?mode=solo');
+    // final reportsJsonList = response.data['data'] as List;
+
+    await Future.delayed(Duration(milliseconds: 5));
+    final Map<String, dynamic> reportsJson = {
+      "status": 200,
+      "message": "솔로 보컬 분석 리포트 목록 조회에 성공했습니다.",
+      "data": [
+        {"report_id": 790, "title": "2025-04-07 Shape of You"},
+        {"report_id": 789, "title": "2025-04-01 Shape of You"},
+        {"report_id": 39, "title": "2025-03-15 Do-Re-Mi Solo Song"},
+      ],
+    };
+    final reportsJsonList = reportsJson['data'] as List;
+
+    final reportsList = reportsJsonList.map((e) => _ReportOverviewData.fromJson(e)).toList();
+    return reportsList;
+  }
+
+  Future<List<_ReportOverviewData>> _fetchDuetReportData() async {
+    // final response = await DioFactory(SecureStorage()).get('/user/reports?mode=duet');
+    // final reportsJsonList = response.data['data'] as List;
+
+    await Future.delayed(Duration(milliseconds: 5));
+    final Map<String, dynamic> reportsJson = // 듀엣 보컬 분석 리포트 목록 조회
+        {
+      "status": 200,
+      "message": "듀엣 보컬 분석 리포트 목록 조회에 성공했습니다.",
+      "data": [
+        {"report_id": 155, "title": "2025-05-13 Popular (From 'Wicked')"},
+        {"report_id": 150, "title": "2025-05-07 Golden (From 'K-POP Demon Hunters')"},
+      ],
+    };
+    final reportsJsonList = reportsJson['data'] as List;
+
+    final reportsList = reportsJsonList.map((e) => _ReportOverviewData.fromJson(e)).toList();
+    return reportsList;
+  }
+
+  void _loadReports() async {
+    final results = await Future.wait([_fetchSoloReportData(), _fetchDuetReportData()]);
+    setState(() {
+      _soloReports = results[0];
+      _duetReports = results[1];
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _userData = _fetchUserData();
+    _loadReports();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,22 +125,67 @@ class _MyPageState extends State<MyPage> {
       backgroundColor: AppColors.grayscale8,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(height: 15.h),
-              _buildHeader(),
+              _buildAppBar(),
               SizedBox(height: 30.h),
-              _buildProfileSection(),
-              SizedBox(height: 10.h),
-              _buildVoiceTypeSection(),
-              SizedBox(height: 20.h),
-              _buildVoiceRangeSection(),
-              SizedBox(height: 20.h),
-              _buildParticipationStatusSection(),
-              SizedBox(height: 30.h),
-              _buildVocalAnalysisReportSection(),
-              SizedBox(height: 100.h),
+
+              SizedBox(
+                width: 327.w,
+                child: Column(
+                  children: [
+                    FutureBuilder(
+                      future: _userData,
+                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                        if (snapshot.hasError) {
+                          final errorString = snapshot.error.toString();
+
+                          debugPrint("widget 오류 발생: $errorString");
+                          try {
+                            final Map<String, dynamic> errorJson = jsonDecode(
+                              errorString.replaceFirst('Exception: ', '').trim(),
+                            );
+
+                            final status = errorJson['status']?.toString() ?? 'Unknown status';
+
+                            if (status == "403") {
+                              return Text("로그인 해주세요!");
+                            }
+                            return Text('알 수 없는 오류가 발생했습니다.');
+                          } catch (e) {
+                            return Text('알 수 없는 오류가 발생했습니다.');
+                          }
+                        } else if (snapshot.hasData == false) {
+                          return CustomLoading();
+                        } else {
+                          final Map<String, dynamic> json = snapshot.data;
+                          // debugPrint("response - userData: $json");
+                          return Column(
+                            children: [
+                              _buildProfileSection(json['nickname'], json['username']),
+                              SizedBox(height: 10.h),
+                              _buildVoiceTypeSection(json['voice_type']),
+                              SizedBox(height: 20.h),
+                              VoiceRangeDisplay(
+                                pitchNoteMin: json['pitch_note_min'],
+                                pitchNoteMax: json['pitch_note_max'],
+                                title: "나의 음역대",
+                              ),
+                              SizedBox(height: 20.h),
+                              _buildParticipationStatusSection(json),
+                            ],
+                          );
+                        }
+                      },
+                    ),
+                    SizedBox(height: 30.h),
+                    _buildVocalAnalysisReportSection(),
+                    SizedBox(height: 100.h),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -61,7 +193,7 @@ class _MyPageState extends State<MyPage> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildAppBar() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -71,11 +203,12 @@ class _MyPageState extends State<MyPage> {
           },
           child: Image.asset('assets/images/settings_icon.png', width: 27.w, height: 27.h),
         ),
+        SizedBox(width: 18.w),
       ],
     );
   }
 
-  Widget _buildProfileSection() {
+  Widget _buildProfileSection(String nickname, String username) {
     return Column(
       children: [
         Row(
@@ -84,7 +217,7 @@ class _MyPageState extends State<MyPage> {
           children: [
             SizedBox(width: 10.w),
             Text(
-              '노래하는 해파리',
+              nickname,
               style: AppTextStyles.heading2Bold.copyWith(color: AppColors.grayscale1),
               textAlign: TextAlign.center,
             ),
@@ -106,7 +239,7 @@ class _MyPageState extends State<MyPage> {
         ),
         SizedBox(height: 3.h),
         Text(
-          '@jellyfish1234',
+          username,
           style: AppTextStyles.body2.copyWith(color: AppColors.grayscale4),
           textAlign: TextAlign.center,
         ),
@@ -114,7 +247,7 @@ class _MyPageState extends State<MyPage> {
     );
   }
 
-  Widget _buildVoiceTypeSection() {
+  Widget _buildVoiceTypeSection(String voiceType) {
     return Container(
       width: 100.w,
       height: 30.h,
@@ -124,7 +257,7 @@ class _MyPageState extends State<MyPage> {
       ),
       child: Center(
         child: Text(
-          '소프라노',
+          SongDetailModel.convertVoiceTypeEng2Kor(voiceType),
           style: AppTextStyles.body3Bold.copyWith(color: AppColors.grayscale8),
           textAlign: TextAlign.center,
         ),
@@ -132,85 +265,14 @@ class _MyPageState extends State<MyPage> {
     );
   }
 
-  Widget _buildVoiceRangeSection() {
-    return Container(
-      width: 327.w,
-      height: 50.h,
-      decoration: BoxDecoration(
-        color: AppColors.grayscale8,
-        borderRadius: BorderRadius.circular(30.r),
-        border: Border.all(color: AppColors.grayscale6, width: 1),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 5.h),
-        child: Row(
-          children: [
-            Text('나의 음역대', style: AppTextStyles.body4.copyWith(color: AppColors.grayscale1)),
-            SizedBox(width: 20.w),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Stack(
-                    children: [
-                      Positioned(
-                        left: 0,
-                        top: 0,
-                        child: Text(
-                          'E1',
-                          style: AppTextStyles.body6.copyWith(color: AppColors.grayscale1),
-                        ),
-                      ),
-                      Positioned(
-                        left: 74.w,
-                        top: 0,
-                        child: Text(
-                          'F4',
-                          style: AppTextStyles.body6.copyWith(color: AppColors.grayscale1),
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(top: 18.h),
-                        child: Stack(
-                          children: [
-                            Container(
-                              width: 200.w,
-                              height: 7.h,
-                              decoration: BoxDecoration(
-                                color: AppColors.grayscale6,
-                                borderRadius: BorderRadius.circular(10.r),
-                              ),
-                            ),
-                            Container(
-                              width: 80.w,
-                              height: 7.h,
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryPink,
-                                borderRadius: BorderRadius.circular(10.r),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildParticipationStatusSection() {
+  Widget _buildParticipationStatusSection(Map<String, dynamic> json) {
     return Row(
       children: [
-        Expanded(child: _buildStatusCard('총 연습시간', '32분')),
+        Expanded(child: _buildStatusCard('총 연습시간', '${json['total_training_minutes'] ?? ''}분')),
         SizedBox(width: 12.w),
-        Expanded(child: _buildStatusCard('완료한 훈련', '16개')),
+        Expanded(child: _buildStatusCard('완료한 훈련', '${json['total_training_count'] ?? ''}개')),
         SizedBox(width: 12.w),
-        Expanded(child: _buildStatusCard('패널티', '1개')),
+        Expanded(child: _buildStatusCard('패널티', '${json['duet_penalty_count'] ?? 0}개')),
       ],
     );
   }
@@ -233,7 +295,7 @@ class _MyPageState extends State<MyPage> {
             style: AppTextStyles.body4.copyWith(color: AppColors.grayscale2),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 4.h),
+          SizedBox(height: 2.h),
           Text(
             value,
             style: AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale1),
@@ -262,9 +324,9 @@ class _MyPageState extends State<MyPage> {
           ],
         ),
         SizedBox(height: 20.h),
-        _buildTrainingSection('솔로 트레이닝', '${_soloReports.length}', _soloReports, 'solo'),
+        _buildTrainingSection('솔로 트레이닝', '${_soloReports.length}', _soloReports, TrainingMode.solo),
         SizedBox(height: 30.h),
-        _buildTrainingSection('듀엣 트레이닝', '${_duetReports.length}', _duetReports, 'duet'),
+        _buildTrainingSection('듀엣 트레이닝', '${_duetReports.length}', _duetReports, TrainingMode.duet),
       ],
     );
   }
@@ -272,8 +334,8 @@ class _MyPageState extends State<MyPage> {
   Widget _buildTrainingSection(
     String title,
     String count,
-    List<Map<String, String>> reports,
-    String type,
+    List<_ReportOverviewData> reports,
+    TrainingMode mode,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,15 +350,15 @@ class _MyPageState extends State<MyPage> {
         SizedBox(height: 12.h),
         ...reports.asMap().entries.map((entry) {
           int index = entry.key;
-          Map<String, String> report = entry.value;
-          return _buildReportItem(report['date']!, report['title']!, index, type);
-        }).toList(),
+          _ReportOverviewData report = entry.value;
+          return _buildReportItem(report.title, index, mode, report.id);
+        }),
       ],
     );
   }
 
-  Widget _buildReportItem(String date, String title, int index, String type) {
-    bool isPressed = _pressedReportIndex == index && _pressedReportType == type;
+  Widget _buildReportItem(String title, int index, TrainingMode mode, int reportId) {
+    bool isPressed = _pressedReportIndex == index && _pressedReportMode == mode;
 
     return Column(
       children: [
@@ -304,21 +366,23 @@ class _MyPageState extends State<MyPage> {
           onTapDown: (_) {
             setState(() {
               _pressedReportIndex = index;
-              _pressedReportType = type;
+              _pressedReportMode = mode;
             });
           },
           onTapUp: (_) {
             setState(() {
+              context.push('${AppRoutePaths.detailReportPage}/$reportId?trainingMode=${mode.name}');
               _pressedReportIndex = null;
-              _pressedReportType = null;
+              _pressedReportMode = null;
             });
           },
           onTapCancel: () {
             setState(() {
               _pressedReportIndex = null;
-              _pressedReportType = null;
+              _pressedReportMode = null;
             });
           },
+
           child: Container(
             width: 327.w,
             height: 35.h,
@@ -328,29 +392,11 @@ class _MyPageState extends State<MyPage> {
             ),
             child: Row(
               children: [
-                Text(date, style: AppTextStyles.body4.copyWith(color: AppColors.grayscale1)),
-                SizedBox(width: 16.w),
                 Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final textPainter = TextPainter(
-                        text: TextSpan(
-                          text: title,
-                          style: AppTextStyles.body4.copyWith(color: AppColors.grayscale1),
-                        ),
-                        textDirection: TextDirection.ltr,
-                      );
-                      textPainter.layout(maxWidth: constraints.maxWidth);
-
-                      return Text(
-                        title,
-                        style: AppTextStyles.body4.copyWith(color: AppColors.grayscale1),
-                        overflow:
-                            textPainter.didExceedMaxLines
-                                ? TextOverflow.ellipsis
-                                : TextOverflow.visible,
-                      );
-                    },
+                  child: Text(
+                    title,
+                    style: AppTextStyles.body4.copyWith(color: AppColors.grayscale1),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 SizedBox(width: 8.w),
