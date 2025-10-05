@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
-import 'dart:math' as math;
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/features/curriculum/logics/curriculum_generation_request.dart';
 import 'package:sync2sing/features/curriculum/logics/selected_song_provider.dart';
@@ -466,6 +465,11 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     int? preBeatAcc,
     int? prePronAcc,
   ) {
+    int? preTotalScore =
+        (prePitchAcc != null && preBeatAcc != null && prePronAcc != null)
+            ? ((prePitchAcc + preBeatAcc + prePronAcc) / 3).toInt()
+            : null;
+
     return Column(
       children: [
         _buildAccuracyBarRow("음정", pitchAcc, prePitchAcc),
@@ -473,6 +477,13 @@ class VocalAnalysisReportPage extends ConsumerWidget {
         _buildAccuracyBarRow("박자", beatAcc, preBeatAcc),
         SizedBox(height: (prePitchAcc == null) ? 25.h : 15.h),
         _buildAccuracyBarRow("발음", pronAcc, prePronAcc),
+        SizedBox(height: (prePitchAcc == null) ? 25.h : 15.h),
+        _buildAccuracyBarRow(
+          "총점",
+          ((pronAcc + pitchAcc + beatAcc) / 3).toInt(),
+          preTotalScore,
+          isTotal: true,
+        ),
         if (prePitchAcc != null)
           Padding(padding: EdgeInsets.only(top: 20.h), child: _buildChartLegend())
         else
@@ -481,7 +492,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildAccuracyBarRow(String desc, int acc, int? preAcc) {
+  Widget _buildAccuracyBarRow(String desc, int acc, int? preAcc, {bool isTotal = false}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -495,10 +506,12 @@ class VocalAnalysisReportPage extends ConsumerWidget {
                 padding: EdgeInsets.only(bottom: 4.h),
                 child: _buildAccuracyBar(preAcc, AppColors.primaryGreen),
               ),
-            _buildAccuracyBar(acc, AppColors.primaryPink),
+            _buildAccuracyBar(
+              acc,
+              (isTotal && preAcc == null) ? AppColors.primaryGreen : AppColors.primaryPink,
+            ),
           ],
         ),
-        // ),
       ],
     );
   }
