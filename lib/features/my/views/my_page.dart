@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
@@ -36,6 +37,9 @@ class _MyPageState extends State<MyPage> {
   late final Future<Map<String, dynamic>> _userData;
   List<_ReportOverviewData> _soloReports = [];
   List<_ReportOverviewData> _duetReports = [];
+  String nickname = "";
+  bool _isNicknameEditing = false;
+  late TextEditingController _nicknameController;
 
   Future<Map<String, dynamic>> _fetchUserData() async {
     final response = await DioFactory(SecureStorage()).get('/user');
@@ -112,11 +116,98 @@ class _MyPageState extends State<MyPage> {
     });
   }
 
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _applyNicknameChange() async {
+    // 닉네이 텍스트 필드 -> 밖 클릭
+    final newNickname = _nicknameController.text.trim();
+    if (newNickname != nickname && newNickname.isNotEmpty) {
+      if (!validateNickname(newNickname)) {
+        return;
+      }
+
+      final success = await _submitNicknameChange(newNickname);
+      if (!mounted) return;
+      if (success) {
+        setState(() {
+          _isNicknameEditing = false;
+        });
+      }
+    } else {
+      setState(() => _isNicknameEditing = false);
+    }
+  }
+
+  Future<bool> _submitNicknameChange(String? newNickname) async {
+    // 닉네임 수정 api 요청
+    try {
+      DioFactory dio = DioFactory(SecureStorage());
+      var response = await dio.put('/user', data: jsonEncode({'nickname': newNickname}));
+      final updatedNickname = response.data['data']['nickname'];
+      if (!mounted) return false;
+      setState(() {
+        nickname = updatedNickname;
+        _nicknameController.text = updatedNickname; // 컨트롤러도 최신 값으로 갱신
+      });
+      return true;
+    } on DioException catch (e) {
+      int? statusCode = e.response?.statusCode;
+      if (statusCode == 400 || statusCode == 401 || statusCode == 404) {
+        _showError(e.response?.data['message']);
+      }
+      _showError("닉네임 수정에 실패했습니다. 다시 시도해주세요.");
+      return false;
+    }
+  }
+
+  bool validateNickname(String value) {
+    // 1. 허용 문자: 한글+영문만, 공백 불가
+    final isValidCharacters = RegExp(r'^[가-힣a-zA-Z]+$').hasMatch(value);
+    final hasSpace = value.contains(' ');
+    // 2. 길이 제한: 8자 이내
+    final isLengthValid = value.length <= 8;
+
+    String nicknameValidationMsg;
+    if (value.isEmpty) {
+      nicknameValidationMsg = "";
+    } else if (hasSpace) {
+      nicknameValidationMsg = "닉네임에 공백은 사용할 수 없습니다";
+    } else if (!isValidCharacters) {
+      nicknameValidationMsg = "닉네임은 한글과 영문만 사용 가능합니다";
+    } else if (!isLengthValid) {
+      nicknameValidationMsg = "닉네임은 8자 이내여야 합니다";
+    } else {
+      nicknameValidationMsg = "valid";
+      return true;
+    }
+
+    _showError(nicknameValidationMsg);
+    return false;
+  }
+
   @override
   void initState() {
     super.initState();
     _userData = _fetchUserData();
     _loadReports();
+    _nicknameController = TextEditingController();
+
+    _userData.then((data) {
+      if (mounted) {
+        setState(() {
+          nickname = data['nickname'];
+          _nicknameController.text = data['nickname']; // 텍스트에디터 기본값: 기존의 nickname 값
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _nicknameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -161,10 +252,9 @@ class _MyPageState extends State<MyPage> {
                           return CustomLoading();
                         } else {
                           final Map<String, dynamic> json = snapshot.data;
-                          // debugPrint("response - userData: $json");
                           return Column(
                             children: [
-                              _buildProfileSection(json['nickname'], json['username']),
+                              _buildProfileSection(json['username']), //json['nickname']
                               SizedBox(height: 10.h),
                               _buildVoiceTypeSection(json['voice_type']),
                               SizedBox(height: 20.h),
@@ -208,40 +298,67 @@ class _MyPageState extends State<MyPage> {
     );
   }
 
-  Widget _buildProfileSection(String nickname, String username) {
+  Widget _buildProfileSection(String username) {
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(width: 10.w),
-            Text(
-              nickname,
-              style: AppTextStyles.heading2Bold.copyWith(color: AppColors.grayscale1),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(width: 8.w),
-            Padding(
-              padding: EdgeInsets.only(top: 2.h),
-              child: GestureDetector(
-                onTap: () {
-                  // todo: 닉네임 수정 기능 추가
-                },
-                child: Image.asset(
-                  'assets/images/edit_nickname_icon.png',
-                  width: 12.w,
-                  height: 12.h,
-                ),
-              ),
-            ),
-          ],
-        ),
+        _buildNicknameSection(),
         SizedBox(height: 3.h),
         Text(
           username,
           style: AppTextStyles.body2.copyWith(color: AppColors.grayscale4),
           textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNicknameSection() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(width: 10.w),
+        _isNicknameEditing
+            ? Expanded(
+              child: Focus(
+                onFocusChange: (hasFocus) {
+                  if (!hasFocus) _applyNicknameChange();
+                },
+                child: TextField(
+                  controller: _nicknameController,
+                  decoration: InputDecoration(
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.grayscale2),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.grayscale2),
+                    ),
+                  ),
+                  onTapOutside: (event) {
+                    // 텍스트 에디터 밖 선택 -> 포커스 사라짐
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                  cursorColor: AppColors.grayscale1,
+                ),
+              ),
+            )
+            : Text(
+              nickname,
+              style: AppTextStyles.heading2Bold.copyWith(color: AppColors.grayscale1),
+              textAlign: TextAlign.center,
+            ),
+        SizedBox(width: 2.w),
+        GestureDetector(
+          // 닉네임 수정 버튼
+          onTap: () {
+            setState(() {
+              _isNicknameEditing = true;
+            });
+          },
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(6.w, 2.h, 20.w, 8.h),
+            child: Image.asset('assets/images/edit_nickname_icon.png', width: 12.w, height: 12.h),
+          ),
         ),
       ],
     );
