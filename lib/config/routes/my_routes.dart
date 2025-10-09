@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
+import 'package:sync2sing/features/home_hub/views/main_tab_screen.dart';
 import 'package:sync2sing/features/my/views/license_page.dart';
-import 'package:sync2sing/features/my/views/my_page.dart';
 import 'package:sync2sing/features/my/views/settings_page.dart';
 import 'package:sync2sing/features/report/views/detail_vocal_analyssis_report_page.dart';
 import 'package:sync2sing/features/report/views/vocal_analysis_report_page.dart';
@@ -12,7 +12,7 @@ final List<GoRoute> myRoutes = [
   GoRoute(
     path: AppRoutePaths.my,
     name: AppRouteNames.my,
-    builder: (context, state) => const MyPage(),
+    builder: (context, state) => const MainTabScreen(initialTabIndex: 3),
   ),
   GoRoute(
     path: AppRoutePaths.settings,
