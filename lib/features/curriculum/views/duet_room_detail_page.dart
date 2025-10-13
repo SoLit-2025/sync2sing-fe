@@ -196,7 +196,7 @@ class _DuetRoomDetailPageState extends State<DuetRoomDetailPage> {
                               }
                             }
                             if (context.mounted) {
-                              context.go(AppRoutePaths.duetTrainingHome);
+                              context.replace(AppRoutePaths.duetTrainingHome);
                             }
                           } else {
                             context.pop();
@@ -425,6 +425,7 @@ class _ApplicationListSectionState extends State<ApplicationListSection> {
             try {
               dio.post('/duet-training/rooms/${widget.roomId}/applications/$applicationId');
               widget.refreshCond();
+              context.replace(AppRoutePaths.duetTrainingHome);
             } catch (e) {
               _showError("수락에 실패했습니다. 다시 시도해주세요.");
             }

@@ -57,10 +57,14 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
     try {
       final response = await dioFactory.get('/duet-training/session');
 
-      debugPrint("duetHome: response - ${response.data}");
-      trainingSessionStatus = _getDataFromResponse(response.data['data']);
+      final Map<String, dynamic> nowSessionInfoJson = response.data['data'];
+      trainingSessionStatus = _getDataFromResponse(nowSessionInfoJson);
+      if (trainingSessionStatus != TrainingSessionStatus.beforeSession) {
+        Map<String, dynamic> roomJson = nowSessionInfoJson['duet_training_room'];
+        room = Room.fromJson(roomJson);
+      }
 
-      return response.data['data'];
+      return nowSessionInfoJson;
     } on DioException catch (e) {
       debugPrint("error2: ${e.response}");
       throw Exception(e.response);
@@ -154,13 +158,18 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
             } else {
               // 응답이 정상적으로 온 경우
 
-              DateTime? dateTime;
+              DateTime? preDueDate;
+              DateTime? postDueDate;
               String? userPartName;
 
               if (trainingSessionStatus != TrainingSessionStatus.beforeSession) {
-                dateTime =
+                preDueDate =
                     snapshot.data['pre_recording_due_date'] != null
                         ? DateTime.parse(snapshot.data['pre_recording_due_date'])
+                        : null;
+                postDueDate =
+                    snapshot.data['post_recording_due_date'] != null
+                        ? DateTime.parse(snapshot.data['post_recording_due_date'])
                         : null;
                 userPartName = snapshot.data['song']['user_part_name'] ?? '';
               }
@@ -190,7 +199,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
                                 isRoomHost: _isRoomHost,
                               ) // 콜백함수 전달 / 방 정보 보여주는 위젯
                               : (trainingSessionStatus == TrainingSessionStatus.beforeTraining)
-                              ? _buildBeforeTraining(room, dateTime!, userPartName!)
+                              ? _buildBeforeTraining(room, preDueDate!, userPartName!)
                               : _buildExistSessionHome(),
                         ],
                       ),
