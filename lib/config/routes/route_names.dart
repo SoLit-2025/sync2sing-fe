@@ -24,6 +24,7 @@ abstract class AppRouteNames {
   static const settings = 'settings';
   static const vocalAnalysisReport = 'vocalAnalysisReport';
   static const license = 'license';
+  static const detailReportPage = 'detailReportPage';
 
   // curriculum
   static const soloTrainingSetting = 'soloTrainingSetting';
@@ -67,6 +68,7 @@ abstract class AppRoutePaths {
   static const settings = '/my/settings';
   static const vocalAnalysisReport = '/vocal_analysis_report';
   static const license = '/license';
+  static const detailReportPage = '/report';
 
   // curriculum 라우트 주소 변경 예정 (다음 스프린트를 위해 임시로 지음)
   static const soloTrainingSetting = '/solo_training/setting';
