@@ -106,7 +106,7 @@ class _SoloTrainingSettingPageState extends ConsumerState<SoloTrainingSettingPag
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
-              context.push("${AppRoutePaths.songList}/solo");
+              context.push(AppRoutePaths.songList);
             },
             child: _buildSongCard(selectedSong, isSongSelected),
           ),
