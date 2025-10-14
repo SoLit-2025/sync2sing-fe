@@ -38,7 +38,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
 
       // Null-safe 객체 처리
       final dynamic extra = state.extra!;
-      debugPrint("state - extra: $extra");
+      debugPrint("state - extra: ${extra['mergeJson']}");
 
       if (extra is Map<String, dynamic>) {
         return extra['reportJson'];
@@ -142,7 +142,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reportData = getReportData(context);
-    debugPrint("mergeData: ${getMergeData(context)}");
+    final mergeData = getMergeData(context);
     final songData = getSongData(reportData);
 
     final voiceTypeData =
@@ -208,6 +208,16 @@ class VocalAnalysisReportPage extends ConsumerWidget {
                       (analysisType == AnalysisType.post)
                           ? _buildFeedbackSection(reportData)
                           : _buildRecommendationSection(reportData),
+                      // 병합 결과 보여주기 (있으면)
+                      if (mergeData != null && mergeData['vocal_analysis_report_response'] != null)
+                        Column(
+                          children: [
+                            SizedBox(height: 14.h),
+                            _buildAnalysisDescription(mergeData['vocal_analysis_report_response']),
+                            SizedBox(height: 14.h),
+                            _buildFeedbackSection(mergeData['vocal_analysis_report_response']),
+                          ],
+                        ),
                       SizedBox(height: 40.h),
                       _buildCurriculumButton(context, reportData),
                       SizedBox(height: 40.h),
@@ -445,8 +455,6 @@ class VocalAnalysisReportPage extends ConsumerWidget {
             if (analysisType == AnalysisType.guest) {
               context.go(AppRoutePaths.signupProfileInfo);
             } else if (analysisType == AnalysisType.pre) {
-              debugPrint("pre AnalysisType");
-
               // selectedSongProvider에 값이 있으면 사용, 없으면 서버 조회
               int trainingDays;
               final selectedSong = ref.read(selectedSongProvider);

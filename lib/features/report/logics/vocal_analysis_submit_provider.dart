@@ -54,9 +54,6 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose.family<
       await SecureStorage().deleteTokens();
       debugPrint("remove token");
     }
-    // debugPrint(
-    //   "formData: ${jsonEncode({'training_mode': params.trainingMode.apiValue, 'analysis_type': params.analysisType.name.toUpperCase(), 'pitch_accuracy': vocalData.pitchAccuracy, 'beat_accuracy': vocalData.rhythmAccuracy})}",
-    // );
 
     debugPrint('[4/4] 요청 전송');
     final response = await dioFactory.post('/training/vocal-analysis', data: formData);
@@ -64,31 +61,38 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose.family<
     // 8. 응답 데이터 직접 반환
     final jsonResult = response.data;
     // final Map<String, dynamic> jsonResult = {
-    //   'status': 201,
-    //   'message': '보컬 분석 리포트 생성에 성공했습니다.',
-    //   'data': {
-    //     'report_id': 322,
-    //     'analysis_type': 'POST',
-    //     'title': '2025-10-14 Do-Re-Mi Duet Dong',
-    //     'song': {
-    //       'song_id': 20,
-    //       'title': 'Do-Re-Mi Duet Dong',
-    //       'artist': 'Richard Rodgers',
-    //       'voice_type': null,
-    //       'pitch_note_min': null,
-    //       'pitch_note_max': null,
-    //       'album_cover_url':
-    //           ' https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/b3a398e3-1a45-4da7-a7a9-a588d11c8c00.jpg',
+    //   "status": 201,
+    //   "message": "듀엣 음원 병합에 성공했습니다.",
+    //   "data": {
+    //     "room_id": 4,
+    //     "recording_phase": "POST",
+    //     "merged_audio_url":
+    //     "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/merged/c035284c-15dc-455b-b283-ac615efbee03.mp3",
+    //     "vocal_analysis_report_response": {
+    //       "report_id": 26,
+    //       "analysis_type": "POST",
+    //       "title": "2025-09-06 Do-Re-Mi Duet Dong",
+    //       "song": {
+    //         "song_id": 5,
+    //         "title": "Do-Re-Mi Duet Dong",
+    //         "artist": "Richard Rodgers",
+    //         "voice_type": "SOPRANO",
+    //         "pitch_note_min": "C4",
+    //         "pitch_note_max": "D5",
+    //         "album_cover_url":
+    //         "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/984ebad3-38bd-4984-a3b3-9c5ca93170e2.jpg",
+    //       },
+    //       "pitch_score": 65,
+    //       "beat_score": 90,
+    //       "pronunciation_score": 6,
+    //       "overall_review_title": "음정과 발음 조화로 성장할 기회",
+    //       "overall_review_content":
+    //       "음정은 적당히 안정적이고 박자가 잘 맞추어지고 있어요. 그러나 발음이 매우 부족해서 노래의 전달력이 떨어질 수 있어요. 태그 분석으로 볼 때 립트릴은 확률이 높아 발성 연습에 도움이 될 수 있지만, 발음 연습이 필요해 보여요. 이를 통해 더 자연스럽고 명확한 표현이 가능해질 거예요.",
+    //       "created_at": "2025-09-06T04:48:16.77498159",
+    //       "feedback_title": "발음 집중 연습으로 조화 향상하기",
+    //       "feedback_content":
+    //       "발음 점수가 낮아 전달력 향상이 필요해요. 발음 연습으로 혀와 입 근육 강화, 10분씩 하루 3회, 일주일 지속해보세요. 립트릴 연습도 병행하면 발성 안정과 함께 자연스러운 발음이 늘어날 거예요. 박자와 음정도 유지하며 꾸준히 연습하면 전체 조화가 더 좋아질 거예요.",
     //     },
-    //     'pitch_score': 5,
-    //     'beat_score': 42,
-    //     'pronunciation_score': 0,
-    //     'overall_review_title': '리듬과 발음 연습으로 전체 향상 기대',
-    //     'overall_review_content':
-    //         "박자와 발음 부분이 낮아 노래의 안정성과 선명도가 떨어질 수 있어요. 발성 태그를 보면 보컬 플라이(확률 79.5%)가 강하고, 립 트릴이 보조적이니 이를 활용하는 연습이 좋겠어요. 꾸준히 연습하면 전체 실력이 올라갈 거예요.",
-    //     'created_at': '2025-10-14T12:08:16.14095454',
-    //     'cause_content': '박자와 발음에 집중하는 연습 부족, 발성에서 작작은 호흡과 발성 제어 미흡 가능성이 있어요',
-    //     'proposal_content': '',
     //   },
     // };
     debugPrint("보분리 결과: $jsonResult");
@@ -103,24 +107,59 @@ final vocalAnalysisSubmitProvider = FutureProvider.autoDispose.family<
         if (params.analysisType == AnalysisType.post &&
             params.trainingMode == TrainingMode.duet &&
             params.roomId != null) {
+          // 듀엣 + post -> 무조건 병합 시도.
           final mergeResponse = await dioFactory.post(
             '/duet-training/rooms/${params.roomId}/merge-audios',
           );
-          if (mergeResponse.statusCode == 201) {
-            mergeJson = mergeResponse.data['data'];
-            debugPrint('reportJson: ${jsonResult}');
-            debugPrint('mergeJson: ${mergeJson}');
-            await dioFactory.delete('/duet-training/rooms/${params.roomId}');
-          }
+          mergeJson = mergeResponse.data['data'];
+
+          // final Map<String, dynamic> mergeResponse = {
+          //   "status": 201,
+          //   "message": "듀엣 음원 병합에 성공했습니다.",
+          //   "data": {
+          //     "room_id": 4,
+          //     "recording_phase": "POST",
+          //     "merged_audio_url":
+          //         "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/merged/c035284c-15dc-455b-b283-ac615efbee03.mp3",
+          //     "vocal_analysis_report_response": {
+          //       "report_id": 26,
+          //       "analysis_type": "POST",
+          //       "title": "2025-09-06 Do-Re-Mi Duet Dong",
+          //       "song": {
+          //         "song_id": 5,
+          //         "title": "Do-Re-Mi Duet Dong",
+          //         "artist": "Richard Rodgers",
+          //         "voice_type": "SOPRANO",
+          //         "pitch_note_min": "C4",
+          //         "pitch_note_max": "D5",
+          //         "album_cover_url":
+          //             "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/984ebad3-38bd-4984-a3b3-9c5ca93170e2.jpg",
+          //       },
+          //       "pitch_score": 65,
+          //       "beat_score": 90,
+          //       "pronunciation_score": 6,
+          //       "overall_review_title": "음정과 발음 조화로 성장할 기회",
+          //       "overall_review_content":
+          //           "음정은 적당히 안정적이고 박자가 잘 맞추어지고 있어요. 그러나 발음이 매우 부족해서 노래의 전달력이 떨어질 수 있어요. 태그 분석으로 볼 때 립트릴은 확률이 높아 발성 연습에 도움이 될 수 있지만, 발음 연습이 필요해 보여요. 이를 통해 더 자연스럽고 명확한 표현이 가능해질 거예요.",
+          //       "created_at": "2025-09-06T04:48:16.77498159",
+          //       "feedback_title": "발음 집중 연습으로 조화 향상하기",
+          //       "feedback_content":
+          //           "발음 점수가 낮아 전달력 향상이 필요해요. 발음 연습으로 혀와 입 근육 강화, 10분씩 하루 3회, 일주일 지속해보세요. 립트릴 연습도 병행하면 발성 안정과 함께 자연스러운 발음이 늘어날 거예요. 박자와 음정도 유지하며 꾸준히 연습하면 전체 조화가 더 좋아질 거예요.",
+          //     },
+          //   },
+          // };
+          mergeJson = mergeResponse.data['data'];
+          debugPrint('mergeJson: $mergeJson');
+          // 위에서 오류가 나지 않으면 방 삭제. (이것도 애매..)
+          await dioFactory.delete('/duet-training/rooms/${params.roomId}');
         }
       } catch (e) {
         mergeJson = null;
       }
       return {'reportJson': jsonResult['data'] as Map<String, dynamic>, 'mergeJson': mergeJson};
-      // return jsonResult['data'] as Map<String, dynamic>;
     }
-    // debugPrint('[응답 수신] 상태 코드: ${response.statusCode}');
-    // debugPrint('[응답 수신] responseBody: ${response.statusMessage}');
+    debugPrint('[응답 수신] 상태 코드: ${response.statusCode}');
+    debugPrint('[응답 수신] responseBody: ${response.statusMessage}');
     throw Exception('API 요청 실패: ${jsonResult['message']}');
   } on TimeoutException catch (e, stack) {
     debugPrint('⏰ [타임아웃] ${e.message}\n${stack.toString().split('\n').take(3).join('\n')}');

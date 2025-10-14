@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -425,9 +426,15 @@ class _ApplicationListSectionState extends State<ApplicationListSection> {
             try {
               dio.post('/duet-training/rooms/${widget.roomId}/applications/$applicationId');
               widget.refreshCond();
-              context.replace(AppRoutePaths.duetTrainingHome);
-            } catch (e) {
+              // todo: 홈으로 넘어갈 때 새로고침 되게
+              context.go(AppRoutePaths.songList);
+              context.go(AppRoutePaths.duetTrainingHome);
+            } on DioException catch (_) {
               _showError("수락에 실패했습니다. 다시 시도해주세요.");
+            } catch (e) {
+              debugPrint("error! : duetRoomDetailPage");
+              context.go(AppRoutePaths.duetSongList);
+              context.replace(AppRoutePaths.duetTrainingHome);
             }
           },
         ),

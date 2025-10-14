@@ -140,8 +140,6 @@ final List<GoRoute> curriculumRoutes = [
     path: AppRoutePaths.trainingGenerationLoading,
     name: AppRouteNames.trainingGenerationLoading,
     builder: (context, state) {
-      final roomIdStr = state.uri.queryParameters['roomId'];
-      final int? roomId = (roomIdStr != null) ? int.tryParse(roomIdStr) : null;
       return TrainingGenerationLoadingPage(
         curriculumGenerationRequest: state.extra as CurriculumGenerationRequest,
       );
