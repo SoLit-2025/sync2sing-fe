@@ -21,6 +21,19 @@ import 'before_session_widget.dart';
 import 'duet_song_section.dart';
 import 'training_item_card.dart';
 
+enum DuetTrainingSessionStatus {
+  // 세션 상태 : 세션 생성 전 | BEFORE_TRAINING (백엔드 api 참조) | TRAINING_IN_PROGRESS | AFTER_TRAINING
+  beforeSession,
+  beforeTraining,
+  trainingInProgress,
+  afterTraining,
+  pendingMerge,
+  error;
+
+  static DuetTrainingSessionStatus fromName(String name) =>
+      DuetTrainingSessionStatus.values.firstWhere((e) => e.name == name);
+}
+
 class DuetTrainingHomePage extends StatefulWidget {
   const DuetTrainingHomePage({super.key});
 
@@ -33,11 +46,11 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
   late final List<TrainingItem> items;
   late final Future<Map<String, dynamic>> responseData;
   late final int totalProgress;
-  late final TrainingSessionStatus trainingSessionStatus;
+  late final DuetTrainingSessionStatus trainingSessionStatus;
   late final int? sessionId;
   late final int? songId;
   late int selectedIdx = // 버튼이 보이는 위젯 인덱스 == 클릭한 위젯의 인덱스
-      (trainingSessionStatus == TrainingSessionStatus.trainingInProgress)
+      (trainingSessionStatus == DuetTrainingSessionStatus.trainingInProgress)
           ? 0 // 트레이닝 진행 중일 때: 첫 진입에는 0번 인덱스만 버튼 보임
           : -1; // 그 외는 기본 카드만 버튼이 보임)
   late final String _apiMessage;
@@ -59,7 +72,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
 
       final Map<String, dynamic> nowSessionInfoJson = response.data['data'];
       trainingSessionStatus = _getDataFromResponse(nowSessionInfoJson);
-      if (trainingSessionStatus != TrainingSessionStatus.beforeSession) {
+      if (trainingSessionStatus != DuetTrainingSessionStatus.beforeSession) {
         Map<String, dynamic> roomJson = nowSessionInfoJson['duet_training_room'];
         room = Room.fromJson(roomJson);
       }
@@ -71,36 +84,43 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
     }
   }
 
-  TrainingSessionStatus _getDataFromResponse(Map<String, dynamic> responseBody) {
+  DuetTrainingSessionStatus _getDataFromResponse(Map<String, dynamic> responseBody) {
     debugPrint("responseBody - data: $responseBody");
     var tTrainingSessionStatus = getTrainingStatusFromJson(responseBody);
-    switch (tTrainingSessionStatus) {
-      case TrainingSessionStatus.beforeSession:
-      case TrainingSessionStatus.beforeTraining:
+    var dTrainingSessionStatus = DuetTrainingSessionStatus.fromName(tTrainingSessionStatus.name);
+    debugPrint("dTrainingSessionStatus: ${dTrainingSessionStatus.name}");
+    if (dTrainingSessionStatus == DuetTrainingSessionStatus.afterTraining &&
+        responseBody['post_recording_file_url'] != null) {
+      dTrainingSessionStatus = DuetTrainingSessionStatus.pendingMerge;
+    }
+    switch (dTrainingSessionStatus) {
+      case DuetTrainingSessionStatus.beforeSession:
+      case DuetTrainingSessionStatus.beforeTraining:
         // 아직 트레이닝 시작 전 --> 진행 0.
         totalProgress = 0;
         break;
-      case TrainingSessionStatus.afterTraining:
-      case TrainingSessionStatus.trainingInProgress:
+      case DuetTrainingSessionStatus.afterTraining:
+      case DuetTrainingSessionStatus.pendingMerge:
+      case DuetTrainingSessionStatus.trainingInProgress:
         sessionId = responseBody['session_id'];
         items = parseCurriculumItemsInOrderAndPostCompletedLast(responseBody['curriculum']);
         totalProgress = calculateTotalProgressFromItems(items);
-        if (totalProgress >= 100) tTrainingSessionStatus = TrainingSessionStatus.afterTraining;
+        if (totalProgress >= 100) dTrainingSessionStatus = DuetTrainingSessionStatus.afterTraining;
         // 만약 트레이닝진행 현황이 100% -> afterTraining 처럼 보이게.
         break;
-      case TrainingSessionStatus.error:
+      case DuetTrainingSessionStatus.error:
         totalProgress = 0;
     }
 
-    if (tTrainingSessionStatus != TrainingSessionStatus.beforeSession) {
+    if (dTrainingSessionStatus != DuetTrainingSessionStatus.beforeSession) {
       songId = responseBody['song']['id'];
     }
-    return tTrainingSessionStatus;
+    return dTrainingSessionStatus;
   }
 
   void onCardTap(int idx) {
     // trainingInProgress 가 아니면 카드를 클릭해도 버튼이 보이지 x
-    if (trainingSessionStatus != TrainingSessionStatus.trainingInProgress) return;
+    if (trainingSessionStatus != DuetTrainingSessionStatus.trainingInProgress) return;
     // 선택한 항목이 완료(progress >= 100)면 무시
     if (items[idx].progress >= 100) return;
 
@@ -162,7 +182,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
               DateTime? postDueDate;
               String? userPartName;
 
-              if (trainingSessionStatus != TrainingSessionStatus.beforeSession) {
+              if (trainingSessionStatus != DuetTrainingSessionStatus.beforeSession) {
                 preDueDate =
                     snapshot.data['pre_recording_due_date'] != null
                         ? DateTime.parse(snapshot.data['pre_recording_due_date'])
@@ -194,11 +214,11 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 12.h),
-                          (trainingSessionStatus == TrainingSessionStatus.beforeSession)
+                          (trainingSessionStatus == DuetTrainingSessionStatus.beforeSession)
                               ? BeforeSessionWidget(
                                 isRoomHost: _isRoomHost,
                               ) // 콜백함수 전달 / 방 정보 보여주는 위젯
-                              : (trainingSessionStatus == TrainingSessionStatus.beforeTraining)
+                              : (trainingSessionStatus == DuetTrainingSessionStatus.beforeTraining)
                               ? _buildBeforeTraining(room, preDueDate!, userPartName!)
                               : _buildExistSessionHome(),
                         ],
@@ -266,10 +286,10 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
             alignment: Alignment.topRight,
             padding: EdgeInsets.only(right: 24.w, top: 95.h),
             child: Text(
-              (trainingSessionStatus == TrainingSessionStatus.trainingInProgress ||
-                      trainingSessionStatus == TrainingSessionStatus.afterTraining)
+              (trainingSessionStatus == DuetTrainingSessionStatus.trainingInProgress ||
+                      trainingSessionStatus == DuetTrainingSessionStatus.afterTraining)
                   ? "$nickname 님,\n진행중인\n트레이닝이 있어요"
-                  : (trainingSessionStatus == TrainingSessionStatus.beforeSession)
+                  : (trainingSessionStatus == DuetTrainingSessionStatus.beforeSession)
                   ? "$nickname 님,\n원하는 연습실에\n참여해보세요"
                   : '$nickname 님,\n맞춤형 훈련을\n추천받아보세요', // beforeTraining 시
               style: AppTextStyles.heading2Bold,
@@ -298,19 +318,19 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
         ),
         SizedBox(height: 12.h),
         ...switch (trainingSessionStatus) {
-          TrainingSessionStatus.beforeSession => [],
-          TrainingSessionStatus.beforeTraining => [],
-          TrainingSessionStatus.trainingInProgress => [_curriculumListView()],
-          TrainingSessionStatus.afterTraining => [
+          DuetTrainingSessionStatus.beforeSession => [],
+          DuetTrainingSessionStatus.beforeTraining => [],
+          DuetTrainingSessionStatus.trainingInProgress => [_curriculumListView()],
+          DuetTrainingSessionStatus.afterTraining => [
             SessionOptionCard(
               category: "트레이닝 마무리",
-              title: "AI 보컬 진단",
-              desc: "AI가 트레이닝 전후를 비교해 나만의 성장 리포트를 제공해요",
+              title: "STEP1. AI 보컬 진단",
+              desc: "AI가 트레이닝 전후를 비교하고 듀엣곡 완성을 준비해요",
               buttonText: "진단하러 가기",
               isMicReq: true,
               onPressed: () {
                 context.go(
-                  "${AppRoutePaths.songExampleVideo}/duet/${AnalysisType.post.name}/$songId",
+                  "${AppRoutePaths.songExampleVideo}/duet/${AnalysisType.post.name}/$songId?roomId=${room?.id}",
                 );
               },
             ),
@@ -322,7 +342,20 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
             ),
             _curriculumListView(),
           ],
-          TrainingSessionStatus.error => [
+
+          DuetTrainingSessionStatus.pendingMerge => [
+            SessionOptionCard(
+              category: "트레이닝 마무리",
+              title: "STEP2. 듀엣곡 완성",
+              desc: "파트너와 함께 부른 듀엣곡을 리포트에서 재생할 수 있어요",
+              buttonText: "진단하러 가기",
+              isMicReq: false,
+              onPressed: () {
+                // todo: merge audio api 및 레포트 페이지 연결
+              },
+            ),
+          ],
+          DuetTrainingSessionStatus.error => [
             SessionOptionCard(
               category: "",
               title: "데이터를 조회하지 못했습니다.",

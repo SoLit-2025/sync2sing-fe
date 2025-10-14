@@ -39,14 +39,44 @@ class VocalAnalysisReportPage extends ConsumerWidget {
 
       // Null-safe 객체 처리
       final dynamic extra = state.extra!;
+      debugPrint("state - extra: $extra");
 
       if (extra is Map<String, dynamic>) {
-        return extra;
+        return extra['reportJson'];
       } else if (extra is String) {
         final decoded = jsonDecode(extra);
-        return decoded is Map<String, dynamic> ? decoded : {};
+        return decoded['reportJson'] is Map<String, dynamic> ? decoded : {};
       } else if (extra is AnalysisResult || extra is Song) {
-        return extra.toJson();
+        return extra.toJson()['reportJson'];
+      } else {
+        debugPrint('⚠️ 알 수 없는 데이터 타입: ${extra.runtimeType}');
+        return {};
+      }
+    } catch (e) {
+      debugPrint('❌ 데이터 파싱 오류: $e');
+      return {};
+    }
+  }
+
+  Map<String, dynamic>? getMergeData(BuildContext context) {
+    final state = GoRouterState.of(context);
+    try {
+      if (state.extra == null) {
+        debugPrint('⚠️ state.extra가 null입니다.');
+        return {};
+      }
+
+      // Null-safe 객체 처리
+      final dynamic extra = state.extra!;
+      debugPrint("state - extra: $extra");
+
+      if (extra is Map<String, dynamic>) {
+        return extra['mergeJson'];
+      } else if (extra is String) {
+        final decoded = jsonDecode(extra);
+        return decoded['mergeJson'] is Map<String, dynamic> ? decoded : {};
+      } else if (extra is AnalysisResult || extra is Song) {
+        return extra.toJson()['mergeJson'];
       } else {
         debugPrint('⚠️ 알 수 없는 데이터 타입: ${extra.runtimeType}');
         return {};
@@ -128,20 +158,21 @@ class VocalAnalysisReportPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reportData = getReportData(context);
+    debugPrint("mergeData: ${getMergeData(context)}");
     final songData = getSongData(reportData);
 
     final voiceTypeData =
         (analysisType == AnalysisType.guest)
-            ? ref.watch(voiceTypeProfileProvider).voiceType!
-            : songData['voice_type'];
+            ? ref.watch(voiceTypeProfileProvider).voiceType ?? ""
+            : songData['voice_type'] ?? "";
 
     final pitchNoteMin =
         (analysisType == AnalysisType.guest)
-            ? ref.watch(voiceTypeProfileProvider).minNote
+            ? ref.watch(voiceTypeProfileProvider).minNote ?? ""
             : songData['pitch_note_min'] ?? "";
     final pitchNoteMax =
         (analysisType == AnalysisType.guest)
-            ? ref.watch(voiceTypeProfileProvider).maxNote
+            ? ref.watch(voiceTypeProfileProvider).maxNote ?? ""
             : songData['pitch_note_max'] ?? "";
 
     if (reportData.isEmpty) {
@@ -151,7 +182,6 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     }
 
     return Scaffold(
-      // backgroundColor: AppColors.grayscale8,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -405,31 +435,43 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     return Consumer(
       builder: (BuildContext context, WidgetRef ref, Widget? child) {
         return GestureDetector(
-          onTap: () {
+          onTap: () async {
             if (analysisType == AnalysisType.guest) {
               context.go(AppRoutePaths.signupProfileInfo);
             } else if (analysisType == AnalysisType.pre) {
-              final trainingDays =
-                  ref.watch(selectedSongProvider).trainingDays ??
-                  () async {
-                    DioFactory(SecureStorage()).get('/solo-training/session').then((data) {
-                          return data.data['training_days'];
-                        })
-                        as int;
-                  }; // 서버 조회 필요.
+              debugPrint("pre AnalysisType");
+
+              // selectedSongProvider에 값이 있으면 사용, 없으면 서버 조회
+              int trainingDays;
+              final selectedSong = ref.read(selectedSongProvider);
+              if (selectedSong.trainingDays != null) {
+                trainingDays = selectedSong.trainingDays!;
+              } else {
+                final response = await DioFactory(
+                  SecureStorage(),
+                ).get('/${trainingMode.apiBasePath}/session');
+                trainingDays = response.data['data']['training_days'] as int;
+              }
+
               final curriculumGenerationRequest = CurriculumGenerationRequest(
                 trainingMode: trainingMode,
                 pitch: _getGradeFromScore(reportData['pitch_score'] as int),
                 rhythm: _getGradeFromScore(reportData['beat_score'] as int),
                 pronunciation: _getGradeFromScore(reportData['pronunciation_score'] as int),
-                trainingDays: trainingDays as int,
+                trainingDays: trainingDays,
               );
-              context.go(
-                AppRoutePaths.trainingGenerationLoading,
-                extra: curriculumGenerationRequest,
-              );
+              if (context.mounted) {
+                context.go(
+                  AppRoutePaths.trainingGenerationLoading,
+                  extra: curriculumGenerationRequest,
+                );
+              }
             } else {
-              context.go(AppRoutePaths.soloTrainingHome);
+              if (trainingMode == TrainingMode.solo) {
+                context.go(AppRoutePaths.soloTrainingHome);
+              } else {
+                context.go(AppRoutePaths.duetTrainingHome);
+              }
             }
           },
           child: Container(

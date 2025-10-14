@@ -18,11 +18,13 @@ class SongExampleVideoPage extends ConsumerWidget {
   final TrainingMode trainingMode;
   final AnalysisType analysisType;
   final int songId;
+  final int? roomId;
   SongExampleVideoPage({
     super.key,
     required this.trainingMode,
     required this.analysisType,
     required this.songId,
+    this.roomId,
   });
 
   final Map<String, dynamic> json = {
@@ -133,10 +135,17 @@ class SongExampleVideoPage extends ConsumerWidget {
                     onPressed:
                         isButtonEnabled
                             ? () {
-                              context.go(
-                                "${AppRoutePaths.soloPreRecordingSong}/${analysisType.name}/$songId",
-                                extra: songDetail.id,
-                              );
+                              if (trainingMode == TrainingMode.solo) {
+                                context.go(
+                                  "${AppRoutePaths.soloPreRecordingSong}/${analysisType.name}/$songId",
+                                  extra: songDetail.id,
+                                );
+                              } else {
+                                context.go(
+                                  "${AppRoutePaths.duetRecordingSong}/${analysisType.name}/$songId?roomId=${roomId ?? ""}",
+                                  extra: songDetail.id,
+                                );
+                              }
                             }
                             : null,
                     minSize: 0.0,

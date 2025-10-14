@@ -34,6 +34,7 @@ abstract class AppRouteNames {
   static const duetSongDetail = 'duetSongDetail';
   static const songExampleVideo = 'songExampleVideo';
   static const soloPreRecordingSong = 'soloPreRecordingSong';
+  static const duetRecordingSong = 'duetRecordingSong';
   static const trainingGenerationLoading = 'trainingGenerationLoading';
 
   static const duetRoomDetail = 'duetRoomDetail';
@@ -83,6 +84,7 @@ abstract class AppRoutePaths {
   static const duetSongList = '/songs/duet';
   static const duetRoomDetail = '/duet/room/detail';
   static const duetSongDetail = '/songs/duet/detail';
+  static const duetRecordingSong = '/duet_training/recording_song';
 
   // training
   static const trainingGuide = '/training/guide'; // 트레이닝 시 카드뉴스 or 유튜브 영상을 보여주는 페이지

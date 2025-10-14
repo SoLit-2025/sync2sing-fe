@@ -17,6 +17,7 @@ import 'package:sync2sing/features/curriculum/views/training_guide_page.dart';
 import 'package:sync2sing/features/home_hub/logics/room_item.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
+import 'package:sync2sing/features/vocal_analysis/views/pages/duet_recording_song_page.dart';
 import 'package:sync2sing/features/vocal_analysis/views/pages/pitch_training_page.dart';
 import 'package:sync2sing/features/vocal_analysis/views/pages/pronunciation_training_page.dart';
 import 'package:sync2sing/features/vocal_analysis/views/pages/rhythm_training_page.dart';
@@ -98,10 +99,13 @@ final List<GoRoute> curriculumRoutes = [
       );
       final songIdStr = state.pathParameters['songId'];
       final songId = int.tryParse(songIdStr!);
+      final roomIdStr = state.uri.queryParameters['roomId'];
+      final int? roomId = (roomIdStr != null) ? int.tryParse(roomIdStr) : null;
       return SongExampleVideoPage(
         songId: songId!,
         trainingMode: trainingMode,
         analysisType: analysisType,
+        roomId: roomId,
       );
     },
   ),
@@ -114,17 +118,34 @@ final List<GoRoute> curriculumRoutes = [
       );
       final songIdStr = state.pathParameters['songId'];
       final songId = int.tryParse(songIdStr!);
-
       return SoloRecordingSongPage(songId: songId!, analysisType: analysisType);
+    },
+  ),
+  GoRoute(
+    path: "${AppRoutePaths.duetRecordingSong}/:analysisType/:songId",
+    name: AppRouteNames.duetRecordingSong,
+    builder: (context, state) {
+      final analysisType = AnalysisType.values.firstWhere(
+        (e) => e.name == state.pathParameters['analysisType'],
+      );
+      final songIdStr = state.pathParameters['songId'];
+      final songId = int.tryParse(songIdStr!);
+      final roomIdStr = state.uri.queryParameters['roomId'];
+      final int? roomId = (roomIdStr != null) ? int.tryParse(roomIdStr) : null;
+
+      return DuetRecordingSongPage(songId: songId!, analysisType: analysisType, roomId: roomId);
     },
   ),
   GoRoute(
     path: AppRoutePaths.trainingGenerationLoading,
     name: AppRouteNames.trainingGenerationLoading,
-    builder:
-        (context, state) => TrainingGenerationLoadingPage(
-          curriculumGenerationRequest: state.extra as CurriculumGenerationRequest,
-        ),
+    builder: (context, state) {
+      final roomIdStr = state.uri.queryParameters['roomId'];
+      final int? roomId = (roomIdStr != null) ? int.tryParse(roomIdStr) : null;
+      return TrainingGenerationLoadingPage(
+        curriculumGenerationRequest: state.extra as CurriculumGenerationRequest,
+      );
+    },
   ),
   GoRoute(
     path: AppRoutePaths.trainingGuide,
