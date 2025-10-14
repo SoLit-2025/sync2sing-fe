@@ -182,6 +182,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
               DateTime? postDueDate;
               String? userPartName;
 
+              debugPrint("trainingSessionStatus: $trainingSessionStatus");
               if (trainingSessionStatus != DuetTrainingSessionStatus.beforeSession) {
                 preDueDate =
                     snapshot.data['pre_recording_due_date'] != null

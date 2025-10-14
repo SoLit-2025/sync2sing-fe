@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:sync2sing/features/shared/logics/dio_factory.dart';
+import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -15,6 +20,24 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _isNotificationEnabled = false;
+
+  Future<void> logout() async {
+    final secureStorage = SecureStorage();
+    try {
+      await DioFactory(secureStorage).post(
+        '/user/logout',
+        data: jsonEncode({'refresh_token': await secureStorage.readRefreshToken()}),
+      );
+      if (mounted) {
+        context.go(AppRoutePaths.login);
+      }
+      secureStorage.deleteTokens();
+    } on DioException catch (s, _) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("로그아웃에 실패했습니다. 다시 시도해주세요")));
+    }
+  }
 
   @override
   void initState() {
@@ -108,8 +131,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                           onPressed: () {
                             // todo: 회원탈퇴 api 연결
-                            Navigator.of(context).pop();
-                            context.go(AppRoutePaths.login);
+                            context.go(AppRoutePaths.onboardingQuestion);
                           },
                           child: Center(
                             child: Text(
@@ -182,9 +204,8 @@ class _SettingsPageState extends State<SettingsPage> {
               iconHeight: 30.h,
               title: '로그아웃',
               titleTextStyle: AppTextStyles.heading4.copyWith(color: AppColors.grayscale1),
-              onTap: () {
-                // todo: 로그아웃 api 연결
-                context.go(AppRoutePaths.login);
+              onTap: () async {
+                await logout();
               },
             ),
             _divider(),

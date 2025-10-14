@@ -1,89 +1,164 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sync2sing/features/curriculum/logics/curriculum_generation_request.dart';
-import 'package:sync2sing/features/curriculum/logics/selected_song_provider.dart';
-import 'package:sync2sing/features/curriculum/logics/training_grade.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
+import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
 import 'package:sync2sing/features/shared/views/voice_range_display.dart';
 import 'dart:convert';
-import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
-import 'package:sync2sing/features/vocal_analysis/logics/providers/voice_type_profile_provider.dart';
 
-class VocalAnalysisReportPage extends ConsumerWidget {
+class _UserVoiceInfo {
+  String voiceType;
+  String pitchNoteMin;
+  String pitchNoteMax;
+
+  _UserVoiceInfo({required this.voiceType, required this.pitchNoteMin, required this.pitchNoteMax});
+}
+
+class DetailVocalAnalysisReportPage extends StatefulWidget {
+  final int reportId;
   final TrainingMode trainingMode;
-  final AnalysisType analysisType;
 
-  const VocalAnalysisReportPage({
+  const DetailVocalAnalysisReportPage({
     super.key,
+    required this.reportId,
     required this.trainingMode,
-    required this.analysisType,
   });
 
-  // extra에서 데이터 받기
-  Map<String, dynamic> getReportData(BuildContext context) {
+  @override
+  State<DetailVocalAnalysisReportPage> createState() => _DetailVocalAnalysisReportPageState();
+}
+
+class _DetailVocalAnalysisReportPageState extends State<DetailVocalAnalysisReportPage> {
+  late final Future<Map<String, dynamic>> reportJson;
+  String appBarTitle = '';
+  late _UserVoiceInfo _userVoiceInfo;
+
+  _UserVoiceInfo getUserVoiceInfo() {
     final state = GoRouterState.of(context);
+    // Null-safe 객체 처리
+    final dynamic extra = state.extra!;
+    debugPrint("extra: $extra");
     try {
       if (state.extra == null) {
         debugPrint('⚠️ state.extra가 null입니다.');
-        return {};
+        return _UserVoiceInfo(voiceType: '', pitchNoteMin: '', pitchNoteMax: '');
       }
 
-      // Null-safe 객체 처리
-      final dynamic extra = state.extra!;
-      debugPrint("state - extra: $extra");
-
       if (extra is Map<String, dynamic>) {
-        return extra['reportJson'];
-      } else if (extra is String) {
-        final decoded = jsonDecode(extra);
-        return decoded['reportJson'] is Map<String, dynamic> ? decoded : {};
-      } else if (extra is AnalysisResult || extra is Song) {
-        return extra.toJson()['reportJson'];
+        return _UserVoiceInfo(
+          voiceType: extra['voiceType'],
+          pitchNoteMin: extra['pitchNoteMin'],
+          pitchNoteMax: extra['pitchNoteMax'],
+        );
       } else {
         debugPrint('⚠️ 알 수 없는 데이터 타입: ${extra.runtimeType}');
-        return {};
+        return _UserVoiceInfo(voiceType: '', pitchNoteMin: '', pitchNoteMax: '');
       }
     } catch (e) {
       debugPrint('❌ 데이터 파싱 오류: $e');
-      return {};
+      return _UserVoiceInfo(voiceType: '', pitchNoteMin: '', pitchNoteMax: '');
     }
   }
 
-  Map<String, dynamic>? getMergeData(BuildContext context) {
-    final state = GoRouterState.of(context);
-    try {
-      if (state.extra == null) {
-        debugPrint('⚠️ state.extra가 null입니다.');
-        return {};
-      }
+  Future<Map<String, dynamic>> _fetchReportData() async {
+    Future.delayed(Duration(milliseconds: 4));
 
-      // Null-safe 객체 처리
-      final dynamic extra = state.extra!;
-      debugPrint("state - extra: $extra");
+    Map<String, dynamic> guestJson = // 비로그인 보컬 분석 리포트 (GUEST)
+        {
+      "report_id": 10,
+      "analysis_type": "GUEST",
+      "title": "2025-09-06 Do-Re-Mi",
+      "song": {
+        "song_id": 1,
+        "title": "Do-Re-Mi",
+        "artist": "Richard Rodgers",
+        "voice_type": "SOPRANO",
+        "pitch_note_min": "C4",
+        "pitch_note_max": "D5",
+        "album_cover_url":
+            'https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/39f14afc-704b-453a-b481-474728491780.jpg',
+      },
+      "pitch_score": 65,
+      "beat_score": 90,
+      "pronunciation_score": 94,
+      "overall_review_title": "음정 조절 연습으로 자신감 높이기",
+      "overall_review_content":
+          "음정 점수가 낮아 음정 조절 능력을 향상시키는 것이 필요해요. 박자와 발음이 좋은 상태이지만, 음정이 불안정하면 노래의 안정감이 떨어질 수 있어요. 이 원인을 개선하면 전체적인 노래 실력이 향상될 거예요.",
+      "created_at": "2025-09-06T00:25:18.332294367",
+      "cause_content":
+          "음정 조절에 어려움을 겪는 것이 낮은 점수의 주 원인일 가능성이 높아요. 발성 태그 중 lip_trill이 주요 특징으로 나타나는데, 이는 음정 안정성을 키우는 데 도움이 될 수 있어요.",
+      "proposal_content":
+          "매일 10분씩 음정 연습을 해보세요. 피아노나 튜터와 함께 기본 음정 연습(5분), 가사에 맞춰 간단한 노래 연습(5분)을 해요. 무리하지 말고 꾸준히 연습하는 것이 중요해요.",
+    };
 
-      if (extra is Map<String, dynamic>) {
-        return extra['mergeJson'];
-      } else if (extra is String) {
-        final decoded = jsonDecode(extra);
-        return decoded['mergeJson'] is Map<String, dynamic> ? decoded : {};
-      } else if (extra is AnalysisResult || extra is Song) {
-        return extra.toJson()['mergeJson'];
-      } else {
-        debugPrint('⚠️ 알 수 없는 데이터 타입: ${extra.runtimeType}');
-        return {};
-      }
-    } catch (e) {
-      debugPrint('❌ 데이터 파싱 오류: $e');
-      return {};
-    }
+    Map<String, dynamic> postJson = {
+      "report_id": 12,
+      "analysis_type": "POST",
+      "title": "2025-09-06 Do-Re-Mi",
+      "song": {
+        "song_id": 1,
+        "title": "Do-Re-Mi",
+        "artist": "Richard Rodgers",
+        "voice_type": "SOPRANO",
+        "pitch_note_min": "C4",
+        "pitch_note_max": "D5",
+        "album_cover_url":
+            'https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/39f14afc-704b-453a-b481-474728491780.jpg',
+      },
+      "pitch_score": 70,
+      "beat_score": 100,
+      "pronunciation_score": 51,
+      "overall_review_title": "발음 교정이 필요해요",
+      "overall_review_content":
+          "음정과 박자는 안정적이나 발음이 크게 부족해서 노래 전달력이 떨어져요. 훈련 후 변화가 없어서 지속적인 개선이 필요해요. 발성과 발음 연습을 꾸준히 하면서 발음 교정에 집중해봐요.",
+      "created_at": "2025-09-06T01:06:14.764957128",
+      "pre_pitch_score": 65,
+      "pre_beat_score": 90,
+      "pre_pronunciation_score": 11,
+      "feedback_title": "발음 연습으로 개선하세요",
+      "feedback_content":
+          "발음 태그 중 lip_trill이 가장 높으니, 매일 5분씩 혀와 입술 근육을 강화하는 연습을 하세요. 예를 들어, 10분간 '입술 살짝 벌려 소리 내기'와 '혀 끝으로 입천장 지르기'를 하루에 두 번씩 해보세요.",
+    };
+
+    Map<String, dynamic> preJson = {
+      "report_id": 11,
+      "analysis_type": "PRE",
+      "title":
+          "2025-09-06 Do-Re-Mi", // 2025-05-07 Golden (From 'K-POP Demon Hunters') // 2025-09-06 Do-Re-Mi
+      "song": {
+        "song_id": 1,
+        "title": "Do-Re-Mi",
+        "artist": "Richard Rodgers",
+        "voice_type": "SOPRANO",
+        "pitch_note_min": "C4",
+        "pitch_note_max": "D5",
+        "album_cover_url":
+            'https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/39f14afc-704b-453a-b481-474728491780.jpg',
+      },
+      "pitch_score": 100,
+      "beat_score": 90,
+      "pronunciation_score": 11,
+      "overall_review_title": "발음이 가장 약해요, 개선이 필요해요",
+      "overall_review_content":
+          "발음 점수가 낮아 노래 전달력이 떨어질 수 있어요. 특히 발음이 불분명하면 듣는 사람이 이해하기 어려워요. 발음 연습과 꾸준한 연습이 필요해요.",
+      "created_at": "2025-09-06T00:58:57.561592029",
+      "cause_content": "발음 점수가 매우 낮아 발성 연습과 구체적 혀·입술 움직임 연습이 부족했을 가능성이 있어요.",
+      "proposal_content": "매일 10분 동안 발음 교정 연습을 하세요. 혀와 입술을 이용한 소리 명확히 하기, 슬로우하게 발음하면서 연습해요.",
+    };
+
+    final nowJson = postJson;
+
+    setState(() {
+      appBarTitle = nowJson['title'];
+    });
+
+    return nowJson;
   }
 
   Map<String, dynamic> getSongData(Map<String, dynamic> reportData) =>
@@ -128,90 +203,115 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     }
   }
 
-  TrainingGrade _getGradeFromScore(int score) {
-    switch (score) {
-      case >= 70:
-        return TrainingGrade.high;
-      case >= 40:
-        return TrainingGrade.medium;
-      default:
-        return TrainingGrade.low;
-    }
+  @override
+  void initState() {
+    super.initState();
+    reportJson = _fetchReportData();
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final reportData = getReportData(context);
-    debugPrint("mergeData: ${getMergeData(context)}");
-    final songData = getSongData(reportData);
-
-    final voiceTypeData =
-        (analysisType == AnalysisType.guest)
-            ? ref.watch(voiceTypeProfileProvider).voiceType ?? ""
-            : songData['voice_type'] ?? "";
-
-    final pitchNoteMin =
-        (analysisType == AnalysisType.guest)
-            ? ref.watch(voiceTypeProfileProvider).minNote ?? ""
-            : songData['pitch_note_min'] ?? "";
-    final pitchNoteMax =
-        (analysisType == AnalysisType.guest)
-            ? ref.watch(voiceTypeProfileProvider).maxNote ?? ""
-            : songData['pitch_note_max'] ?? "";
-
-    if (reportData.isEmpty) {
-      return Scaffold(
-        body: Center(child: Text("분석 결과 데이터가 없습니다.", style: AppTextStyles.body1Bold)),
-      );
-    }
+  Widget build(BuildContext context) {
+    _userVoiceInfo = getUserVoiceInfo();
 
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(height: 18.h),
-              _buildAppBar(context, reportData['title'] ?? ""),
-              SizedBox(height: 46.h),
+              _buildAppBar(context, appBarTitle),
               Align(
                 alignment: Alignment(0.0, -1.0),
                 child: SizedBox(
                   width: 327.w,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _buildSongOverView(songData),
-                      SizedBox(height: 16.h),
-                      (analysisType == AnalysisType.guest)
-                          ? _buildVoiceTypeSection(voiceTypeData)
-                          : _buildVoiceTypeBadge(voiceTypeData),
-                      SizedBox(height: 16.h),
-                      VoiceRangeDisplay(
-                        pitchNoteMin: pitchNoteMin,
-                        pitchNoteMax: pitchNoteMax,
-                        title: (analysisType == AnalysisType.guest) ? "나의 음역대" : "노래 음역대",
-                      ),
-                      SizedBox(height: 16.h),
-                      _buildAccuracySection(reportData['pitch_score'], reportData['beat_score']),
-                      SizedBox(height: 40.h),
-                      _buildAccuracyBarSection(
-                        reportData['pitch_score'],
-                        reportData['beat_score'],
-                        reportData['pronunciation_score'],
-                        reportData['pre_pitch_score'],
-                        reportData['pre_beat_score'],
-                        reportData['pre_pronunciation_score'],
-                      ),
-                      SizedBox(height: 32.h),
-                      _buildAnalysisDescription(reportData),
-                      SizedBox(height: 14.h),
-                      (analysisType == AnalysisType.post)
-                          ? _buildFeedbackSection(reportData)
-                          : _buildRecommendationSection(reportData),
-                      SizedBox(height: 40.h),
-                      _buildCurriculumButton(context, reportData),
-                      SizedBox(height: 40.h),
-                    ],
+                  child: FutureBuilder(
+                    future: reportJson,
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.hasError) {
+                        final errorString = snapshot.error.toString();
+
+                        debugPrint("widget 오류 발생: $errorString");
+                        try {
+                          final Map<String, dynamic> errorJson = jsonDecode(
+                            errorString.replaceFirst('Exception: ', '').trim(),
+                          );
+
+                          final status = errorJson['status']?.toString() ?? 'Unknown status';
+
+                          if (status == "403") {
+                            return Text("로그인 해주세요!");
+                          }
+                          return Text('알 수 없는 오류가 발생했습니다.');
+                        } catch (e) {
+                          return Text('알 수 없는 오류가 발생했습니다.');
+                        }
+                      } else if (snapshot.hasData == false) {
+                        return CustomLoading();
+                      } else {
+                        final Map<String, dynamic> reportData = snapshot.data;
+                        final songData = getSongData(reportData);
+
+                        final AnalysisType analysisType = AnalysisType.values.firstWhere(
+                          (e) => e.apiValue == (reportData['analysis_type'] ?? 'PRE'),
+                        );
+
+                        final voiceTypeData =
+                            (AnalysisType.guest == analysisType)
+                                ? _userVoiceInfo.voiceType
+                                : songData['voice_type'];
+                        final pitchNoteMin =
+                            (AnalysisType.guest == analysisType)
+                                ? _userVoiceInfo.pitchNoteMin
+                                : songData['pitch_note_min'] ?? "";
+                        final pitchNoteMax =
+                            (AnalysisType.guest == analysisType)
+                                ? _userVoiceInfo.pitchNoteMax
+                                : songData['pitch_note_max'] ?? "";
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 46.h),
+                            _buildSongOverView(songData),
+                            SizedBox(height: 16.h),
+                            (analysisType == AnalysisType.guest)
+                                ? _buildVoiceTypeSection(voiceTypeData) // guest 모드인 경우 타입 설명 포함
+                                : _buildVoiceTypeBadge(voiceTypeData),
+                            SizedBox(height: 16.h),
+                            VoiceRangeDisplay(
+                              pitchNoteMin: pitchNoteMin,
+                              pitchNoteMax: pitchNoteMax,
+                              title: (analysisType == AnalysisType.guest) ? "나의 음역대" : "노래 음역대",
+                            ),
+                            SizedBox(height: 16.h),
+                            _buildAccuracySection(
+                              reportData['pitch_score'],
+                              reportData['beat_score'],
+                            ),
+                            SizedBox(height: 40.h),
+                            _buildAccuracyBarSection(
+                              reportData['pitch_score'],
+                              reportData['beat_score'],
+                              reportData['pronunciation_score'],
+                              reportData['pre_pitch_score'],
+                              reportData['pre_beat_score'],
+                              reportData['pre_pronunciation_score'],
+                            ),
+                            SizedBox(height: 32.h),
+                            _buildAnalysisDescription(reportData),
+                            SizedBox(height: 14.h),
+                            if (reportData['feedback_title'] != null &&
+                                reportData['feedback_content'] != null)
+                              _buildFeedbackSection(reportData),
+                            if (reportData['cause_content'] != null &&
+                                reportData['proposal_content'] != null)
+                              _buildRecommendationSection(reportData),
+                            SizedBox(height: 40.h),
+                            _buildCurriculumButton(context, reportData),
+                            SizedBox(height: 40.h),
+                          ],
+                        );
+                      }
+                    },
                   ),
                 ),
               ),
@@ -223,36 +323,36 @@ class VocalAnalysisReportPage extends ConsumerWidget {
   }
 
   Widget _buildAppBar(BuildContext context, String text) {
-    return Stack(
-      children: [
-        SizedBox(width: 18.w),
-        if (analysisType != AnalysisType.guest)
-          Padding(
-            padding: EdgeInsets.only(left: 18.w),
-            child: GestureDetector(
-              onTap: () => context.pop(),
-              child: Image.asset(
-                'assets/images/left_arrow_icon.png',
-                width: 14.w,
-                height: 24.h,
-                fit: BoxFit.contain,
-              ),
+    return SizedBox(
+      height: 56.h,
+      child: Row(
+        children: [
+          SizedBox(width: 18.w),
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Image.asset(
+              'assets/images/left_arrow_icon.png',
+              width: 14.w,
+              height: 24.h,
+              fit: BoxFit.contain,
             ),
           ),
-        Align(
-          alignment: Alignment.topCenter,
-          child: Text(
-            text,
-            style: AppTextStyles.body1,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
+          Expanded(
+            child: Text(
+              text,
+              style: AppTextStyles.body1,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ),
-      ],
+          SizedBox(width: 14.w),
+        ],
+      ),
     );
   }
 
   Widget _buildSongOverView(Map<String, dynamic> songData) {
+    debugPrint("songData['album_cover_url']: ${songData['album_cover_url']}");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -337,7 +437,6 @@ class VocalAnalysisReportPage extends ConsumerWidget {
             style: AppTextStyles.body4.copyWith(color: AppColors.grayscale2),
             textAlign: TextAlign.center,
           ),
-          // SizedBox(height: 4.h),
           Text(desc, style: AppTextStyles.heading4Bold, textAlign: TextAlign.center),
         ],
       ),
@@ -441,40 +540,8 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     return Consumer(
       builder: (BuildContext context, WidgetRef ref, Widget? child) {
         return GestureDetector(
-          onTap: () async {
-            if (analysisType == AnalysisType.guest) {
-              context.go(AppRoutePaths.signupProfileInfo);
-            } else if (analysisType == AnalysisType.pre) {
-              debugPrint("pre AnalysisType");
-
-              // selectedSongProvider에 값이 있으면 사용, 없으면 서버 조회
-              int trainingDays;
-              final selectedSong = ref.read(selectedSongProvider);
-              if (selectedSong.trainingDays != null) {
-                trainingDays = selectedSong.trainingDays!;
-              } else {
-                final response = await DioFactory(
-                  SecureStorage(),
-                ).get('/${trainingMode.apiBasePath}/session');
-                trainingDays = response.data['data']['training_days'] as int;
-              }
-
-              final curriculumGenerationRequest = CurriculumGenerationRequest(
-                trainingMode: trainingMode,
-                pitch: _getGradeFromScore(reportData['pitch_score'] as int),
-                rhythm: _getGradeFromScore(reportData['beat_score'] as int),
-                pronunciation: _getGradeFromScore(reportData['pronunciation_score'] as int),
-                trainingDays: trainingDays,
-              );
-              if (context.mounted) {
-                context.go(
-                  AppRoutePaths.trainingGenerationLoading,
-                  extra: curriculumGenerationRequest,
-                );
-              }
-            } else {
-              context.go(AppRoutePaths.mainHome);
-            }
+          onTap: () {
+            context.pop();
           },
           child: Container(
             width: double.infinity,
@@ -483,13 +550,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
               color: AppColors.primaryPink,
               borderRadius: BorderRadius.circular(8.r),
             ),
-            child: Center(
-              child: Text(switch (analysisType) {
-                AnalysisType.guest => "회원가입하고 리포트 저장하기",
-                AnalysisType.pre => "맞춤형 커리큘럼 생성하기",
-                AnalysisType.post => "홈 페이지로 이동하기", // todo: 임시 -> 수정 필요
-              }, style: AppTextStyles.body1BoldWhite),
-            ),
+            child: Center(child: Text('확인', style: AppTextStyles.body1BoldWhite)),
           ),
         );
       },
@@ -557,7 +618,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
 
   Widget _buildAccuracyBar(int accuracy, Color barColor) {
     final double clampedAccuracy = accuracy.toDouble().clamp(0, 100);
-    final double totalWidth = 263.w;
+    final double totalWidth = 260.w;
     final double progressWidth = totalWidth * (clampedAccuracy / 100);
 
     return Container(
