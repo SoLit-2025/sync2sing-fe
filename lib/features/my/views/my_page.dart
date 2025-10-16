@@ -44,72 +44,27 @@ class _MyPageState extends State<MyPage> {
   Future<Map<String, dynamic>> _fetchUserData() async {
     final response = await DioFactory(SecureStorage()).get('/user');
     return response.data['data'];
-
-    // 보분리 api 요청까지도 완료 후 아래 삭제 예정
-    // await Future.delayed(Duration(milliseconds: 5));
-    // final Map<String, dynamic> userJson = {
-    //   // 듀엣 패널티가 없을 경우
-    //   "status": "200",
-    //   "message": "회원 정보 조회 성공",
-    //   "data": {
-    //     "username": "user@example.com",
-    //     "nickname": "노래하는 해파리",
-    //     "gender": "FEMALE",
-    //     "age": 26,
-    //     "pitch_note_min": "C3",
-    //     "pitch_note_max": "G5",
-    //     "voice_type": "SOPRANO",
-    //     "duet_penalty_count": 0,
-    //     "duet_penalty_until": null,
-    //     "total_training_minutes": 30, // 총 훈련한 시간(연습량)
-    //     "total_training_count": 12, // 총 훈련 개수(훈련 개수)
-    //   },
-    // };
-    // return userJson['data'];
   }
 
-  Future<List<_ReportOverviewData>> _fetchSoloReportData() async {
-    // final response = await DioFactory(SecureStorage()).get('/user/reports?mode=solo');
-    // final reportsJsonList = response.data['data'] as List;
+  Future<List<_ReportOverviewData>> _fetchReportData(TrainingMode mode) async {
+    final response = await DioFactory(SecureStorage()).get('/user/reports?mode=${mode.name}');
+    final responseJson = response.data['data']['${mode.name}_report_list'];
+    debugPrint("${mode.name} response data: $responseJson");
 
-    await Future.delayed(Duration(milliseconds: 5));
-    final Map<String, dynamic> reportsJson = {
-      "status": 200,
-      "message": "솔로 보컬 분석 리포트 목록 조회에 성공했습니다.",
-      "data": [
-        {"report_id": 790, "title": "2025-04-07 Shape of You"},
-        {"report_id": 789, "title": "2025-04-01 Shape of You"},
-        {"report_id": 39, "title": "2025-03-15 Do-Re-Mi Solo Song"},
-      ],
-    };
-    final reportsJsonList = reportsJson['data'] as List;
+    final List<_ReportOverviewData> reportsList = [];
+    responseJson.forEach((e) {
+      reportsList.add(_ReportOverviewData.fromJson(e));
+    });
 
-    final reportsList = reportsJsonList.map((e) => _ReportOverviewData.fromJson(e)).toList();
-    return reportsList;
-  }
-
-  Future<List<_ReportOverviewData>> _fetchDuetReportData() async {
-    // final response = await DioFactory(SecureStorage()).get('/user/reports?mode=duet');
-    // final reportsJsonList = response.data['data'] as List;
-
-    await Future.delayed(Duration(milliseconds: 5));
-    final Map<String, dynamic> reportsJson = // 듀엣 보컬 분석 리포트 목록 조회
-        {
-      "status": 200,
-      "message": "듀엣 보컬 분석 리포트 목록 조회에 성공했습니다.",
-      "data": [
-        {"report_id": 155, "title": "2025-05-13 Popular (From 'Wicked')"},
-        {"report_id": 150, "title": "2025-05-07 Golden (From 'K-POP Demon Hunters')"},
-      ],
-    };
-    final reportsJsonList = reportsJson['data'] as List;
-
-    final reportsList = reportsJsonList.map((e) => _ReportOverviewData.fromJson(e)).toList();
     return reportsList;
   }
 
   void _loadReports() async {
-    final results = await Future.wait([_fetchSoloReportData(), _fetchDuetReportData()]);
+    final results = await Future.wait([
+      _fetchReportData(TrainingMode.solo),
+      _fetchReportData(TrainingMode.duet),
+    ]);
+
     setState(() {
       _soloReports = results[0];
       _duetReports = results[1];
