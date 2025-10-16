@@ -44,18 +44,19 @@ class DuetTrainingHomePage extends StatefulWidget {
 class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
   late final DioFactory dioFactory;
   late final List<TrainingItem> items;
-  late final Future<Map<String, dynamic>> responseData;
-  late final int totalProgress;
-  late final DuetTrainingSessionStatus trainingSessionStatus;
-  late final int? sessionId;
-  late final int? songId;
+  late Future<Map<String, dynamic>> responseData;
+  late int totalProgress;
+  late DuetTrainingSessionStatus trainingSessionStatus;
+  late int? sessionId;
+  late int? songId;
   late int selectedIdx = // 버튼이 보이는 위젯 인덱스 == 클릭한 위젯의 인덱스
       (trainingSessionStatus == DuetTrainingSessionStatus.trainingInProgress)
           ? 0 // 트레이닝 진행 중일 때: 첫 진입에는 0번 인덱스만 버튼 보임
           : -1; // 그 외는 기본 카드만 버튼이 보임)
-  late final String _apiMessage;
+  late String _apiMessage;
   bool isFABVisible = false; // floatingActionButton 이 보이는지
-  late final Room? room;
+  late Room? room;
+  int _refreshKey = 0; // beforeSessionWidgetKey
 
   int calculateTotalProgressFromItems(List<TrainingItem> items) {
     // totalProgress 계산
@@ -65,8 +66,6 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
   }
 
   Future<Map<String, dynamic>> _fetchSessionInfo() async {
-    dioFactory = DioFactory(SecureStorage());
-
     try {
       final response = await dioFactory.get('/duet-training/session');
 
@@ -84,11 +83,19 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
     }
   }
 
+  Future<void> _handleRefresh() async {
+    // 페이지 내에서 refresh
+    setState(() {
+      _refreshKey++; // BeforeSessionWidget rebuild
+      responseData = _fetchSessionInfo();
+    });
+    await responseData; // FutureBuilder가 갱신될 때까지 대기
+  }
+
   DuetTrainingSessionStatus _getDataFromResponse(Map<String, dynamic> responseBody) {
     debugPrint("responseBody - data: $responseBody");
     var tTrainingSessionStatus = getTrainingStatusFromJson(responseBody);
     var dTrainingSessionStatus = DuetTrainingSessionStatus.fromName(tTrainingSessionStatus.name);
-    debugPrint("dTrainingSessionStatus: ${dTrainingSessionStatus.name}");
     if (dTrainingSessionStatus == DuetTrainingSessionStatus.afterTraining &&
         responseBody['post_recording_file_url'] != null) {
       dTrainingSessionStatus = DuetTrainingSessionStatus.pendingMerge;
@@ -143,6 +150,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
   void initState() {
     super.initState();
     // todo: 리턴값 타입 변경(not Map) / trainingSession 을 반환값으로 받기
+    dioFactory = DioFactory(SecureStorage());
     responseData = _fetchSessionInfo();
   }
 
@@ -151,85 +159,93 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
     return Scaffold(
       backgroundColor: AppColors.grayscale8,
       body: SafeArea(
-        child: FutureBuilder(
-          future: responseData,
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.hasError) {
-              final errorString = snapshot.error.toString();
-              debugPrint("결과: ${snapshot.error.toString()}");
+        child: RefreshIndicator(
+          onRefresh: _handleRefresh,
+          color: AppColors.primaryPink,
+          backgroundColor: AppColors.grayscale8,
+          child: FutureBuilder(
+            future: responseData,
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.hasError) {
+                final errorString = snapshot.error.toString();
+                debugPrint("결과: ${snapshot.error.toString()}");
 
-              try {
-                final Map<String, dynamic> errorJson = jsonDecode(
-                  errorString.replaceFirst('Exception: ', '').trim(),
-                );
+                try {
+                  final Map<String, dynamic> errorJson = jsonDecode(
+                    errorString.replaceFirst('Exception: ', '').trim(),
+                  );
 
-                final status = errorJson['status']?.toString() ?? 'Unknown status';
+                  final status = errorJson['status']?.toString() ?? 'Unknown status';
 
-                if (status == "403") {
-                  return Text("로그인 해주세요!");
+                  if (status == "403") {
+                    return Text("로그인 해주세요!");
+                  }
+                  return Text('알 수 없는 오류가 발생했습니다.');
+                } catch (e) {
+                  return Text('알 수 없는 오류가 발생했습니다.');
                 }
-                return Text('알 수 없는 오류가 발생했습니다.');
-              } catch (e) {
-                return Text('알 수 없는 오류가 발생했습니다.');
-              }
-            } else if (snapshot.hasData == false) {
-              // 응답이 오지 않았으면
-              return CustomLoading();
-            } else {
-              // 응답이 정상적으로 온 경우
+              } else if (snapshot.hasData == false) {
+                // 응답이 오지 않았으면
+                return CustomLoading();
+              } else {
+                // 응답이 정상적으로 온 경우
 
-              DateTime? preDueDate;
-              DateTime? postDueDate;
-              String? userPartName;
+                DateTime? preDueDate;
+                DateTime? postDueDate;
+                String? userPartName;
 
-              debugPrint("trainingSessionStatus: $trainingSessionStatus");
-              if (trainingSessionStatus != DuetTrainingSessionStatus.beforeSession) {
-                preDueDate =
-                    snapshot.data['pre_recording_due_date'] != null
-                        ? DateTime.parse(snapshot.data['pre_recording_due_date'])
-                        : null;
-                postDueDate =
-                    snapshot.data['post_recording_due_date'] != null
-                        ? DateTime.parse(snapshot.data['post_recording_due_date'])
-                        : null;
-                userPartName = snapshot.data['song']['user_part_name'] ?? '';
-              }
+                debugPrint("trainingSessionStatus: $trainingSessionStatus");
+                if (trainingSessionStatus != DuetTrainingSessionStatus.beforeSession) {
+                  preDueDate =
+                      snapshot.data['pre_recording_due_date'] != null
+                          ? DateTime.parse(snapshot.data['pre_recording_due_date'])
+                          : null;
+                  postDueDate =
+                      snapshot.data['post_recording_due_date'] != null
+                          ? DateTime.parse(snapshot.data['post_recording_due_date'])
+                          : null;
+                  userPartName = snapshot.data['song']['user_part_name'] ?? '';
+                }
 
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Consumer(
-                      builder: (context, ref, child) {
-                        final nickname = ref.watch(nicknameGetProvider);
-                        return nickname.when(
-                          data: (data) => _buildMainHeader(data), // nickname이 존재하면
-                          error: (e, stackTrace) => _buildMainHeader("error"), // 불러오는데 실패하면
-                          loading: () => _buildMainHeader(""), // 불러오는 중이면 비어보이게 둠
-                        );
-                      },
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(31.w, 5.4.h, 31.w, 10.h),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 12.h),
-                          (trainingSessionStatus == DuetTrainingSessionStatus.beforeSession)
-                              ? BeforeSessionWidget(
-                                isRoomHost: _isRoomHost,
-                              ) // 콜백함수 전달 / 방 정보 보여주는 위젯
-                              : (trainingSessionStatus == DuetTrainingSessionStatus.beforeTraining)
-                              ? _buildBeforeTraining(room, preDueDate!, userPartName!)
-                              : _buildExistSessionHome(),
-                        ],
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(), // 언제나 스크롤 가능하게 --> 언제나 refresh 가능
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final nickname = ref.watch(nicknameGetProvider);
+                          return nickname.when(
+                            data: (data) => _buildMainHeader(data), // nickname이 존재하면
+                            error: (e, stackTrace) => _buildMainHeader("error"), // 불러오는데 실패하면
+                            loading: () => _buildMainHeader(""), // 불러오는 중이면 비어보이게 둠
+                          );
+                        },
                       ),
-                    ),
-                  ],
-                ),
-              );
-            }
-          },
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(31.w, 5.4.h, 31.w, 10.h),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 12.h),
+                            (trainingSessionStatus == DuetTrainingSessionStatus.beforeSession)
+                                ? BeforeSessionWidget(
+                                  key: ValueKey(_refreshKey), // 매번 새로 생성 강제
+                                  isRoomHost: _isRoomHost,
+                                ) // 콜백함수 전달 / 방 정보 보여주는 위젯
+                                : (trainingSessionStatus ==
+                                    DuetTrainingSessionStatus.beforeTraining)
+                                ? _buildBeforeTraining(room, preDueDate!, userPartName!)
+                                : _buildExistSessionHome(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
         ),
       ),
 

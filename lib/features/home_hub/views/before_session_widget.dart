@@ -74,7 +74,7 @@ class _BeforeSessionWidgetState extends State<BeforeSessionWidget> {
           roomDataList.isNotEmpty ? roomDataList.map((json) => Room.fromJson(json)).toList() : [];
 
       final List<Room> partnerSentList = []; // 보낸 신청 요청의 방 정보를 저장
-      final List<Room> pendingRooms = []; // 참ㅊ여 대기중인 연습실 x, 대기중인 연습실
+      final List<Room> pendingRooms = []; // 참여 대기중인 연습실 x, 대기중인 연습실
 
       for (var waitingRoom in roomList) {
         bool flag = false;
