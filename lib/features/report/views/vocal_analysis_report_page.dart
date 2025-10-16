@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
@@ -165,6 +168,8 @@ class VocalAnalysisReportPage extends ConsumerWidget {
       );
     }
 
+    final String? mergeAudioFileUrl = mergeData?['merged_audio_url'];
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -180,7 +185,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      _buildSongOverView(songData),
+                      _buildSongOverView(songData, mergeAudioFileUrl),
                       SizedBox(height: 16.h),
                       (analysisType == AnalysisType.guest)
                           ? _buildVoiceTypeSection(voiceTypeData)
@@ -262,20 +267,26 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildSongOverView(Map<String, dynamic> songData) {
+  Widget _buildSongOverView(Map<String, dynamic> songData, String? mergeAudioFileUrl) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10.r),
-          child: Image.network(
-            songData['album_cover_url'],
-            height: 150.h,
-            width: 150.w,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _buildDefaultAlbumArt(),
-          ),
-        ),
+        (mergeAudioFileUrl == null)
+            ? ClipRRect(
+              borderRadius: BorderRadius.circular(10.r),
+              child: Image.network(
+                songData['album_cover_url'],
+                height: 150.h,
+                width: 150.w,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildDefaultAlbumArt(),
+              ),
+            )
+            : MusicPlayerCover(
+              // 음악 듣기 버튼이 포함된 앨범 커버
+              songFileUrl: mergeAudioFileUrl,
+              albumArtUrl: songData['album_cover_url'],
+            ),
         SizedBox(height: 10.h),
         Text(songData['title'], style: AppTextStyles.heading3Bold),
         Text(songData['artist'], style: AppTextStyles.body3.copyWith(color: AppColors.grayscale3)),
@@ -627,6 +638,131 @@ class VocalAnalysisReportPage extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class MusicPlayerCover extends StatefulWidget {
+  final String songFileUrl;
+  final String albumArtUrl;
+  const MusicPlayerCover({super.key, required this.songFileUrl, required this.albumArtUrl});
+
+  @override
+  State<MusicPlayerCover> createState() => _MusicPlayerCoverState();
+}
+
+class _MusicPlayerCoverState extends State<MusicPlayerCover> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  late StreamSubscription<PlayerState> _playerStateSub;
+  bool isPlaying = false;
+  bool isEnded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("imgurl: ${widget.albumArtUrl}");
+    debugPrint("audioUrl: ${widget.songFileUrl}");
+
+    // 플레이어 상태 스트림 구독
+    _playerStateSub = _audioPlayer.playerStateStream.listen((state) async {
+      final ended = state.processingState == ProcessingState.completed;
+      if (ended) {
+        await _audioPlayer.pause();
+        await _audioPlayer.setUrl(widget.songFileUrl);
+      }
+      setState(() {
+        isPlaying = state.playing && !ended;
+        isEnded = ended;
+      });
+    });
+    try {
+      if (!widget.songFileUrl.startsWith('assets')) {
+        _audioPlayer.setUrl(widget.songFileUrl);
+      } else {
+        _audioPlayer.setAsset(widget.songFileUrl);
+      }
+    } catch (e) {
+      debugPrint(e as String?);
+    }
+  }
+
+  @override
+  void dispose() {
+    _playerStateSub.cancel();
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  void _playMusic() {
+    _audioPlayer.play();
+  }
+
+  void _pauseMusic() {
+    _audioPlayer.pause();
+    _audioPlayer.playerState;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(5.r),
+          child: ColorFiltered(
+            colorFilter: ColorFilter.mode(
+              AppColors.grayscale8.withValues(alpha: 0.5),
+              BlendMode.srcATop,
+            ),
+            child: _buildAlbumArt(widget.albumArtUrl),
+          ),
+        ),
+
+        GestureDetector(
+          onTap: isPlaying ? _pauseMusic : _playMusic,
+          child: Image.asset(
+            isPlaying ? "assets/images/pause.png" : "assets/images/play.png",
+            color: AppColors.primaryPink,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 앨범아트
+  Widget _buildAlbumArt(String? url) {
+    return Container(
+      width: 150.w,
+      height: 150.h,
+      decoration: BoxDecoration(
+        color: AppColors.primaryPinkDisabled,
+        borderRadius: BorderRadius.circular(5.r),
+      ),
+      child:
+          url != null && url.isNotEmpty
+              ? ClipRRect(
+                borderRadius: BorderRadius.circular(5.r),
+                child: Image.network(
+                  url,
+                  width: 150.w,
+                  height: 150.w,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _buildDefaultAlbumArt(),
+                ),
+              )
+              : _buildDefaultAlbumArt(),
+    );
+  }
+
+  // 기본 앨범아트
+  Widget _buildDefaultAlbumArt() {
+    return Center(
+      child: Image.asset(
+        'assets/images/default_album_art.png',
+        height: 150.h,
+        width: 150.w,
+        fit: BoxFit.contain,
+      ),
     );
   }
 }
