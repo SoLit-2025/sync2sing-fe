@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
-import 'package:sync2sing/features/auth/logics/user_profile_provider.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
