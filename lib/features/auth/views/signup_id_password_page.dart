@@ -6,11 +6,14 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/features/auth/logics/user_profile_provider.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/auth/logics/auth_api.dart';
+import 'package:sync2sing/features/vocal_analysis/logics/providers/voice_type_profile_provider.dart';
 
+import '../logics/birth_info_provider.dart';
 import '../logics/nickname_provider.dart';
 
 class SignupIdPasswordPage extends ConsumerStatefulWidget {
@@ -123,20 +126,12 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
     if (idErrorType == 'success') {
       return Padding(
         padding: EdgeInsets.only(right: 10.w),
-        child: Icon(
-          Icons.check_circle,
-          size: 18.w,
-          color: AppColors.systemSuccess,
-        ),
+        child: Icon(Icons.check_circle, size: 18.w, color: AppColors.systemSuccess),
       );
     } else {
       return Padding(
         padding: EdgeInsets.only(right: 10.w),
-        child: Icon(
-          Icons.cancel,
-          size: 18.w,
-          color: AppColors.systemDanger,
-        ),
+        child: Icon(Icons.cancel, size: 18.w, color: AppColors.systemDanger),
       );
     }
   }
@@ -146,24 +141,34 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
     if (pwErrorType != null && pwErrorType != 'success') {
       return Padding(
         padding: EdgeInsets.only(right: 10.w),
-        child: Icon(
-          Icons.cancel,
-          size: 18.w,
-          color: AppColors.systemDanger,
-        ),
+        child: Icon(Icons.cancel, size: 18.w, color: AppColors.systemDanger),
       );
     }
     return null;
   }
 
   Future<void> _doSignUp() async {
+    int nowYear = DateTime.now().year;
     final nickname = ref.watch(nicknameProvider) ?? '';
+    final genderKor = ref.watch(birthInfoProvider).gender ?? '';
+    final String birthYearString = ref.watch(birthInfoProvider).birthYear ?? nowYear.toString();
+    final int birthYear = int.parse(birthYearString);
+    final genderEng = (genderKor == '여성') ? "FEMALE" : "MALE";
 
-    print('SignUp - username: $id, password: $pw, nickname: $nickname');
+    final voiceProfile = ref.watch(voiceTypeProfileProvider);
+
+    debugPrint(
+      'SignUp - username: $id, password: $pw, nickname: $nickname, age: ${nowYear - birthYear + 1}',
+    );
     try {
       final response = await _authApi.signUp(
         username: id,
         password: pw,
+        gender: genderEng,
+        age: nowYear - birthYear + 1,
+        pitchNoteMin: voiceProfile.minNote,
+        pitchNoteMax: voiceProfile.maxNote,
+        voiceType: voiceProfile.voiceType ?? "BASS",
         nickname: nickname,
       );
 
@@ -176,7 +181,7 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
     } catch (e) {
       if (e is DioException) {
         // DioError일 경우, 서버가 반환한 상세 에러 메시지를 출력
-        print('Dio error response data: ${e.response?.data}');
+        debugPrint('Dio error response data: ${e.response?.data}');
         final errorMessage = e.response?.data['message'] ?? '회원가입에 실패했습니다.';
         _showError(errorMessage);
       } else {
@@ -187,9 +192,7 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -203,23 +206,14 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ① 상단 페이지네이션
-              Center(
-                child: PageIndicator(
-                  currentPage: 0,
-                  pageCount: 2,
-                ),
-              ),
+              Center(child: PageIndicator(currentPage: 0, pageCount: 2)),
               // ② 본문 입력영역 (중간, Expanded로 감싸기)
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 27.h),
-                    Text(
-                      '환영합니다!',
-                      style: AppTextStyles.heading2Bold,
-                      textAlign: TextAlign.left,
-                    ),
+                    Text('환영합니다!', style: AppTextStyles.heading2Bold, textAlign: TextAlign.left),
                     SizedBox(height: 8.h),
                     Text(
                       'Sync2Sing 회원가입을 시작합니다',
@@ -244,17 +238,19 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.r),
                               borderSide: BorderSide(
-                                color: idErrorType == null || idErrorType == 'success'
-                                    ? AppColors.grayscale4
-                                    : AppColors.systemDanger,
+                                color:
+                                    idErrorType == null || idErrorType == 'success'
+                                        ? AppColors.grayscale4
+                                        : AppColors.systemDanger,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.r),
                               borderSide: BorderSide(
-                                color: idErrorType == null || idErrorType == 'success'
-                                    ? AppColors.grayscale4
-                                    : AppColors.systemDanger,
+                                color:
+                                    idErrorType == null || idErrorType == 'success'
+                                        ? AppColors.grayscale4
+                                        : AppColors.systemDanger,
                               ),
                             ),
                             suffixIcon: getIdIcon(),
@@ -266,16 +262,18 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
                     Center(
                       child: SizedBox(
                         width: 326.w,
-                        child: id.isEmpty
-                            ? const SizedBox.shrink()
-                            : Text(
-                          idMessage ?? "",
-                          style: AppTextStyles.body6.copyWith(
-                            color: idErrorType == 'success'
-                                ? AppColors.systemSuccessText
-                                : AppColors.systemDangerText,
-                          ),
-                        ),
+                        child:
+                            id.isEmpty
+                                ? const SizedBox.shrink()
+                                : Text(
+                                  idMessage ?? "",
+                                  style: AppTextStyles.body6.copyWith(
+                                    color:
+                                        idErrorType == 'success'
+                                            ? AppColors.systemSuccessText
+                                            : AppColors.systemDangerText,
+                                  ),
+                                ),
                       ),
                     ),
                     SizedBox(height: 20.h),
@@ -297,18 +295,20 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.r),
                               borderSide: BorderSide(
-                                color: pwErrorType == null || pwErrorType == 'success'
-                                    ? AppColors.grayscale4
-                                    : AppColors.systemDanger,
+                                color:
+                                    pwErrorType == null || pwErrorType == 'success'
+                                        ? AppColors.grayscale4
+                                        : AppColors.systemDanger,
                                 width: 1,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.r),
                               borderSide: BorderSide(
-                                color: pwErrorType == null || pwErrorType == 'success'
-                                    ? AppColors.grayscale4
-                                    : AppColors.systemDanger,
+                                color:
+                                    pwErrorType == null || pwErrorType == 'success'
+                                        ? AppColors.grayscale4
+                                        : AppColors.systemDanger,
                                 width: 1,
                               ),
                             ),
@@ -322,15 +322,16 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
                       child: SizedBox(
                         width: 326.w,
                         height: 15.h,
-                        child: pw.isEmpty || pwErrorType == 'success'
-                            ? const SizedBox.shrink()
-                            : Text(
-                          pwMessage ?? "",
-                          style: AppTextStyles.body6.copyWith(
-                            color: AppColors.systemDangerText,
-                          ),
-                          textAlign: TextAlign.left,
-                        ),
+                        child:
+                            pw.isEmpty || pwErrorType == 'success'
+                                ? const SizedBox.shrink()
+                                : Text(
+                                  pwMessage ?? "",
+                                  style: AppTextStyles.body6.copyWith(
+                                    color: AppColors.systemDangerText,
+                                  ),
+                                  textAlign: TextAlign.left,
+                                ),
                       ),
                     ),
                   ],
@@ -344,21 +345,21 @@ class _SignupIdPasswordPageState extends ConsumerState<SignupIdPasswordPage> {
                   child: ElevatedButton(
                     onPressed: idValid && pwValid ? _doSignUp : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: idValid && pwValid
-                          ? AppColors.primaryPink
-                          : AppColors.primaryPinkDisabled,
+                      backgroundColor:
+                          idValid && pwValid
+                              ? AppColors.primaryPink
+                              : AppColors.primaryPinkDisabled,
                       disabledForegroundColor: AppColors.grayscale8,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
                       padding: EdgeInsets.zero,
                     ),
                     child: Text(
                       '확인',
                       textAlign: TextAlign.center,
-                      style: idValid && pwValid
-                          ? AppTextStyles.body1White
-                          : AppTextStyles.body1.copyWith(color: AppColors.grayscale4),
+                      style:
+                          idValid && pwValid
+                              ? AppTextStyles.body1White
+                              : AppTextStyles.body1.copyWith(color: AppColors.grayscale4),
                     ),
                   ),
                 ),

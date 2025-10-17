@@ -7,6 +7,7 @@ import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sync2sing/features/auth/logics/user_profile_provider.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import '../logics/birth_info_provider.dart';
 import '../logics/nickname_provider.dart';
@@ -94,9 +95,9 @@ class _SignupProfileInfoPageState extends ConsumerState<SignupProfileInfoPage> {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 200), () {
       validateNickname(value);
-      if (isNicknameValid){
+      if (isNicknameValid) {
         ref.read(nicknameProvider.notifier).state = value;
-      } else{
+      } else {
         ref.read(nicknameProvider.notifier).state = null;
       }
     });

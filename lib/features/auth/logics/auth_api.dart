@@ -10,6 +10,12 @@ class AuthApi {
     required String username,
     required String password,
     required String nickname,
+    required String gender,
+    required int age,
+    required String voiceType,
+    String? pitchNoteMin,
+    String? pitchNoteMax,
+    int? reportId,
   }) async {
     try {
       final response = await dioFactory.post(
@@ -18,6 +24,12 @@ class AuthApi {
           'username': username,
           'password': password,
           'nickname': nickname,
+          'gender': gender,
+          'age': age,
+          'pitch_note_min': pitchNoteMin ?? " ",
+          'pitch_note_max': pitchNoteMax ?? " ",
+          'voice_type': voiceType,
+          if (reportId != null) 'report_id': reportId,
         },
       );
 
@@ -32,17 +44,11 @@ class AuthApi {
   }
 
   /// 로그인 API
-  Future<Map<String, dynamic>> login({
-    required String username,
-    required String password,
-  }) async {
+  Future<Map<String, dynamic>> login({required String username, required String password}) async {
     try {
       final response = await dioFactory.post(
         '/user/login',
-        data: {
-          'username': username,
-          'password': password,
-        },
+        data: {'username': username, 'password': password},
       );
 
       if (response.statusCode == 200) {
@@ -56,14 +62,9 @@ class AuthApi {
   }
 
   /// 로그아웃 API
-  Future<void> logout({
-    required String refreshToken,
-  }) async {
+  Future<void> logout({required String refreshToken}) async {
     try {
-      final response = await dioFactory.post(
-        '/user/logout',
-        data: {'refreshToken': refreshToken},
-      );
+      final response = await dioFactory.post('/user/logout', data: {'refreshToken': refreshToken});
 
       if (response.statusCode != 200) {
         throw Exception('로그아웃 실패: ${response.data['message']}');
