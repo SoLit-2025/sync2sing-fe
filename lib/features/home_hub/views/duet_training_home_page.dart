@@ -43,20 +43,20 @@ class DuetTrainingHomePage extends StatefulWidget {
 
 class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
   late final DioFactory dioFactory;
-  late final List<TrainingItem> items;
+  late List<TrainingItem> items;
   late Future<Map<String, dynamic>> responseData;
   late int totalProgress;
   late DuetTrainingSessionStatus trainingSessionStatus;
   late int? sessionId;
   late int? songId;
-  late int selectedIdx = // 버튼이 보이는 위젯 인덱스 == 클릭한 위젯의 인덱스
-      (trainingSessionStatus == DuetTrainingSessionStatus.trainingInProgress)
-          ? 0 // 트레이닝 진행 중일 때: 첫 진입에는 0번 인덱스만 버튼 보임
-          : -1; // 그 외는 기본 카드만 버튼이 보임)
+  late int selectedIdx;
   late String _apiMessage;
   bool isFABVisible = false; // floatingActionButton 이 보이는지
   late Room? room;
   int _refreshKey = 0; // beforeSessionWidgetKey
+  DateTime? preDueDate;
+  DateTime? postDueDate;
+  String? userPartName;
 
   int calculateTotalProgressFromItems(List<TrainingItem> items) {
     // totalProgress 계산
@@ -68,13 +68,27 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
   Future<Map<String, dynamic>> _fetchSessionInfo() async {
     try {
       final response = await dioFactory.get('/duet-training/session');
-
       final Map<String, dynamic> nowSessionInfoJson = response.data['data'];
       trainingSessionStatus = _getDataFromResponse(nowSessionInfoJson);
+
+      // trainingSessionStatus 에 따라 값 초기화
       if (trainingSessionStatus != DuetTrainingSessionStatus.beforeSession) {
         Map<String, dynamic> roomJson = nowSessionInfoJson['duet_training_room'];
         room = Room.fromJson(roomJson);
       }
+      if (trainingSessionStatus != DuetTrainingSessionStatus.beforeSession) {
+        preDueDate =
+            nowSessionInfoJson['pre_recording_due_date'] != null
+                ? DateTime.parse(nowSessionInfoJson['pre_recording_due_date'])
+                : null;
+        postDueDate =
+            nowSessionInfoJson['post_recording_due_date'] != null
+                ? DateTime.parse(nowSessionInfoJson['post_recording_due_date'])
+                : null;
+        userPartName = nowSessionInfoJson['song']?['user_part_name'] ?? '';
+      }
+      selectedIdx =
+          (trainingSessionStatus == DuetTrainingSessionStatus.trainingInProgress) ? 0 : -1;
 
       return nowSessionInfoJson;
     } on DioException catch (e) {
@@ -86,7 +100,9 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
   Future<void> _handleRefresh() async {
     // 페이지 내에서 refresh
     setState(() {
-      _refreshKey++; // BeforeSessionWidget rebuild
+      if (trainingSessionStatus == DuetTrainingSessionStatus.beforeSession) {
+        _refreshKey++; // BeforeSessionWidget rebuild
+      }
       responseData = _fetchSessionInfo();
     });
     await responseData; // FutureBuilder가 갱신될 때까지 대기
@@ -189,23 +205,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
                 return CustomLoading();
               } else {
                 // 응답이 정상적으로 온 경우
-
-                DateTime? preDueDate;
-                DateTime? postDueDate;
-                String? userPartName;
-
                 debugPrint("trainingSessionStatus: $trainingSessionStatus");
-                if (trainingSessionStatus != DuetTrainingSessionStatus.beforeSession) {
-                  preDueDate =
-                      snapshot.data['pre_recording_due_date'] != null
-                          ? DateTime.parse(snapshot.data['pre_recording_due_date'])
-                          : null;
-                  postDueDate =
-                      snapshot.data['post_recording_due_date'] != null
-                          ? DateTime.parse(snapshot.data['post_recording_due_date'])
-                          : null;
-                  userPartName = snapshot.data['song']['user_part_name'] ?? '';
-                }
 
                 return SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(), // 언제나 스크롤 가능하게 --> 언제나 refresh 가능
@@ -357,7 +357,19 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
               margin: EdgeInsets.only(left: 16.w),
               color: AppColors.grayscale6,
             ),
-            _curriculumListView(),
+            // item 이 없으면 카드 잇는 연결부 삭제
+            if (items.isNotEmpty)
+              Column(
+                children: [
+                  Container(
+                    width: 16.w,
+                    height: 16.h,
+                    margin: EdgeInsets.only(left: 16.w),
+                    color: AppColors.grayscale6,
+                  ),
+                  _curriculumListView(),
+                ],
+              ),
           ],
 
           DuetTrainingSessionStatus.pendingMerge => [
@@ -524,7 +536,7 @@ class SessionOptionCard extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 5.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.r),
-            color: AppColors.grayscale8,
+            color: AppColors.grayscale7,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
