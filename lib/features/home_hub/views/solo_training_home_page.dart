@@ -230,14 +230,18 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                                   );
                                 },
                               ),
-                              Container(
-                                width: 16.w,
-                                height: 16.h,
-                                margin: EdgeInsets.only(left: 16.w),
-                                color: AppColors.grayscale6,
-                              ),
-                              // ),
-                              _curriculumListView(),
+                              if (items.isNotEmpty)
+                                Column(
+                                  children: [
+                                    Container(
+                                      width: 16.w,
+                                      height: 16.h,
+                                      margin: EdgeInsets.only(left: 16.w),
+                                      color: AppColors.grayscale6,
+                                    ),
+                                    _curriculumListView(),
+                                  ],
+                                ),
                             ],
                             TrainingSessionStatus.error => [
                               SessionOptionCard(

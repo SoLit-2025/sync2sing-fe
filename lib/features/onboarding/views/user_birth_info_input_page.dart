@@ -212,16 +212,13 @@ class _UserBirthInfoInputPageState extends ConsumerState<UserBirthInfoInputPage>
                                 ),
                                 CupertinoButton(
                                   padding: EdgeInsets.symmetric(vertical: 8.h),
+                                  onPressed: _confirmYear,
                                   child: Text(
                                     '확인',
-                                    style: TextStyle(
+                                    style: AppTextStyles.body1Bold.copyWith(
                                       color: AppColors.primaryPink,
-                                      fontSize: 17.sp,
-                                      fontFamily: 'Pretendard Variable',
-                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  onPressed: _confirmYear,
                                 ),
                               ],
                             ),
@@ -248,13 +245,10 @@ class _UserBirthInfoInputPageState extends ConsumerState<UserBirthInfoInputPage>
                         ),
                         child: Text(
                           '확인',
-                          style: TextStyle(
-                            color: _isButtonActive ? AppColors.grayscale8 : AppColors.grayscale2,
-                            fontSize: 17.sp,
-                            fontFamily: 'Pretendard Variable',
-                            fontWeight: _isButtonActive ? FontWeight.w600 : FontWeight.w400,
-                            height: 1.4,
-                          ),
+                          style:
+                              _isButtonActive
+                                  ? AppTextStyles.body1Bold.copyWith(color: AppColors.grayscale8)
+                                  : AppTextStyles.body1.copyWith(color: AppColors.grayscale2),
                         ),
                       ),
                     ),
@@ -287,13 +281,8 @@ class _UserBirthInfoInputPageState extends ConsumerState<UserBirthInfoInputPage>
         alignment: Alignment.center,
         child: Text(
           text,
-          style: TextStyle(
+          style: AppTextStyles.body1.copyWith(
             color: isSelected ? AppColors.grayscale8 : AppColors.grayscale2,
-            fontSize: 17.sp,
-            fontFamily: 'Pretendard Variable',
-            fontWeight: FontWeight.w400,
-            height: 1.4,
-            decoration: TextDecoration.none,
           ),
           textAlign: TextAlign.center,
         ),
