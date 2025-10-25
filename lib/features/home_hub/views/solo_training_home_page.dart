@@ -385,13 +385,13 @@ class SessionOptionCard extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          height: 150.h,
           width: double.infinity,
           padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 5.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.r),
             color: AppColors.grayscale8,
           ),
+          constraints: BoxConstraints(minHeight: 150.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             // mainAxisAlignment: MainAxisAlignment.center,
