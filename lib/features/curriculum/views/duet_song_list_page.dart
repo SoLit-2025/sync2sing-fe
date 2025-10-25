@@ -6,33 +6,34 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:sync2sing/features/curriculum/logics/duet_song_model.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
+import 'package:sync2sing/features/home_hub/views/duet_song_section.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
-import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
+import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
 
-class SongListPage extends StatefulWidget {
-  final TrainingMode trainingMode = TrainingMode.solo;
-  const SongListPage({super.key});
+class DuetSongListPage extends StatefulWidget {
+  const DuetSongListPage({super.key});
 
   @override
-  State<SongListPage> createState() => _SongListPageState();
+  State<DuetSongListPage> createState() => _DuetSongListPageState();
 }
 
-class _SongListPageState extends State<SongListPage> {
+class _DuetSongListPageState extends State<DuetSongListPage> {
   final List<String> voiceTypes = ['전체', '소프라노', '알토', '테너', '바리톤', '베이스'];
   String selectedVoiceType = '전체';
   late final Future<Map<String, dynamic>> responseData; // status 를 포함하는 response data.
-  late List<SongDetailModel> songs = [];
+  late List<DuetSongModel> songs = [];
   late final List<Map<String, dynamic>> songList;
 
   Future<Map<String, dynamic>> _fetchSongsInfo() async {
     try {
       final dioFactory = DioFactory(SecureStorage());
       final response = await dioFactory.get(
-        '/${TrainingMode.solo.apiBasePath}/songs?type=original',
+        '/${TrainingMode.duet.apiBasePath}/songs?type=original',
       );
       if (response.statusCode == 200) {
         return response.data;
@@ -96,14 +97,20 @@ class _SongListPageState extends State<SongListPage> {
               // api 응답 완료:
               songs = [];
               snapshot.data['data']['song_list'].forEach((e) {
-                songs.add(SongDetailModel.fromJson(e));
+                songs.add(DuetSongModel.fromJson(e));
               });
 
-              final List<SongDetailModel> filteredSongList =
+              final List<DuetSongModel> filteredSongList =
                   selectedVoiceType == '전체'
                       ? songs
                       : songs
-                          .where((song) => song.voiceType == getVoiceTypeEnglish(selectedVoiceType))
+                          .where(
+                            (song) =>
+                                song.duetParts.first.voiceType ==
+                                    getVoiceTypeEnglish(selectedVoiceType) ||
+                                song.duetParts.last.voiceType ==
+                                    getVoiceTypeEnglish(selectedVoiceType),
+                          )
                           .toList();
 
               return Column(
@@ -163,80 +170,31 @@ class _SongListPageState extends State<SongListPage> {
 
                         final songDetailModel = song;
 
+                        bool isFirstVoiceTypeSelected =
+                            selectedVoiceType == '전체' ||
+                            selectedVoiceType ==
+                                SongDetailModel.convertVoiceTypeEng2Kor(
+                                  songDetailModel.duetParts.first.voiceType,
+                                );
+
                         return GestureDetector(
                           onTap: () {
-                            context.push(AppRoutePaths.soloSongDetail, extra: song);
+                            context.push(
+                              AppRoutePaths.duetSongDetail,
+                              extra: {'song': song, 'isSelectFirst': isFirstVoiceTypeSelected},
+                            );
                           },
-                          child: Container(
-                            width: 327.w.roundToDouble(),
-                            height: 103.h.roundToDouble(),
-                            decoration: BoxDecoration(
-                              color: AppColors.grayscale8,
-                              borderRadius: BorderRadius.circular(15.w),
+
+                          child: DuetSongSection(
+                            albumArtUrl: songDetailModel.albumArtUrl,
+                            artist: songDetailModel.artist,
+                            id: songDetailModel.id,
+                            title: songDetailModel.title,
+                            voiceType: songDetailModel.duetParts.first.voiceType,
+                            partName: SongDetailModel.convertVoiceTypeEng2Kor(
+                              songDetailModel.duetParts.last.voiceType,
                             ),
-                            child: Row(
-                              children: [
-                                SizedBox(width: 10.w),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12.w),
-                                  child:
-                                      song.albumArtUrl.startsWith('assets')
-                                          ? Image.asset(
-                                            song.albumArtUrl,
-                                            width: 80.w,
-                                            height: 80.h,
-                                            fit: BoxFit.cover,
-                                          )
-                                          : Image.network(
-                                            song.albumArtUrl,
-                                            width: 80.w,
-                                            height: 80.h,
-                                            fit: BoxFit.cover,
-                                          ),
-                                ),
-                                SizedBox(width: 14.w),
-                                Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        song.title,
-                                        style: AppTextStyles.body1Bold,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      SizedBox(height: 5.h),
-                                      Text(
-                                        song.artist,
-                                        style: AppTextStyles.body2.copyWith(
-                                          color: AppColors.grayscale3,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      SizedBox(height: 5.h),
-                                      Container(
-                                        height: 20.h,
-                                        width: 60.w,
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.grayscale3,
-                                          borderRadius: BorderRadius.circular(12.w),
-                                        ),
-                                        child: Text(
-                                          songDetailModel.getVoiceTypeKorean(),
-                                          style: AppTextStyles.body6.copyWith(
-                                            color: AppColors.grayscale8,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(width: 20.w),
-                              ],
-                            ),
+                            isLeftColored: (isFirstVoiceTypeSelected),
                           ),
                         );
                       },

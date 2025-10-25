@@ -6,19 +6,40 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 
+enum VoiceRangeColor {
+  /// 기본값: 회색 테두리, pink bar
+  base(AppColors.grayscale6, AppColors.grayscale1, AppColors.primaryPink),
+
+  /// 배경 흰색, 강조 primaryGreen
+  green(AppColors.primaryGreen, AppColors.primaryGreen, AppColors.primaryGreen),
+
+  /// 배경 흰색, 강조 primaryPink
+  pink(AppColors.primaryPink, AppColors.primaryPink, AppColors.primaryPink),
+
+  /// 회색 테두리, 회색 막대바
+  gray(AppColors.grayscale6, AppColors.grayscale1, AppColors.grayscale3);
+
+  final Color borderColor;
+  final Color textColor;
+  final Color barColor;
+  const VoiceRangeColor(this.borderColor, this.textColor, this.barColor);
+}
+
 class VoiceRangeDisplay extends StatelessWidget {
   final String pitchNoteMin;
   final String pitchNoteMax;
   final String title;
+  final VoiceRangeColor themeColor;
 
   const VoiceRangeDisplay({
     super.key,
     required this.pitchNoteMin,
     required this.pitchNoteMax,
     this.title = "노래 음역대",
+    this.themeColor = VoiceRangeColor.base,
   });
 
-  static int _noteToNumber(String note) {
+  static int noteToNumber(String note) {
     if (note.isEmpty) return -1;
 
     final Map<String, int> noteMap = {
@@ -62,8 +83,8 @@ class VoiceRangeDisplay extends StatelessWidget {
     const String barMinNoteString = 'G#2';
     const String barMaxNoteString = 'C6';
 
-    final int barMinNum = _noteToNumber(barMinNoteString); // 32
-    final int barMaxNum = _noteToNumber(barMaxNoteString); // 60
+    final int barMinNum = noteToNumber(barMinNoteString); // 32
+    final int barMaxNum = noteToNumber(barMaxNoteString); // 60
 
     // 예외값 처리
     if (barMinNum == -1 || barMaxNum == -1 || barMaxNum <= barMinNum) {
@@ -73,8 +94,8 @@ class VoiceRangeDisplay extends StatelessWidget {
     // bar 차이값 구하기 -> 0 ~ 가장 오른쪽 값 구함.
     final int totalBarRangeSemitones = barMaxNum - barMinNum;
 
-    final int songMinNum = _noteToNumber(pitchNoteMin);
-    final int songMaxNum = _noteToNumber(pitchNoteMax);
+    final int songMinNum = noteToNumber(pitchNoteMin);
+    final int songMaxNum = noteToNumber(pitchNoteMax);
 
     // 바에서 상대적인 위치 정하기
     double startOffsetSemitones = (songMinNum - barMinNum).toDouble().clamp(
@@ -100,12 +121,12 @@ class VoiceRangeDisplay extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.grayscale8,
         borderRadius: BorderRadius.circular(30.r),
-        border: Border.all(color: AppColors.grayscale6, width: 1.r),
+        border: Border.all(color: themeColor.borderColor, width: 1.r),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: AppTextStyles.body4),
+          Text(title, style: AppTextStyles.body4.copyWith(color: themeColor.textColor)),
           SizedBox(
             width: 200.w,
             child: Column(
@@ -127,14 +148,20 @@ class VoiceRangeDisplay extends StatelessWidget {
                         children: <Widget>[
                           Positioned(
                             left: minNoteLabelAdjustedX,
-                            child: Text(pitchNoteMin, style: AppTextStyles.body6),
+                            child: Text(
+                              pitchNoteMin,
+                              style: AppTextStyles.body6.copyWith(color: themeColor.textColor),
+                            ),
                           ),
                           Positioned(
                             left: maxNoteLabelAdjustedX.clamp(
                               minNoteLabelAdjustedX + 15,
                               barWidth - 18,
                             ),
-                            child: Text(pitchNoteMax, style: AppTextStyles.body6),
+                            child: Text(
+                              pitchNoteMax,
+                              style: AppTextStyles.body6.copyWith(color: themeColor.textColor),
+                            ),
                           ),
                         ],
                       ),
@@ -161,7 +188,7 @@ class VoiceRangeDisplay extends StatelessWidget {
                             child: Container(
                               height: 7.h,
                               decoration: BoxDecoration(
-                                color: AppColors.primaryPink,
+                                color: themeColor.barColor,
                                 borderRadius: BorderRadius.circular(4.r),
                               ),
                             ),

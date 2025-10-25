@@ -16,17 +16,23 @@ import 'package:sync2sing/features/vocal_analysis/logics/providers/audio_recorde
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import 'dart:io';
 
-class SoloRecordingSongPage extends ConsumerStatefulWidget {
+class DuetRecordingSongPage extends ConsumerStatefulWidget {
   final AnalysisType analysisType; // 아마 analysisType 로 onboarding 역할 아예 대체 가능할 듯.
   final int songId;
+  final int? roomId;
 
-  const SoloRecordingSongPage({required this.analysisType, required this.songId, super.key});
+  const DuetRecordingSongPage({
+    required this.analysisType,
+    required this.songId,
+    this.roomId,
+    super.key,
+  });
 
   @override
-  ConsumerState createState() => _SoloRecordingSongPageState();
+  ConsumerState createState() => _DuetRecordingSongPageState();
 }
 
-class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
+class _DuetRecordingSongPageState extends ConsumerState<DuetRecordingSongPage>
     with WidgetsBindingObserver {
   Key _playerKey = UniqueKey();
 
@@ -85,6 +91,8 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    debugPrint("duet recordingsong page: ${widget.analysisType.name}");
 
     // if 문 임시 주석처리 : 어느 상항에서든 do re mi song.
     // if (widget.analysisType == AnalysisType.guest) {
@@ -237,7 +245,7 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
                                 await storeVocalAnalysisSubmit(ref);
                                 if (!context.mounted) return; // 반드시 위 함수가 실행된 후에 페이지를 이동하도록 함
                                 context.go(
-                                  "${AppRoutePaths.vocalAnalysisLoading}/solo/${widget.analysisType.name}",
+                                  "${AppRoutePaths.vocalAnalysisLoading}/duet/${widget.analysisType.name}?roomId=${widget.roomId}",
                                 );
                               }
                               : null,

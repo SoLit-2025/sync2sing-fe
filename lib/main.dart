@@ -22,6 +22,7 @@ class MyApp extends ConsumerWidget {
       builder: (context, child) {
         return MaterialApp.router(
           routerConfig: router,
+          debugShowCheckedModeBanner: false,
           title: "sync2sing",
           theme: appTheme,
         );

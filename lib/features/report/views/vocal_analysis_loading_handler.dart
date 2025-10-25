@@ -12,18 +12,20 @@ import 'dart:io';
 class VocalAnalysisLoadingHandler extends ConsumerWidget {
   final TrainingMode trainingMode;
   final AnalysisType analysisType;
+  final int? roomId;
 
   const VocalAnalysisLoadingHandler({
     super.key,
     required this.trainingMode,
     required this.analysisType,
+    this.roomId,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen<AsyncValue<Map<String, dynamic>>>(
       vocalAnalysisSubmitProvider(
-        AnalysisParams(trainingMode: trainingMode, analysisType: analysisType),
+        AnalysisParams(trainingMode: trainingMode, analysisType: analysisType, roomId: roomId),
       ),
       (previous, next) {
         if (next.hasValue && context.mounted) {
@@ -40,7 +42,11 @@ class VocalAnalysisLoadingHandler extends ConsumerWidget {
       body: ref
           .watch(
             vocalAnalysisSubmitProvider(
-              AnalysisParams(trainingMode: trainingMode, analysisType: analysisType),
+              AnalysisParams(
+                trainingMode: trainingMode,
+                analysisType: analysisType,
+                roomId: roomId,
+              ),
             ),
           )
           .when(

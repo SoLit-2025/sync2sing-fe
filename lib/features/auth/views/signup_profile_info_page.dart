@@ -94,9 +94,9 @@ class _SignupProfileInfoPageState extends ConsumerState<SignupProfileInfoPage> {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 200), () {
       validateNickname(value);
-      if (isNicknameValid){
+      if (isNicknameValid) {
         ref.read(nicknameProvider.notifier).state = value;
-      } else{
+      } else {
         ref.read(nicknameProvider.notifier).state = null;
       }
     });

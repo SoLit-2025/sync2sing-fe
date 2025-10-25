@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,56 +12,50 @@ import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/onboarding/logics/watch_youtube_providers.dart';
 import 'package:sync2sing/features/onboarding/views/youtube_player_widget.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class SongExampleVideoPage extends ConsumerWidget {
   final TrainingMode trainingMode;
   final AnalysisType analysisType;
   final int songId;
-  const SongExampleVideoPage({
+  final int? roomId;
+  SongExampleVideoPage({
     super.key,
     required this.trainingMode,
     required this.analysisType,
     required this.songId,
+    this.roomId,
   });
 
-  final String jsonStr = '''
-  
-  {
+  final Map<String, dynamic> json = {
     "status": 200,
     "message": "솔로 트레이닝 원곡 조회에 성공했습니다.",
     "data": {
-        "id": 1,
-        "title": "Do-Re-Mi",
-        "artist": "Richard Rodgers",
-        "voice_type": "SOPRANO",
-        "pitch_note_min": "C4",
-        "pitch_note_max": "D5",
-        "lyrics": [
-            {
-                "line_index": 0,
-                "text": "Doe(Do), a deer, a female deer",
-                "start_time": 0
-            },
-            {
-                "line_index": 1,
-                "text": "Ray(Re), a drop of golden sun",
-                "start_time": 7200
-            }
-        ],
-        "album_art_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-        "file_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/6875743e-3955-4067-abed-da1911a6aae1.mp3"
-    }
-  }
-''';
-  final String videoId = "Qy9cj-zwbVY";
+      "id": 1,
+      "title": "Do-Re-Mi",
+      "artist": "Richard Rodgers",
+      'youtube_link': 'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
+      "voice_type": "SOPRANO",
+      "pitch_note_min": "C4",
+      "pitch_note_max": "D5",
+      "lyrics": [
+        {"line_index": 0, "text": "Doe(Do), a deer, a female deer", "start_time": 0},
+        {"line_index": 1, "text": "Ray(Re), a drop of golden sun", "start_time": 7200},
+      ],
+      "album_art_url":
+          "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+      "file_url":
+          "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/6875743e-3955-4067-abed-da1911a6aae1.mp3",
+    },
+  };
   final int videoStartSec = 42;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    Map<String, dynamic> decoded = jsonDecode(jsonStr);
+    Map<String, dynamic> decoded = json;
     Map<String, dynamic> data = decoded['data'] ?? {};
     SongDetailModel songDetail = SongDetailModel.fromJson(data);
+    final String url = songDetail.youtubeLink;
+    String videoId = url.substring(url.lastIndexOf('/') + 1, url.indexOf('?'));
     final bool isButtonEnabled = ref.watch(isOnboardingRecordingStartButtonEnabledProvider);
 
     return Scaffold(
@@ -120,8 +112,6 @@ class SongExampleVideoPage extends ConsumerWidget {
                         margin: EdgeInsets.symmetric(vertical: 20.h),
                         child: YoutubePlayerWidget(
                           videoId: videoId, // 도레미송 공식 가사 비디오
-                          // do a deer 부분에서 영상 시작, 자동 재생 금지
-                          flags: YoutubePlayerFlags(autoPlay: false, startAt: videoStartSec),
                         ),
                       ),
                     ],
@@ -142,10 +132,17 @@ class SongExampleVideoPage extends ConsumerWidget {
                     onPressed:
                         isButtonEnabled
                             ? () {
-                              context.go(
-                                "${AppRoutePaths.soloPreRecordingSong}/${analysisType.name}/$songId",
-                                extra: songDetail.id,
-                              );
+                              if (trainingMode == TrainingMode.solo) {
+                                context.go(
+                                  "${AppRoutePaths.soloPreRecordingSong}/${analysisType.name}/$songId",
+                                  extra: songDetail.id,
+                                );
+                              } else {
+                                context.go(
+                                  "${AppRoutePaths.duetRecordingSong}/${analysisType.name}/$songId?roomId=${roomId ?? ""}",
+                                  extra: songDetail.id,
+                                );
+                              }
                             }
                             : null,
                     minSize: 0.0,

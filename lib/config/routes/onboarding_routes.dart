@@ -63,7 +63,14 @@ final List<GoRoute> onboardingRoutes = [
       final analysisType = AnalysisType.values.firstWhere(
         (e) => e.name == state.pathParameters['analysisType'],
       );
-      return VocalAnalysisLoadingHandler(trainingMode: trainingMode, analysisType: analysisType);
+      final roomIdStr = state.uri.queryParameters['roomId'];
+      final int? roomId = (roomIdStr != null) ? int.tryParse(roomIdStr) : null;
+
+      return VocalAnalysisLoadingHandler(
+        trainingMode: trainingMode,
+        analysisType: analysisType,
+        roomId: roomId,
+      );
     },
   ),
 ];

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
@@ -38,14 +41,44 @@ class VocalAnalysisReportPage extends ConsumerWidget {
 
       // Null-safe 객체 처리
       final dynamic extra = state.extra!;
+      debugPrint("state - extra: ${extra['mergeJson']}");
 
       if (extra is Map<String, dynamic>) {
-        return extra;
+        return extra['reportJson'];
       } else if (extra is String) {
         final decoded = jsonDecode(extra);
-        return decoded is Map<String, dynamic> ? decoded : {};
+        return decoded['reportJson'] is Map<String, dynamic> ? decoded : {};
       } else if (extra is AnalysisResult || extra is Song) {
-        return extra.toJson();
+        return extra.toJson()['reportJson'];
+      } else {
+        debugPrint('⚠️ 알 수 없는 데이터 타입: ${extra.runtimeType}');
+        return {};
+      }
+    } catch (e) {
+      debugPrint('❌ 데이터 파싱 오류: $e');
+      return {};
+    }
+  }
+
+  Map<String, dynamic>? getMergeData(BuildContext context) {
+    final state = GoRouterState.of(context);
+    try {
+      if (state.extra == null) {
+        debugPrint('⚠️ state.extra가 null입니다.');
+        return {};
+      }
+
+      // Null-safe 객체 처리
+      final dynamic extra = state.extra!;
+      debugPrint("state - extra: $extra");
+
+      if (extra is Map<String, dynamic>) {
+        return extra['mergeJson'];
+      } else if (extra is String) {
+        final decoded = jsonDecode(extra);
+        return decoded['mergeJson'] is Map<String, dynamic> ? decoded : {};
+      } else if (extra is AnalysisResult || extra is Song) {
+        return extra.toJson()['mergeJson'];
       } else {
         debugPrint('⚠️ 알 수 없는 데이터 타입: ${extra.runtimeType}');
         return {};
@@ -112,20 +145,21 @@ class VocalAnalysisReportPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reportData = getReportData(context);
+    final mergeData = getMergeData(context);
     final songData = getSongData(reportData);
 
     final voiceTypeData =
         (analysisType == AnalysisType.guest)
-            ? ref.watch(voiceTypeProfileProvider).voiceType!
-            : songData['voice_type'];
+            ? ref.watch(voiceTypeProfileProvider).voiceType ?? ""
+            : songData['voice_type'] ?? "";
 
     final pitchNoteMin =
         (analysisType == AnalysisType.guest)
-            ? ref.watch(voiceTypeProfileProvider).minNote
+            ? ref.watch(voiceTypeProfileProvider).minNote ?? ""
             : songData['pitch_note_min'] ?? "";
     final pitchNoteMax =
         (analysisType == AnalysisType.guest)
-            ? ref.watch(voiceTypeProfileProvider).maxNote
+            ? ref.watch(voiceTypeProfileProvider).maxNote ?? ""
             : songData['pitch_note_max'] ?? "";
 
     if (reportData.isEmpty) {
@@ -133,6 +167,8 @@ class VocalAnalysisReportPage extends ConsumerWidget {
         body: Center(child: Text("분석 결과 데이터가 없습니다.", style: AppTextStyles.body1Bold)),
       );
     }
+
+    final String? mergeAudioFileUrl = mergeData?['merged_audio_url'];
 
     return Scaffold(
       body: SafeArea(
@@ -149,7 +185,7 @@ class VocalAnalysisReportPage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      _buildSongOverView(songData),
+                      _buildSongOverView(songData, mergeAudioFileUrl),
                       SizedBox(height: 16.h),
                       (analysisType == AnalysisType.guest)
                           ? _buildVoiceTypeSection(voiceTypeData)
@@ -177,6 +213,16 @@ class VocalAnalysisReportPage extends ConsumerWidget {
                       (analysisType == AnalysisType.post)
                           ? _buildFeedbackSection(reportData)
                           : _buildRecommendationSection(reportData),
+                      // 병합 결과 보여주기 (있으면)
+                      if (mergeData != null && mergeData['vocal_analysis_report_response'] != null)
+                        Column(
+                          children: [
+                            SizedBox(height: 14.h),
+                            _buildAnalysisDescription(mergeData['vocal_analysis_report_response']),
+                            SizedBox(height: 14.h),
+                            _buildFeedbackSection(mergeData['vocal_analysis_report_response']),
+                          ],
+                        ),
                       SizedBox(height: 40.h),
                       _buildCurriculumButton(context, reportData),
                       SizedBox(height: 40.h),
@@ -221,20 +267,26 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildSongOverView(Map<String, dynamic> songData) {
+  Widget _buildSongOverView(Map<String, dynamic> songData, String? mergeAudioFileUrl) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10.r),
-          child: Image.network(
-            songData['album_cover_url'],
-            height: 150.h,
-            width: 150.w,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _buildDefaultAlbumArt(),
-          ),
-        ),
+        (mergeAudioFileUrl == null)
+            ? ClipRRect(
+              borderRadius: BorderRadius.circular(10.r),
+              child: Image.network(
+                songData['album_cover_url'],
+                height: 150.h,
+                width: 150.w,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildDefaultAlbumArt(),
+              ),
+            )
+            : MusicPlayerCover(
+              // 음악 듣기 버튼이 포함된 앨범 커버
+              songFileUrl: mergeAudioFileUrl,
+              albumArtUrl: songData['album_cover_url'],
+            ),
         SizedBox(height: 10.h),
         Text(songData['title'], style: AppTextStyles.heading3Bold),
         Text(songData['artist'], style: AppTextStyles.body3.copyWith(color: AppColors.grayscale3)),
@@ -410,29 +462,35 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     return Consumer(
       builder: (BuildContext context, WidgetRef ref, Widget? child) {
         return GestureDetector(
-          onTap: () {
+          onTap: () async {
             if (analysisType == AnalysisType.guest) {
               context.go(AppRoutePaths.signupProfileInfo);
             } else if (analysisType == AnalysisType.pre) {
-              final trainingDays =
-                  ref.watch(selectedSongProvider).trainingDays ??
-                  () async {
-                    DioFactory(SecureStorage()).get('/solo-training/session').then((data) {
-                          return data.data['training_days'];
-                        })
-                        as int;
-                  }; // 서버 조회 필요.
+              // selectedSongProvider에 값이 있으면 사용, 없으면 서버 조회
+              int trainingDays;
+              final selectedSong = ref.read(selectedSongProvider);
+              if (selectedSong.trainingDays != null) {
+                trainingDays = selectedSong.trainingDays!;
+              } else {
+                final response = await DioFactory(
+                  SecureStorage(),
+                ).get('/${trainingMode.apiBasePath}/session');
+                trainingDays = response.data['data']['training_days'] as int;
+              }
+
               final curriculumGenerationRequest = CurriculumGenerationRequest(
                 trainingMode: trainingMode,
                 pitch: _getGradeFromScore(reportData['pitch_score'] as int),
                 rhythm: _getGradeFromScore(reportData['beat_score'] as int),
                 pronunciation: _getGradeFromScore(reportData['pronunciation_score'] as int),
-                trainingDays: trainingDays as int,
+                trainingDays: trainingDays,
               );
-              context.go(
-                AppRoutePaths.trainingGenerationLoading,
-                extra: curriculumGenerationRequest,
-              );
+              if (context.mounted) {
+                context.go(
+                  AppRoutePaths.trainingGenerationLoading,
+                  extra: curriculumGenerationRequest,
+                );
+              }
             } else {
               context.go(AppRoutePaths.mainHome);
             }
@@ -580,6 +638,131 @@ class VocalAnalysisReportPage extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class MusicPlayerCover extends StatefulWidget {
+  final String songFileUrl;
+  final String albumArtUrl;
+  const MusicPlayerCover({super.key, required this.songFileUrl, required this.albumArtUrl});
+
+  @override
+  State<MusicPlayerCover> createState() => _MusicPlayerCoverState();
+}
+
+class _MusicPlayerCoverState extends State<MusicPlayerCover> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  late StreamSubscription<PlayerState> _playerStateSub;
+  bool isPlaying = false;
+  bool isEnded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("imgurl: ${widget.albumArtUrl}");
+    debugPrint("audioUrl: ${widget.songFileUrl}");
+
+    // 플레이어 상태 스트림 구독
+    _playerStateSub = _audioPlayer.playerStateStream.listen((state) async {
+      final ended = state.processingState == ProcessingState.completed;
+      if (ended) {
+        await _audioPlayer.pause();
+        await _audioPlayer.setUrl(widget.songFileUrl);
+      }
+      setState(() {
+        isPlaying = state.playing && !ended;
+        isEnded = ended;
+      });
+    });
+    try {
+      if (!widget.songFileUrl.startsWith('assets')) {
+        _audioPlayer.setUrl(widget.songFileUrl);
+      } else {
+        _audioPlayer.setAsset(widget.songFileUrl);
+      }
+    } catch (e) {
+      debugPrint(e as String?);
+    }
+  }
+
+  @override
+  void dispose() {
+    _playerStateSub.cancel();
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  void _playMusic() {
+    _audioPlayer.play();
+  }
+
+  void _pauseMusic() {
+    _audioPlayer.pause();
+    _audioPlayer.playerState;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(5.r),
+          child: ColorFiltered(
+            colorFilter: ColorFilter.mode(
+              AppColors.grayscale8.withValues(alpha: 0.5),
+              BlendMode.srcATop,
+            ),
+            child: _buildAlbumArt(widget.albumArtUrl),
+          ),
+        ),
+
+        GestureDetector(
+          onTap: isPlaying ? _pauseMusic : _playMusic,
+          child: Image.asset(
+            isPlaying ? "assets/images/pause.png" : "assets/images/play.png",
+            color: AppColors.primaryPink,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 앨범아트
+  Widget _buildAlbumArt(String? url) {
+    return Container(
+      width: 150.w,
+      height: 150.h,
+      decoration: BoxDecoration(
+        color: AppColors.primaryPinkDisabled,
+        borderRadius: BorderRadius.circular(5.r),
+      ),
+      child:
+          url != null && url.isNotEmpty
+              ? ClipRRect(
+                borderRadius: BorderRadius.circular(5.r),
+                child: Image.network(
+                  url,
+                  width: 150.w,
+                  height: 150.w,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _buildDefaultAlbumArt(),
+                ),
+              )
+              : _buildDefaultAlbumArt(),
+    );
+  }
+
+  // 기본 앨범아트
+  Widget _buildDefaultAlbumArt() {
+    return Center(
+      child: Image.asset(
+        'assets/images/default_album_art.png',
+        height: 150.h,
+        width: 150.w,
+        fit: BoxFit.contain,
+      ),
     );
   }
 }

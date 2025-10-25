@@ -6,9 +6,9 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class YoutubePlayerWidget extends ConsumerStatefulWidget {
   final String videoId;
-  final YoutubePlayerFlags flags;
+  final int videoStartSec;
 
-  const YoutubePlayerWidget({super.key, required this.videoId, required this.flags});
+  const YoutubePlayerWidget({super.key, required this.videoId, this.videoStartSec = 0});
 
   @override
   ConsumerState<YoutubePlayerWidget> createState() => _VideoPlayerWidgetState();
@@ -22,7 +22,10 @@ class _VideoPlayerWidgetState extends ConsumerState<YoutubePlayerWidget> {
   void initState() {
     super.initState();
 
-    _controller = YoutubePlayerController(initialVideoId: widget.videoId, flags: widget.flags);
+    _controller = YoutubePlayerController(
+      initialVideoId: widget.videoId,
+      flags: YoutubePlayerFlags(autoPlay: false, startAt: widget.videoStartSec), // 자동 재생 금지
+    );
 
     _startWatchTracking();
   }
@@ -31,8 +34,9 @@ class _VideoPlayerWidgetState extends ConsumerState<YoutubePlayerWidget> {
     _timer = Timer.periodic(Duration(seconds: 1), (_) {
       // 1초 간격으로 추적
       if (_controller.value.isPlaying) {
-        final current = ref.read(watchedDurationProvider);
-        ref.read(watchedDurationProvider.notifier).state = current + Duration(seconds: 1);
+        ref
+            .read(watchedDurationProvider.notifier)
+            .update((current) => current + Duration(seconds: 1));
       }
     });
   }

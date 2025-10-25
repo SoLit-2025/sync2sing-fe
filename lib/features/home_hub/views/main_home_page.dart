@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
@@ -11,6 +12,7 @@ import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/features/shared/views/custom_loading_page.dart';
 import 'package:sync2sing/features/home_hub/logics/training_session_status.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
+import 'package:sync2sing/features/home_hub/logics/nickname_get_provider.dart';
 
 class MainHomePage extends StatefulWidget {
   const MainHomePage({Key? key}) : super(key: key);
@@ -20,7 +22,6 @@ class MainHomePage extends StatefulWidget {
 }
 
 class _MainHomePageState extends State<MainHomePage> {
-  final String nickname = "노래하는 해파리";
   late final Future<Map<String, dynamic>> _trainingData;
   late final DioFactory dioFactory;
   final PageController _pageController = PageController();
@@ -34,7 +35,7 @@ class _MainHomePageState extends State<MainHomePage> {
   }
 
   Future<Map<String, dynamic>> _fetchTrainingData() async {
-    try{
+    try {
       dioFactory = DioFactory(SecureStorage());
       final response = await dioFactory.get('/training/trainings/in-progress');
 
@@ -47,9 +48,7 @@ class _MainHomePageState extends State<MainHomePage> {
       debugPrint("Status code: ${e.response?.statusCode}");
 
       throw Exception(e.response?.data ?? e.message);
-
     }
-
   }
 
   // 솔로 트레이닝 상태 확인
@@ -98,16 +97,24 @@ class _MainHomePageState extends State<MainHomePage> {
                   width: double.infinity,
                   alignment: Alignment.center,
                   child: Padding(
-                    padding: EdgeInsets.only(
-                      left: 24.w,
-                      right: 24.w,
-                      top: 40.h,
-                      bottom: 24.h,
-                    ),
+                    padding: EdgeInsets.only(left: 24.w, right: 24.w, top: 40.h, bottom: 24.h),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildMainHeader(soloData, duetData),
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final nickname = ref.watch(nicknameGetProvider);
+                            return nickname.when(
+                              data:
+                                  (data) =>
+                                      _buildMainHeader(soloData, duetData, data), // nickname이 존재하면
+                              error:
+                                  (e, stackTrace) =>
+                                      _buildMainHeader(soloData, duetData, "error"), // 불러오는데 실패하면
+                              loading: () => _buildMainHeader(soloData, duetData, ""), // 불러오는 중이면
+                            );
+                          },
+                        ),
                         SizedBox(height: 45.h),
                         _buildSoloTrainingSection(soloData),
                         SizedBox(height: 40.h),
@@ -132,10 +139,7 @@ class _MainHomePageState extends State<MainHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              "데이터를 불러올 수 없습니다",
-              style: AppTextStyles.heading3Bold,
-            ),
+            Text("데이터를 불러올 수 없습니다", style: AppTextStyles.heading3Bold),
             SizedBox(height: 16.h),
             Text(
               error,
@@ -175,7 +179,11 @@ class _MainHomePageState extends State<MainHomePage> {
     );
   }
 
-  Widget _buildMainHeader(Map<String, dynamic> soloData, Map<String, dynamic> duetData) {
+  Widget _buildMainHeader(
+    Map<String, dynamic> soloData,
+    Map<String, dynamic> duetData,
+    String nickname,
+  ) {
     bool hasAnyTraining = _hasSoloTraining(soloData) || _hasDuetTraining(duetData);
     return Stack(
       clipBehavior: Clip.none,
@@ -194,9 +202,7 @@ class _MainHomePageState extends State<MainHomePage> {
           width: double.infinity,
           padding: EdgeInsets.only(top: 55.h),
           child: Text(
-            hasAnyTraining
-                ? "$nickname 님,\n진행중인\n트레이닝이 있어요"
-                : "$nickname 님,\n지금 바로\n트레이닝을 시작해보세요",
+            hasAnyTraining ? "$nickname 님,\n진행중인\n트레이닝이 있어요" : "$nickname 님,\n지금 바로\n트레이닝을 시작해보세요",
             style: AppTextStyles.heading2Bold,
             textAlign: TextAlign.left,
             softWrap: false,
@@ -224,46 +230,48 @@ class _MainHomePageState extends State<MainHomePage> {
         SizedBox(height: 12.h),
         SizedBox(
           height: hasSolo ? 210.h : 180.h,
-          child: hasSolo
-              ? PageView.builder(
-            controller: _pageController,
-            onPageChanged: (int page){
-              setState(() {
-                _currentPage = page;
-              });
-            },
-            itemCount: orderedTrainingList.length,
-            itemBuilder: (context, index) {
-              final training = orderedTrainingList[index];
-              return Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4.w),
-                child: _buildActiveTrainingCard(
-                  category: categoryKr[training['category'].toString().toLowerCase()] ?? training['category'],
-                  title: training['title'],
-                  description: training['description'],
-                  buttonText: "연습하러 가기",
-                  onPressed: () {
-                    context.push(AppRoutePaths.soloTrainingHome);
-                  },
-                  width: 327.w,
-                ),
-              );
-            },
-          )
-              : Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4.w),
-            child: _buildEmptyTrainingCard(
-              message: "진행중인 트레이닝이 없어요",
-              buttonText: "맞춤형 커리큘럼 생성하기",
-              onPressed: () {
-                context.push(AppRoutePaths.soloTrainingHome);
-              },
-            ),
-          ),
+          child:
+              hasSolo
+                  ? PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (int page) {
+                      setState(() {
+                        _currentPage = page;
+                      });
+                    },
+                    itemCount: orderedTrainingList.length,
+                    itemBuilder: (context, index) {
+                      final training = orderedTrainingList[index];
+                      return Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4.w),
+                        child: _buildActiveTrainingCard(
+                          category:
+                              categoryKr[training['category'].toString().toLowerCase()] ??
+                              training['category'],
+                          title: training['title'],
+                          description: training['description'],
+                          buttonText: "연습하러 가기",
+                          onPressed: () {
+                            context.push(AppRoutePaths.soloTrainingHome);
+                          },
+                          width: 327.w,
+                        ),
+                      );
+                    },
+                  )
+                  : Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
+                    child: _buildEmptyTrainingCard(
+                      message: "진행중인 트레이닝이 없어요",
+                      buttonText: "맞춤형 커리큘럼 생성하기",
+                      onPressed: () {
+                        context.push(AppRoutePaths.soloTrainingHome);
+                      },
+                    ),
+                  ),
         ),
         // 페이지 인디케이터
-        if (hasSolo && orderedTrainingList.length > 1)
-          SizedBox(height: 8.h),
+        if (hasSolo && orderedTrainingList.length > 1) SizedBox(height: 8.h),
         if (hasSolo && orderedTrainingList.length > 1)
           Center(
             child: PageIndicator(
@@ -274,8 +282,6 @@ class _MainHomePageState extends State<MainHomePage> {
       ],
     );
   }
-
-
 
   Widget _buildDuetTrainingSection(Map<String, dynamic> duetData) {
     final hasDuet = _hasDuetTraining(duetData);
@@ -334,11 +340,7 @@ class _MainHomePageState extends State<MainHomePage> {
             textAlign: TextAlign.left,
           ),
           SizedBox(height: 4.h),
-          Text(
-            title,
-            style: AppTextStyles.heading4Bold,
-            textAlign: TextAlign.left,
-          ),
+          Text(title, style: AppTextStyles.heading4Bold, textAlign: TextAlign.left),
           SizedBox(height: 4.h),
           Text(
             description,
@@ -417,9 +419,11 @@ class _MainHomePageState extends State<MainHomePage> {
                     color: AppColors.primaryPink,
                     borderRadius: BorderRadius.circular(30.r),
                   ),
-                  child: Text(buttonText, style: AppTextStyles.body1BoldWhite,
-                    textAlign: TextAlign.center,),
-
+                  child: Text(
+                    buttonText,
+                    style: AppTextStyles.body1BoldWhite,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ),
@@ -428,5 +432,4 @@ class _MainHomePageState extends State<MainHomePage> {
       ),
     );
   }
-
 }

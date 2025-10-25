@@ -41,6 +41,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
     2,
     "Do-Re-Mi Song",
     "Richard Rodgers",
+    'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
     "SOPRANO",
     "C4",
     "D5",
@@ -154,7 +155,6 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
 
                 /// MusicContentPlayer: 음악 재생, 녹음, 시각화를 담당하는 핵심 위젯
                 /// 이 위젯에서 모든 음악 관련 기능이 처리됩니다
-                // child: MusicContentPlayer(key: _playerKey),
                 child: MusicContentPlayer(
                   _songDetailModel,
                   'assets/songs/datas/doremi_song_piano_v2.json',

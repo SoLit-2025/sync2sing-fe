@@ -26,12 +26,12 @@ class _LoginpageState extends ConsumerState<Loginpage> {
 
   Future<void> printAccessToken() async {
     String? accessToken = await _storage.readAccessToken();
-    print('Stored ACCESS_TOKEN: $accessToken');
+    debugPrint('Stored ACCESS_TOKEN: $accessToken');
   }
 
   Future<void> printRefreshToken() async {
     String? refreshToken = await _storage.readRefreshToken();
-    print('Stored REFRESH_TOKEN: $refreshToken');
+    debugPrint('Stored REFRESH_TOKEN: $refreshToken');
   }
 
   bool get _isLoginButtonEnabled => _idController.text.isNotEmpty && _pwController.text.isNotEmpty;
@@ -61,7 +61,7 @@ class _LoginpageState extends ConsumerState<Loginpage> {
     final username = _idController.text.trim();
     final password = _pwController.text.trim();
 
-    print("username: $username, password: $password");
+    debugPrint("username: $username, password: $password");
 
     try {
       final response = await _authApi.login(
@@ -81,12 +81,14 @@ class _LoginpageState extends ConsumerState<Loginpage> {
         await printRefreshToken();
 
         // 로그인 성공 후 메인 홈 화면으로 이동
-        context.go(AppRoutePaths.mainHome);
+        if (mounted) {
+          context.go(AppRoutePaths.mainHome);
+        }
       } else {
         _showError(response['message'] ?? '로그인에 실패했습니다.');
       }
     } catch (e) {
-      print(e);
+      debugPrint("$e");
       _showError('로그인 중 오류가 발생했습니다.');
     }
   }
