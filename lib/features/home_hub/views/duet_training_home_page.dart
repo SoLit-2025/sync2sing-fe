@@ -351,15 +351,10 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
                 );
               },
             ),
-            Container(
-              width: 16.w,
-              height: 16.h,
-              margin: EdgeInsets.only(left: 16.w),
-              color: AppColors.grayscale6,
-            ),
             // item 이 없으면 카드 잇는 연결부 삭제
             if (items.isNotEmpty)
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     width: 16.w,
