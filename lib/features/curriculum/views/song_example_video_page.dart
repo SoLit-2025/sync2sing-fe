@@ -12,7 +12,6 @@ import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/onboarding/logics/watch_youtube_providers.dart';
 import 'package:sync2sing/features/onboarding/views/youtube_player_widget.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class SongExampleVideoPage extends ConsumerWidget {
   final TrainingMode trainingMode;
@@ -113,8 +112,6 @@ class SongExampleVideoPage extends ConsumerWidget {
                         margin: EdgeInsets.symmetric(vertical: 20.h),
                         child: YoutubePlayerWidget(
                           videoId: videoId, // 도레미송 공식 가사 비디오
-                          // do a deer 부분에서 영상 시작, 자동 재생 금지
-                          flags: YoutubePlayerFlags(autoPlay: false, startAt: videoStartSec),
                         ),
                       ),
                     ],

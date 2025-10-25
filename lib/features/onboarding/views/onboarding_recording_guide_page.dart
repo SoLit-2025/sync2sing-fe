@@ -6,7 +6,6 @@ import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 import '../logics/watch_youtube_providers.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
 
@@ -66,9 +65,8 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
                         width: 327.w,
                         margin: EdgeInsets.symmetric(vertical: 20.h),
                         child: YoutubePlayerWidget(
-                          videoId: 'Qy9cj-zwbVY', // 도레미송 공식 가사 비디오
-                          // do a deer 부분에서 영상 시작, 자동 재생 금지
-                          flags: YoutubePlayerFlags(autoPlay: false, startAt: 42),
+                          videoId: 'Qy9cj-zwbVY',
+                          videoStartSec: 42, // do a deer 부분에서 영상 시작
                         ),
                       ),
                     ],
