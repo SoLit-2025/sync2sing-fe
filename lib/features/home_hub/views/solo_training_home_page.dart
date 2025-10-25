@@ -232,6 +232,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                               ),
                               if (items.isNotEmpty)
                                 Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Container(
                                       width: 16.w,

@@ -54,7 +54,7 @@ class SongOfRoom {
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
       artist: json['artist'] ?? '',
-      albumArtUrl: json['albumArtUrl'] ?? '',
+      albumArtUrl: json['album_art_url'] ?? '',
     );
   }
 }
