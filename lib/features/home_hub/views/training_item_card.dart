@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:sync2sing/features/shared/logics/dio_factory.dart';
+import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 
 import '../logics/training_item.dart';
 
@@ -19,7 +21,7 @@ class TrainingItemCard extends StatelessWidget {
     required this.trainingItem,
     required this.sessionId,
     required this.showButton,
-    this.isMicReq = true,
+    this.isMicReq = false,
     this.backGroundColor = AppColors.grayscale8,
   });
 
@@ -54,13 +56,13 @@ class TrainingItemCard extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          height: showButton ? 150.h : 95.h,
           width: double.infinity,
           padding: EdgeInsets.fromLTRB(12.w, 5.h, 12.w, 5.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.r),
             color: backGroundColor,
           ),
+          constraints: BoxConstraints(minHeight: showButton ? 150.h : 95.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -84,18 +86,24 @@ class TrainingItemCard extends StatelessWidget {
                 ),
               ),
               if (showButton)
-                Container(
-                  alignment: Alignment.center,
-                  width: double.infinity,
-                  height: 40.h,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryPink,
-                    borderRadius: BorderRadius.circular(30.r),
-                  ),
-                  margin: EdgeInsets.only(top: 12.h),
-                  child: CupertinoButton(
-                    padding: EdgeInsets.symmetric(vertical: 4.h),
-                    onPressed: () {},
+                CupertinoButton(
+                  padding: EdgeInsets.symmetric(vertical: 4.h),
+                  onPressed: () {
+                    Map<String, dynamic> data = {'progress': 100};
+                    DioFactory(SecureStorage()).put(
+                      '/training/sessions/$sessionId/trainings/${trainingItem.id}/progress',
+                      data: data,
+                    );
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    height: 40.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryPink,
+                      borderRadius: BorderRadius.circular(30.r),
+                    ),
+                    margin: EdgeInsets.only(top: 12.h),
                     child: Text('연습하러 가기', style: AppTextStyles.body2BoldWhite),
                   ),
                 ),
