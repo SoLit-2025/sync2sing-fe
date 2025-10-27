@@ -74,16 +74,21 @@ class SoloSongDetailPage extends StatelessWidget {
                     color: AppColors.grayscale7,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: Column(
-                    // 가사: 텍스트 리스트 형태로 만들기.
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children:
-                        songDetailModel.lyrics.map((item) {
-                          return Text(
-                            item.text,
-                            style: AppTextStyles.heading4Bold.copyWith(color: AppColors.grayscale3),
-                          );
-                        }).toList(),
+                  child: SingleChildScrollView(
+                    physics: ClampingScrollPhysics(),
+                    child: Column(
+                      // 가사: 텍스트 리스트 형태로 만들기.
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children:
+                          songDetailModel.lyrics.map((item) {
+                            return Text(
+                              item.text,
+                              style: AppTextStyles.heading4Bold.copyWith(
+                                color: AppColors.grayscale3,
+                              ),
+                            );
+                          }).toList(),
+                    ),
                   ),
                 ),
               ),

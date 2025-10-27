@@ -185,16 +185,19 @@ class _DuetSongListPageState extends State<DuetSongListPage> {
                             );
                           },
 
-                          child: DuetSongSection(
-                            albumArtUrl: songDetailModel.albumArtUrl,
-                            artist: songDetailModel.artist,
-                            id: songDetailModel.id,
-                            title: songDetailModel.title,
-                            voiceType: songDetailModel.duetParts.first.voiceType,
-                            partName: SongDetailModel.convertVoiceTypeEng2Kor(
-                              songDetailModel.duetParts.last.voiceType,
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 10.h, bottom: 10.h),
+                            child: DuetSongSection(
+                              albumArtUrl: songDetailModel.albumArtUrl,
+                              artist: songDetailModel.artist,
+                              id: songDetailModel.id,
+                              title: songDetailModel.title,
+                              voiceType: songDetailModel.duetParts.first.voiceType,
+                              partName: SongDetailModel.convertVoiceTypeEng2Kor(
+                                songDetailModel.duetParts.last.voiceType,
+                              ),
+                              isLeftColored: (isFirstVoiceTypeSelected),
                             ),
-                            isLeftColored: (isFirstVoiceTypeSelected),
                           ),
                         );
                       },
