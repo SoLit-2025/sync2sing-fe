@@ -45,6 +45,7 @@ abstract class AppRouteNames {
   static const pitchTraining = 'pitchTraining';
   static const rhythmTraining = 'rhythmTraining';
   static const pronunciationTraining = 'pronunciationTraining';
+  static const trainingCard = 'trainingCard';
 }
 
 abstract class AppRoutePaths {
@@ -93,4 +94,5 @@ abstract class AppRoutePaths {
   static const pitchTraining = '/training/pitch';
   static const rhythmTraining = '/training/rhythm';
   static const pronunciationTraining = '/training/pronunciation';
+  static const trainingCard = '/training/card';
 }

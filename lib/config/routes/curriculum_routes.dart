@@ -22,6 +22,7 @@ import 'package:sync2sing/features/vocal_analysis/views/pages/pitch_training_pag
 import 'package:sync2sing/features/vocal_analysis/views/pages/pronunciation_training_page.dart';
 import 'package:sync2sing/features/vocal_analysis/views/pages/rhythm_training_page.dart';
 import 'package:sync2sing/features/vocal_analysis/views/pages/solo_recording_song_page.dart';
+import 'package:sync2sing/features/curriculum/views/training_card_page.dart';
 
 final List<GoRoute> curriculumRoutes = [
   GoRoute(
@@ -194,4 +195,26 @@ final List<GoRoute> curriculumRoutes = [
       return DuetRoomDetailPage(roomPosition: roomPosition, room: room);
     },
   ),
+
+  GoRoute(
+    path: '${AppRoutePaths.trainingCard}/:trainingType/:difficulty',
+    name: AppRouteNames.trainingCard,
+    builder: (context, state) {
+      final trainingType = state.pathParameters['trainingType']!;
+      final difficulty = state.pathParameters['difficulty']!;
+      final extra = state.extra as Map<String, dynamic>?;
+
+
+      return TrainingCardPage(
+        trainingType: trainingType,
+        difficulty: difficulty,
+        title: extra?['title'] ?? '훈련',
+        description: extra?['description'] ?? '',
+        sessionId: extra?['sessionId'] ?? 0,
+        trainingId: extra?['trainingId'] ?? 0,
+
+      );
+    },
+  )
+
 ];

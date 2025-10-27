@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
+
 
 import '../logics/training_item.dart';
 
@@ -22,6 +25,28 @@ class TrainingItemCard extends StatelessWidget {
     this.isMicReq = true,
     this.backGroundColor = AppColors.grayscale8,
   });
+
+  String _getCategoryEnglish(String categoryKr) {
+    const categoryMap = {
+      '음정': 'pitch',
+      '박자': 'rhythm',
+      '발음': 'pronunciation',
+    };
+    return categoryMap[categoryKr] ?? categoryKr.toLowerCase();
+  }
+
+  String _getGradeEnglish(String gradeKr) {
+    if (gradeKr == 'HIGH' || gradeKr == 'MEDIUM' || gradeKr == 'LOW') {
+      return gradeKr.toLowerCase();
+    }
+
+    const gradeMap = {
+      '상': 'high',
+      '중': 'medium',
+      '하': 'low',
+    };
+    return gradeMap[gradeKr] ?? gradeKr.toLowerCase();
+  }
 
   Widget _trainingCardTop() {
     return Row(
@@ -95,7 +120,23 @@ class TrainingItemCard extends StatelessWidget {
                   margin: EdgeInsets.only(top: 12.h),
                   child: CupertinoButton(
                     padding: EdgeInsets.symmetric(vertical: 4.h),
-                    onPressed: () {},
+                    onPressed: () {
+                      final categoryEn = _getCategoryEnglish(trainingItem.category);
+                      final gradeEn = _getGradeEnglish(trainingItem.grade);
+                      context.goNamed(
+                          AppRouteNames.trainingCard,
+                          pathParameters: {
+                          'trainingType': categoryEn,
+                          'difficulty': gradeEn,
+                          },
+                          extra: {
+                            'title': trainingItem.title,
+                            'description': trainingItem.description,
+                            'sessionId': sessionId,
+                            'trainingId': trainingItem.id,
+                          }
+                      );
+                    },
                     child: Text('연습하러 가기', style: AppTextStyles.body2BoldWhite),
                   ),
                 ),
