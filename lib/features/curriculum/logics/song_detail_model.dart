@@ -11,6 +11,7 @@ class SongDetailModel {
   final List<TimedLyric> lyrics;
   final String albumArtUrl;
   final String fileUrl;
+  String? pitchJsonPath;
 
   SongDetailModel(
     this.id,
@@ -22,8 +23,9 @@ class SongDetailModel {
     this.pitchNoteMax,
     this.lyrics,
     this.albumArtUrl,
-    this.fileUrl,
-  );
+    this.fileUrl, {
+    this.pitchJsonPath,
+  });
 
   // JSON → 객체 변환
   factory SongDetailModel.fromJson(Map<String, dynamic> data) {
@@ -55,6 +57,10 @@ class SongDetailModel {
       default:
         return voiceType;
     }
+  }
+
+  void setPitchJsonPath(String path) {
+    pitchJsonPath = path;
   }
 
   static String convertVoiceTypeEng2Kor(String voiceTypeEng) {

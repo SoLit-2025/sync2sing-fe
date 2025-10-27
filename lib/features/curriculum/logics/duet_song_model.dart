@@ -15,6 +15,7 @@ class DuetSongModel extends SongDetailModel {
     super.albumArtUrl,
     super.fileUrl, {
     required this.duetParts,
+    super.pitchJsonPath,
   });
 
   factory DuetSongModel.fromJson(Map<String, dynamic> json) {
