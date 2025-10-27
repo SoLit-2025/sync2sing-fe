@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
 import 'widgets/training_intro_card.dart';
 import 'widgets/training_card_news_viewer.dart';
 import 'widgets/training_completion_card.dart';
@@ -12,6 +14,7 @@ class TrainingCardPage extends StatefulWidget {
   final String description;
   final int sessionId;
   final int trainingId;
+  final String? returnPath;
 
   const TrainingCardPage({
     Key? key,
@@ -21,6 +24,7 @@ class TrainingCardPage extends StatefulWidget {
     required this.description,
     required this.sessionId,
     required this.trainingId,
+    this.returnPath,
   }) : super(key: key);
 
 
@@ -175,7 +179,19 @@ class _TrainingCardPageState extends State<TrainingCardPage> {
               subtitle: widget.description,
               sessionId: widget.sessionId,
               trainingId: widget.trainingId,
-              onConfirm: () => Navigator.pop(context),
+              onConfirm: () async{
+                await Future.delayed(const Duration(milliseconds: 100));
+
+
+                if (!context.mounted) return;
+
+                // returnPath가 있으면 사용, 없으면 메인으로
+                if (widget.returnPath != null) {
+                  context.go(widget.returnPath!);
+                } else {
+                  context.go(AppRoutePaths.mainHome);  // Navigator.pop 대신!
+                }
+              }
             );
           }
         },

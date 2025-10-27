@@ -212,6 +212,7 @@ final List<GoRoute> curriculumRoutes = [
         description: extra?['description'] ?? '',
         sessionId: extra?['sessionId'] ?? 0,
         trainingId: extra?['trainingId'] ?? 0,
+        returnPath: extra?['returnPath'],
 
       );
     },

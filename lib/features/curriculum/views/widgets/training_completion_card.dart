@@ -27,18 +27,7 @@ class TrainingCompletionCard extends StatelessWidget {
     required this.trainingId,
   }) : super(key: key);
 
-  Future<void> _updateProgress() async {
-    try {
-      final dioFactory = DioFactory(SecureStorage());
-      final response = await dioFactory.put(
-        '/training/sessions/$sessionId/trainings/$trainingId/progress',
-        data: {'progress': 100},
-      );
-      debugPrint(' 진행률 업데이트 성공: ${response.data}');
-    } catch (e) {
-      debugPrint(' 진행률 업데이트 실패: $e');
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -82,10 +71,25 @@ class TrainingCompletionCard extends StatelessWidget {
                 height: 50.h,
                 child: ElevatedButton(
                   onPressed: () async {
-                    await _updateProgress();  //  진행률 업데이트
-                    if (context.mounted) {
-                      context.go(AppRoutePaths.soloTrainingHome);
+                    try {
+                      final dioFactory = DioFactory(SecureStorage());
+                      final response = await dioFactory.put(
+                        '/training/sessions/$sessionId/trainings/$trainingId/progress',
+                        data: {'progress': 100},
+                      );
+                      debugPrint('진행률 업데이트 성공: ${response.data}');
+                    } catch (e) {
+                      debugPrint('진행률 업데이트 실패: $e');
                     }
+
+                    if (!context.mounted) return;
+
+                    await Future.delayed(const Duration(milliseconds: 100));
+
+                    if (!context.mounted) return;
+
+                      onConfirm();
+
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryPink,
@@ -106,4 +110,5 @@ class TrainingCompletionCard extends StatelessWidget {
       ),
     );
   }
+
 }

@@ -14,6 +14,7 @@ class TrainingItemCard extends StatelessWidget {
   final bool showButton;
   final bool isMicReq;
   final Color? backGroundColor;
+  final String returnPath;
 
   /// [isMicReq] 마이크가 필요한지 여부, 기본값: [true]
   /// [backGroundColor] 기본값: [AppColors.grayscale8]
@@ -22,6 +23,7 @@ class TrainingItemCard extends StatelessWidget {
     required this.trainingItem,
     required this.sessionId,
     required this.showButton,
+    required this.returnPath,
     this.isMicReq = true,
     this.backGroundColor = AppColors.grayscale8,
   });
@@ -134,6 +136,7 @@ class TrainingItemCard extends StatelessWidget {
                             'description': trainingItem.description,
                             'sessionId': sessionId,
                             'trainingId': trainingItem.id,
+                            'returnPath': returnPath,
                           }
                       );
                     },
