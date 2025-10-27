@@ -101,11 +101,15 @@ final List<GoRoute> curriculumRoutes = [
       final songId = int.tryParse(songIdStr!);
       final roomIdStr = state.uri.queryParameters['roomId'];
       final int? roomId = (roomIdStr != null) ? int.tryParse(roomIdStr) : null;
+      final partNumStr = state.uri.queryParameters['partNumber'];
+      final int? partNumber = (partNumStr != null) ? int.tryParse(partNumStr) : null;
+
       return SongExampleVideoPage(
         songId: songId!,
         trainingMode: trainingMode,
         analysisType: analysisType,
         roomId: roomId,
+        partNumber: partNumber,
       );
     },
   ),
@@ -132,8 +136,15 @@ final List<GoRoute> curriculumRoutes = [
       final songId = int.tryParse(songIdStr!);
       final roomIdStr = state.uri.queryParameters['roomId'];
       final int? roomId = (roomIdStr != null) ? int.tryParse(roomIdStr) : null;
+      final partNumStr = state.uri.queryParameters['partNumber'];
+      final int? partNumber = (partNumStr != null) ? int.tryParse(partNumStr) : null;
 
-      return DuetRecordingSongPage(songId: songId!, analysisType: analysisType, roomId: roomId);
+      return DuetRecordingSongPage(
+        songId: songId!,
+        analysisType: analysisType,
+        roomId: roomId,
+        partNumber: partNumber ?? 0,
+      );
     },
   ),
   GoRoute(

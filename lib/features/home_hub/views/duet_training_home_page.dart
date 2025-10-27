@@ -57,6 +57,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
   DateTime? preDueDate;
   DateTime? postDueDate;
   String? userPartName;
+  int? userPartNumber;
 
   int calculateTotalProgressFromItems(List<TrainingItem> items) {
     // totalProgress 계산
@@ -86,6 +87,8 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
                 ? DateTime.parse(nowSessionInfoJson['post_recording_due_date'])
                 : null;
         userPartName = nowSessionInfoJson['song']?['user_part_name'] ?? '';
+        bool isHost = (room?.hostPart.partName == userPartName) ?? false;
+        userPartNumber = isHost ? room?.hostPart.partNumber : room?.partnerPart.partNumber;
       }
       selectedIdx =
           (trainingSessionStatus == DuetTrainingSessionStatus.trainingInProgress) ? 0 : -1;
@@ -347,7 +350,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
               isMicReq: true,
               onPressed: () {
                 context.go(
-                  "${AppRoutePaths.songExampleVideo}/duet/${AnalysisType.post.name}/$songId?roomId=${room?.id}",
+                  "${AppRoutePaths.songExampleVideo}/duet/${AnalysisType.post.name}/$songId?roomId=${room?.id}&partNumber=$userPartNumber",
                 );
               },
             ),

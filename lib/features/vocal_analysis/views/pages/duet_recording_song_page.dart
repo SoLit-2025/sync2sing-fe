@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
+import 'package:sync2sing/features/curriculum/logics/duet_song_model.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
@@ -20,10 +21,12 @@ class DuetRecordingSongPage extends ConsumerStatefulWidget {
   final AnalysisType analysisType; // 아마 analysisType 로 onboarding 역할 아예 대체 가능할 듯.
   final int songId;
   final int? roomId;
+  final int partNumber;
 
   const DuetRecordingSongPage({
     required this.analysisType,
     required this.songId,
+    required this.partNumber,
     this.roomId,
     super.key,
   });
@@ -38,89 +41,143 @@ class _DuetRecordingSongPageState extends ConsumerState<DuetRecordingSongPage>
 
   bool _isButtonEnabled = false;
   late final SongDetailModel _songDetailModel;
-  final String jsonStr = '''
-  {
-    "status": 200,
-    "message": "솔로 트레이닝 MR 곡 조회에 성공했습니다.",
-    "data": {
-        "id": 1,
-        "title": "Golden",
-        "artist": "HUNXR/X(EJAE, Audrey NUNA, REI AMI)",
-        "voice_type": "SOPRANO",
-        "pitch_note_min": "A3",
-        "pitch_note_max": "C4",
-        "lyrics": [
-        {
-                "line_index": 0,
-                "text": "I'm done hidin'",
-                "start_time": 200
-            },
-             {
-                "line_index": 1,
-                "text": "now I'm shinin'",
-                "start_time": 700
-            },
-             {
-                "line_index": 2,
-                "text": "like I'm born to be",
-                "start_time": 1200
-            },
-             {
-                "line_index": 3,
-                "text": "We dreamin' hard",
-                "start_time": 1700
-            },
-            {
-                "line_index": 4,
-                "text": "we came so far",
-                "start_time": 2000
-            },
-            {
-                "line_index": 5,
-                "text": "now I believe",
-                "start_time": 2500
-            }
-        ],
-        "album_art_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-        "file_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/mr/27e305f9-ca07-4f53-a15a-94f1b5b0cc89.mp3"
-    }
-}
-''';
+  late final String _pitchJsonPath;
+  final double timeOffset = -3.79;
+
+  final SongDetailModel _roseSong = DuetSongModel(
+    28,
+    "APT.",
+    "로제, Bruno Mars",
+    'https://www.youtube.com/watch?v=8Ebqe2Dbzls',
+    "ALTO",
+    "D4",
+    "D#5",
+    [
+      TimedLyric(0, "(전주중)", 0),
+      TimedLyric(1, "Don't you want me like I want you baby", 3352),
+      TimedLyric(2, "Don't you need me like I need you now", 6828),
+      TimedLyric(3, "Sleep tomorrow but tonight go crazy", 9967),
+      TimedLyric(4, "All you gotta do is just meet me at the", 13249),
+      TimedLyric(5, "아파트 아파트", 16468),
+      TimedLyric(6, "아파트 아파트", 18080),
+      TimedLyric(7, "아파트 아파트", 19936),
+      TimedLyric(8, "Just meet me at the", 20936),
+      TimedLyric(9, "아파트 아파트", 22886),
+      TimedLyric(10, "아파트 아파트", 24500),
+      TimedLyric(11, "아파트 아파트", 26146),
+      TimedLyric(12, "Uh, uh huh uh huh", 27475),
+      TimedLyric(13, "아파트 아파트", 29388),
+      TimedLyric(14, "아파트 아파트", 30938),
+      TimedLyric(15, "아파트 아파트", 32615),
+      TimedLyric(16, "Just meet me at the", 34139),
+      TimedLyric(17, "아파트 아파트", 35952),
+      TimedLyric(18, "아파트 아파트", 37348),
+      TimedLyric(19, "아파트 아파트", 39001),
+      TimedLyric(20, "Uh, uh huh uh huh", 40901),
+    ],
+    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/06802146-3055-4f82-bf52-fc653ce63791.jpg",
+    'assets/songs/audios/apt_mr_v1.wav',
+    duetParts: [
+      DuetPart(
+        partNumber: 0,
+        partName: "로제",
+        voiceType: "ALTO",
+        pitchNoteMin: "D4",
+        pitchNoteMax: "D#5",
+      ),
+      DuetPart(
+        partNumber: 0,
+        partName: "Bruno Mars",
+        voiceType: "TENOR",
+        pitchNoteMin: "D4",
+        pitchNoteMax: "A#4",
+      ),
+    ],
+    pitchJsonPath: 'assets/songs/datas/apt_rose_pitch_bar_v1.json',
+  );
+
+  final SongDetailModel _brunoSong = DuetSongModel(
+    26,
+    "APT.",
+    "로제, Bruno Mars",
+    'https://www.youtube.com/watch?v=8Ebqe2Dbzls',
+    "ALTO",
+    "D4",
+    "D#5",
+    [
+      TimedLyric(0, "(전주중)", 0),
+      TimedLyric(1, "Don't you want me like I want you baby", 3352),
+      TimedLyric(2, "Don't you need me like I need you now", 6828),
+      TimedLyric(3, "Sleep tomorrow but tonight go crazy", 9967),
+      TimedLyric(4, "All you gotta do is just meet me at the", 13249),
+      TimedLyric(5, "아파트 아파트", 16468),
+      TimedLyric(6, "아파트 아파트", 18080),
+      TimedLyric(7, "아파트 아파트", 19936),
+      TimedLyric(8, "Uh, uh huh uh huh", 20936),
+      TimedLyric(9, "아파트 아파트", 22886),
+      TimedLyric(10, "아파트 아파트", 24500),
+      TimedLyric(11, "아파트 아파트", 26146),
+      TimedLyric(12, "Just meet me at the", 27475),
+      TimedLyric(13, "아파트 아파트", 29388),
+      TimedLyric(14, "아파트 아파트", 30938),
+      TimedLyric(15, "아파트 아파트", 32615),
+      TimedLyric(16, "Just meet me at the", 34139),
+      TimedLyric(17, "아파트 아파트", 35952),
+      TimedLyric(18, "아파트 아파트", 37348),
+      TimedLyric(19, "아파트 아파트", 39001),
+      TimedLyric(20, "Uh, uh huh uh huh", 40901),
+    ],
+    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/06802146-3055-4f82-bf52-fc653ce63791.jpg",
+    'assets/songs/audios/apt_mr_v1.wav',
+    duetParts: [
+      DuetPart(
+        partNumber: 0,
+        partName: "로제",
+        voiceType: "ALTO",
+        pitchNoteMin: "D4",
+        pitchNoteMax: "D#5",
+      ),
+      DuetPart(
+        partNumber: 0,
+        partName: "Bruno Mars",
+        voiceType: "TENOR",
+        pitchNoteMin: "D4",
+        pitchNoteMax: "A#4",
+      ),
+    ],
+    pitchJsonPath: 'assets/songs/datas/apt_bruno_pitch_bar_v1.json',
+  );
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    debugPrint("duet recordingsong page: ${widget.analysisType.name}");
+    debugPrint("duet recording song page: ${widget.analysisType.name}");
 
-    // if 문 임시 주석처리 : 어느 상항에서든 do re mi song.
-    // if (widget.analysisType == AnalysisType.guest) {
-    // guest -> 온보딩처럼 -> 걍 가져오기
-    // context.go(AppRoutePaths.onboardingRecordingSong);
-    _songDetailModel = SongDetailModel(
-      2,
-      "Do-Re-Mi Song",
-      "Richard Rodgers",
-      'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
-      "SOPRANO",
-      "C4",
-      "D5",
-      [
-        TimedLyric(0, "(전주중)", 0),
-        TimedLyric(1, "Doe - a deer,", 2300),
-        TimedLyric(2, "a female deer", 4000),
-        TimedLyric(3, "Ray - a drop of golden sun", 6000),
-        TimedLyric(4, "Me, a name I call myself", 10000),
-      ],
-      "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-      "assets/songs/audios/doremi_song_v3_mr.wav",
-    );
-    // } else {
-    //   Map<String, dynamic> decoded = jsonDecode(jsonStr);
-    //   Map<String, dynamic> data = decoded['data'] ?? {};
-    //   _songDetailModel = SongDetailModel.fromJson(data);
-    // }
+    _songDetailModel = (widget.partNumber == 0) ? _roseSong : _brunoSong;
+    // (widget.partNumber != 3)
+    //     ? SongDetailModel(
+    //       2,
+    //       "Do-Re-Mi Song",
+    //       "Richard Rodgers",
+    //       'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
+    //       "SOPRANO",
+    //       "C4",
+    //       "D5",
+    //       [
+    //         TimedLyric(0, "(전주중)", 0),
+    //         TimedLyric(1, "Doe - a deer,", 2300),
+    //         TimedLyric(2, "a female deer", 4000),
+    //         TimedLyric(3, "Ray - a drop of golden sun", 6000),
+    //         TimedLyric(4, "Me, a name I call myself", 10000),
+    //       ],
+    //       "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    //       "assets/songs/audios/doremi_song_v3_mr.wav",
+    //       pitchJsonPath: 'assets/songs/datas/doremi_song_v3_mr.json',
+    //     )
+    //     : _roseSong;
+    _pitchJsonPath = _songDetailModel.pitchJsonPath!;
   }
 
   @override
@@ -213,8 +270,9 @@ class _DuetRecordingSongPageState extends ConsumerState<DuetRecordingSongPage>
                 ),
                 child: MusicContentPlayer(
                   _songDetailModel,
-                  'assets/songs/datas/doremi_song_piano_v2.json',
+                  _pitchJsonPath,
                   onChildBoolChanged,
+                  timeOffset: timeOffset,
                   key: _playerKey,
                 ),
               ),
@@ -235,6 +293,7 @@ class _DuetRecordingSongPageState extends ConsumerState<DuetRecordingSongPage>
                       color: AppColors.primaryPink,
                       disabledColor: AppColors.primaryPinkDisabled,
                       borderRadius: BorderRadius.circular(10.w),
+                      padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
 
                       /// 버튼 클릭 시 동작
                       /// 활성화 조건을 만족하면 분석 로딩 페이지로 이동
@@ -244,6 +303,7 @@ class _DuetRecordingSongPageState extends ConsumerState<DuetRecordingSongPage>
                                 // 데이터 저장
                                 await storeVocalAnalysisSubmit(ref);
                                 if (!context.mounted) return; // 반드시 위 함수가 실행된 후에 페이지를 이동하도록 함
+                                debugPrint("recordingSongPage - roomId: ${widget.roomId}");
                                 context.go(
                                   "${AppRoutePaths.vocalAnalysisLoading}/duet/${widget.analysisType.name}?roomId=${widget.roomId}",
                                 );

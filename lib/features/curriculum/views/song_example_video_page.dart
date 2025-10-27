@@ -11,6 +11,7 @@ import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
+import 'package:sync2sing/features/shared/logics/public_song_models.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/onboarding/logics/watch_youtube_providers.dart';
 import 'package:sync2sing/features/onboarding/views/youtube_player_widget.dart';
@@ -21,12 +22,14 @@ class SongExampleVideoPage extends ConsumerStatefulWidget {
   final AnalysisType analysisType;
   final int songId;
   final int? roomId;
+  final int? partNumber;
   const SongExampleVideoPage({
     super.key,
     required this.trainingMode,
     required this.analysisType,
     required this.songId,
     this.roomId,
+    this.partNumber,
   });
   @override
   ConsumerState<SongExampleVideoPage> createState() => _SongExampleVideoPageState();
@@ -34,7 +37,7 @@ class SongExampleVideoPage extends ConsumerStatefulWidget {
 
 class _SongExampleVideoPageState extends ConsumerState<SongExampleVideoPage> {
   late final Future<SongDetailModel> _songDetail;
-  // final int _videoStartSec = 42;
+  late final int _videoStartSec;
 
   final Map<String, dynamic> onboardingJson = {
     "status": 200,
@@ -104,15 +107,18 @@ class _SongExampleVideoPageState extends ConsumerState<SongExampleVideoPage> {
 
   Future<SongDetailModel> _fetchSongData() async {
     try {
-      // final response = await DioFactory(
-      //   SecureStorage(),
-      // ).get('/${widget.trainingMode.apiBasePath}/songs/${widget.songId}?type=mr');
-      // final responseJson = response.data;
+      // 추후 api 연결.
 
-      final responseJson = soloJson;
+      // final responseJson = soloJson;
+      // debugPrint("songExamplePage - responseData: $responseJson");
+      // final songData = SongDetailModel.fromJson(responseJson['data']);
 
-      debugPrint("songExamplePage - responseData: $responseJson");
-      final songData = SongDetailModel.fromJson(responseJson['data']);
+      final songData =
+          (widget.analysisType == AnalysisType.guest)
+              ? PublicSongModels.onboardingSong
+              : (widget.trainingMode == TrainingMode.solo)
+              ? PublicSongModels.soloSong
+              : PublicSongModels.duetSongModels.first;
 
       return songData;
     } on DioException catch (e) {
@@ -125,6 +131,7 @@ class _SongExampleVideoPageState extends ConsumerState<SongExampleVideoPage> {
   void initState() {
     super.initState();
     _songDetail = _fetchSongData();
+    _videoStartSec = (widget.trainingMode == TrainingMode.solo) ? 54 : 129;
   }
 
   @override
@@ -208,6 +215,7 @@ class _SongExampleVideoPageState extends ConsumerState<SongExampleVideoPage> {
                               margin: EdgeInsets.symmetric(vertical: 20.h),
                               child: YoutubePlayerWidget(
                                 youtubeLink: songDetail.youtubeLink, // 도레미송 공식 가사 비디오
+                                videoStartSec: _videoStartSec,
                               ),
                             );
                           }
@@ -235,7 +243,9 @@ class _SongExampleVideoPageState extends ConsumerState<SongExampleVideoPage> {
                               await _songDetail.then((value) {
                                 song = value;
                                 if (mounted) {
-                                  ref.invalidate(watchedDurationProvider);
+                                  ref.invalidate(
+                                    watchedDurationProvider,
+                                  ); // todo:유튜브 영상 스킵용 주석 -> 시연용에선 없애기
                                   if (widget.trainingMode == TrainingMode.solo) {
                                     context.go(
                                       "${AppRoutePaths.soloPreRecordingSong}/${widget.analysisType.name}/${widget.songId}",
@@ -243,7 +253,7 @@ class _SongExampleVideoPageState extends ConsumerState<SongExampleVideoPage> {
                                     );
                                   } else {
                                     context.go(
-                                      "${AppRoutePaths.duetRecordingSong}/${widget.analysisType.name}/${widget.songId}?roomId=${widget.roomId ?? ""}",
+                                      "${AppRoutePaths.duetRecordingSong}/${widget.analysisType.name}/${widget.songId}?roomId=${widget.roomId ?? ""}&partNumber=${widget.partNumber}",
                                       extra: song.id,
                                     );
                                   }

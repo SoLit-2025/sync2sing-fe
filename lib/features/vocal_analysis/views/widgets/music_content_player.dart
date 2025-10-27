@@ -30,11 +30,13 @@ class MusicContentPlayer extends ConsumerStatefulWidget {
   final SongDetailModel songDetailModel;
   final String pitchRhythmJsonPath;
   final ValueChanged<bool> onButtonEnabledChanged; // 보분리 생성 버튼 enabled 여부 콜백 함수.
+  final double timeOffset; // MR과 음정 막대의 시간차 세부 조정을 위한 값
 
   const MusicContentPlayer(
     this.songDetailModel,
     this.pitchRhythmJsonPath,
     this.onButtonEnabledChanged, {
+    this.timeOffset = 0.0,
     super.key,
   });
 
@@ -160,17 +162,14 @@ class _MusicContentPlayerState extends ConsumerState<MusicContentPlayer>
       final List jsonData = json.decode(jsonString);
       debugPrint('JSON 파싱 성공, 데이터 개수: ${jsonData.length}');
 
-      // MR과 음정 막대의 시간차 세부 조정을 위한 값
-      const double TIME_OFFSET = 0.7;
-
       // JSON 데이터를 PitchNoteBar 객체 리스트로 변환 (시간 조정 포함)
       List<PitchNoteBar> rawNotes =
           jsonData.map((item) {
-            final adjustedStart = ((item['start'] as num).toDouble() - TIME_OFFSET).clamp(
+            final adjustedStart = ((item['start'] as num).toDouble() - widget.timeOffset).clamp(
               0.0,
               double.infinity,
             );
-            final adjustedEnd = ((item['end'] as num).toDouble() - TIME_OFFSET).clamp(
+            final adjustedEnd = ((item['end'] as num).toDouble() - widget.timeOffset).clamp(
               0.0,
               double.infinity,
             );

@@ -29,90 +29,72 @@ class SoloRecordingSongPage extends ConsumerStatefulWidget {
 class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
     with WidgetsBindingObserver {
   Key _playerKey = UniqueKey();
-
   bool _isButtonEnabled = false;
   late final SongDetailModel _songDetailModel;
-  final String jsonStr = '''
-  {
-    "status": 200,
-    "message": "솔로 트레이닝 MR 곡 조회에 성공했습니다.",
-    "data": {
-        "id": 1,
-        "title": "Golden",
-        "artist": "HUNXR/X(EJAE, Audrey NUNA, REI AMI)",
-        "voice_type": "SOPRANO",
-        "pitch_note_min": "A3",
-        "pitch_note_max": "C4",
-        "lyrics": [
-        {
-                "line_index": 0,
-                "text": "I'm done hidin'",
-                "start_time": 200
-            },
-             {
-                "line_index": 1,
-                "text": "now I'm shinin'",
-                "start_time": 700
-            },
-             {
-                "line_index": 2,
-                "text": "like I'm born to be",
-                "start_time": 1200
-            },
-             {
-                "line_index": 3,
-                "text": "We dreamin' hard",
-                "start_time": 1700
-            },
-            {
-                "line_index": 4,
-                "text": "we came so far",
-                "start_time": 2000
-            },
-            {
-                "line_index": 5,
-                "text": "now I believe",
-                "start_time": 2500
-            }
-        ],
-        "album_art_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-        "file_url": "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/mr/27e305f9-ca07-4f53-a15a-94f1b5b0cc89.mp3"
-    }
-}
-''';
+  late final String _pitchJsonPath;
+  final timeOffset = 0.3;
+
+  final SongDetailModel sodaPopSong = SongDetailModel(
+    27,
+    "Soda Pop",
+    "Saja Boys, Andrew Choi, Neckwav, Danny Chung, Kevin Woo, samUIL Lee, KPop Demon Hunters Cast",
+    'https://www.youtube.com/watch?v=983bBbJx0Mk',
+    "SOPRANO",
+    "F4",
+    "C6",
+    [
+      TimedLyric(0, "(전주중)", 0),
+      TimedLyric(1, "지금 당장 날 봐 시간 없잖아", 3127),
+      TimedLyric(2, "넌 내꺼야 이미 알고 있잖아", 7005),
+      TimedLyric(3, "'Cause I need you to need me", 10633),
+      TimedLyric(4, "I'm empty you feed me", 12851),
+      TimedLyric(5, "so refreshin'", 14757),
+      TimedLyric(6, "My little soda pop", 17098),
+      TimedLyric(7, "You're all I can think of", 18716),
+      TimedLyric(8, "every drop I drink up", 20691),
+      TimedLyric(9, "You're my soda pop", 22969),
+      TimedLyric(11, "my little soda pop", 24603),
+      TimedLyric(12, "Cool me down you're so hot", 26512),
+      TimedLyric(13, "pour me up I won't stop", 28551),
+      TimedLyric(14, "You're my soda pop", 30684),
+      TimedLyric(15, "my little soda pop", 32222),
+      TimedLyric(16, "(간주중)", 34021),
+      TimedLyric(17, "My little soda pop", 39921),
+    ],
+    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/662e63ef-6472-4049-b328-b74c44a372de.jpg",
+    "assets/songs/audios/soda_pop_mr_v3.wav",
+    pitchJsonPath: 'assets/songs/datas/soda_pop_pitch_bar_v2.json',
+  );
+
+  final SongDetailModel onboardingSong = SongDetailModel(
+    2,
+    "Do-Re-Mi Song",
+    "Richard Rodgers",
+    'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
+    "SOPRANO",
+    "C4",
+    "D5",
+    [
+      TimedLyric(0, "(전주중)", 0),
+      TimedLyric(1, "Doe - a deer,", 2300),
+      TimedLyric(2, "a female deer", 4000),
+      TimedLyric(3, "Ray - a drop of golden sun", 6000),
+      TimedLyric(4, "Me, a name I call myself", 10000),
+    ],
+    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    "assets/songs/audios/doremi_song_v3_mr.wav",
+    pitchJsonPath: 'assets/songs/datas/doremi_song_v3_mr.json',
+  );
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // if 문 임시 주석처리 : 어느 상항에서든 do re mi song.
-    // if (widget.analysisType == AnalysisType.guest) {
-    // guest -> 온보딩처럼 -> 걍 가져오기
-    // context.go(AppRoutePaths.onboardingRecordingSong);
-    _songDetailModel = SongDetailModel(
-      2,
-      "Do-Re-Mi Song",
-      "Richard Rodgers",
-      'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
-      "SOPRANO",
-      "C4",
-      "D5",
-      [
-        TimedLyric(0, "(전주중)", 0),
-        TimedLyric(1, "Doe - a deer,", 2300),
-        TimedLyric(2, "a female deer", 4000),
-        TimedLyric(3, "Ray - a drop of golden sun", 6000),
-        TimedLyric(4, "Me, a name I call myself", 10000),
-      ],
-      "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-      "assets/songs/audios/doremi_song_v3_mr.wav",
-    );
-    // } else {
-    //   Map<String, dynamic> decoded = jsonDecode(jsonStr);
-    //   Map<String, dynamic> data = decoded['data'] ?? {};
-    //   _songDetailModel = SongDetailModel.fromJson(data);
-    // }
+    _songDetailModel = (widget.analysisType == AnalysisType.guest) ? onboardingSong : sodaPopSong;
+
+    _pitchJsonPath =
+        _songDetailModel.pitchJsonPath ?? 'assets/songs/datas/soda_pop_pitch_bar_v2.json';
   }
 
   @override
@@ -205,8 +187,9 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
                 ),
                 child: MusicContentPlayer(
                   _songDetailModel,
-                  'assets/songs/datas/doremi_song_piano_v2.json',
+                  _pitchJsonPath,
                   onChildBoolChanged,
+                  timeOffset: timeOffset,
                   key: _playerKey,
                 ),
               ),
@@ -227,6 +210,7 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
                       color: AppColors.primaryPink,
                       disabledColor: AppColors.primaryPinkDisabled,
                       borderRadius: BorderRadius.circular(10.w),
+                      padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
 
                       /// 버튼 클릭 시 동작
                       /// 활성화 조건을 만족하면 분석 로딩 페이지로 이동
