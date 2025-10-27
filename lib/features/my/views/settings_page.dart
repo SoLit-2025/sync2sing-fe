@@ -28,14 +28,13 @@ class _SettingsPageState extends State<SettingsPage> {
         '/user/logout',
         data: jsonEncode({'refresh_token': await secureStorage.readRefreshToken()}),
       );
+    } on DioException catch (e) {
+      debugPrint("logout error: ${e.response?.data}");
+    } finally {
+      secureStorage.deleteTokens();
       if (mounted) {
         context.go(AppRoutePaths.login);
       }
-      secureStorage.deleteTokens();
-    } on DioException catch (s, _) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("로그아웃에 실패했습니다. 다시 시도해주세요")));
     }
   }
 
