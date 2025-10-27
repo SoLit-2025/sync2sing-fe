@@ -13,6 +13,7 @@ import 'package:sync2sing/features/curriculum/logics/selected_song_provider.dart
 import 'package:sync2sing/features/curriculum/logics/training_grade.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
+import 'package:sync2sing/features/shared/logics/public_song_models.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
 import 'package:sync2sing/features/shared/logics/training_mode.dart';
 import 'package:sync2sing/features/shared/views/voice_range_display.dart';
@@ -151,16 +152,25 @@ class VocalAnalysisReportPage extends ConsumerWidget {
     final voiceTypeData =
         (analysisType == AnalysisType.guest)
             ? ref.watch(voiceTypeProfileProvider).voiceType ?? ""
-            : songData['voice_type'] ?? "";
+            : songData['voice_type'] ??
+                ((trainingMode == TrainingMode.duet)
+                    ? PublicSongModels.duetSongModels.first.voiceType
+                    : "");
 
     final pitchNoteMin =
         (analysisType == AnalysisType.guest)
             ? ref.watch(voiceTypeProfileProvider).minNote ?? ""
-            : songData['pitch_note_min'] ?? "";
+            : songData['pitch_note_min'] ??
+                ((trainingMode == TrainingMode.duet)
+                    ? PublicSongModels.duetSongModels.first.pitchNoteMin
+                    : "");
     final pitchNoteMax =
         (analysisType == AnalysisType.guest)
             ? ref.watch(voiceTypeProfileProvider).maxNote ?? ""
-            : songData['pitch_note_max'] ?? "";
+            : songData['pitch_note_max'] ??
+                ((trainingMode == TrainingMode.duet)
+                    ? PublicSongModels.duetSongModels.first.pitchNoteMax
+                    : "");
 
     if (reportData.isEmpty) {
       return Scaffold(
@@ -289,7 +299,14 @@ class VocalAnalysisReportPage extends ConsumerWidget {
             ),
         SizedBox(height: 10.h),
         Text(songData['title'], style: AppTextStyles.heading3Bold),
-        Text(songData['artist'], style: AppTextStyles.body3.copyWith(color: AppColors.grayscale3)),
+        Text(
+          songData['artist'],
+          style: AppTextStyles.body3.copyWith(color: AppColors.grayscale3),
+          textAlign: TextAlign.center,
+          softWrap: false, // 텍스트 줄 제한
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
       ],
     );
   }
