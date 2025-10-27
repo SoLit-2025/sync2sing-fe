@@ -65,7 +65,7 @@ class OnboardingRecordingGuidePage extends ConsumerWidget {
                         width: 327.w,
                         margin: EdgeInsets.symmetric(vertical: 20.h),
                         child: YoutubePlayerWidget(
-                          videoId: 'Qy9cj-zwbVY',
+                          youtubeLink: 'Qy9cj-zwbVY',
                           videoStartSec: 42, // do a deer 부분에서 영상 시작
                         ),
                       ),

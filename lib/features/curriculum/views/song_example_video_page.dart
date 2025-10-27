@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,24 +16,31 @@ import 'package:sync2sing/features/onboarding/logics/watch_youtube_providers.dar
 import 'package:sync2sing/features/onboarding/views/youtube_player_widget.dart';
 import 'package:sync2sing/features/shared/views/page_indicator.dart';
 
-class SongExampleVideoPage extends ConsumerWidget {
+class SongExampleVideoPage extends ConsumerStatefulWidget {
   final TrainingMode trainingMode;
   final AnalysisType analysisType;
   final int songId;
   final int? roomId;
-  SongExampleVideoPage({
+  const SongExampleVideoPage({
     super.key,
     required this.trainingMode,
     required this.analysisType,
     required this.songId,
     this.roomId,
   });
+  @override
+  ConsumerState<SongExampleVideoPage> createState() => _SongExampleVideoPageState();
+}
 
-  final Map<String, dynamic> json = {
+class _SongExampleVideoPageState extends ConsumerState<SongExampleVideoPage> {
+  late final Future<SongDetailModel> _songDetail;
+  // final int _videoStartSec = 42;
+
+  final Map<String, dynamic> onboardingJson = {
     "status": 200,
     "message": "솔로 트레이닝 원곡 조회에 성공했습니다.",
     "data": {
-      "id": 1,
+      "id": 3,
       "title": "Do-Re-Mi",
       "artist": "Richard Rodgers",
       'youtube_link': 'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
@@ -47,15 +57,78 @@ class SongExampleVideoPage extends ConsumerWidget {
           "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/6875743e-3955-4067-abed-da1911a6aae1.mp3",
     },
   };
-  final int videoStartSec = 42;
+
+  final Map<String, dynamic> soloJson = {
+    "status": 200,
+    "message": "솔로 트레이닝 원곡 조회에 성공했습니다.",
+    "data": {
+      "id": 3,
+      "title": "소다팝",
+      "artist": " 사자보이즈",
+      'youtube_link': 'https://www.youtube.com/watch?v=983bBbJx0Mk',
+      "voice_type": "SOPRANO",
+      "pitch_note_min": "C4",
+      "pitch_note_max": "D5",
+      "lyrics": [
+        {"line_index": 0, "text": "Doe(Do), a deer, a female deer", "start_time": 0},
+        {"line_index": 1, "text": "Ray(Re), a drop of golden sun", "start_time": 7200},
+      ],
+      "album_art_url":
+          "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+      "file_url":
+          "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/6875743e-3955-4067-abed-da1911a6aae1.mp3",
+    },
+  };
+
+  final Map<String, dynamic> duetJson = {
+    "status": 200,
+    "message": "솔로 트레이닝 원곡 조회에 성공했습니다.",
+    "data": {
+      "id": 3,
+      "title": "Do-Re-Mi",
+      "artist": "Richard Rodgers",
+      'youtube_link': 'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
+      "voice_type": "SOPRANO",
+      "pitch_note_min": "C4",
+      "pitch_note_max": "D5",
+      "lyrics": [
+        {"line_index": 0, "text": "Doe(Do), a deer, a female deer", "start_time": 0},
+        {"line_index": 1, "text": "Ray(Re), a drop of golden sun", "start_time": 7200},
+      ],
+      "album_art_url":
+          "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+      "file_url":
+          "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/audios/original/6875743e-3955-4067-abed-da1911a6aae1.mp3",
+    },
+  };
+
+  Future<SongDetailModel> _fetchSongData() async {
+    try {
+      // final response = await DioFactory(
+      //   SecureStorage(),
+      // ).get('/${widget.trainingMode.apiBasePath}/songs/${widget.songId}?type=mr');
+      // final responseJson = response.data;
+
+      final responseJson = soloJson;
+
+      debugPrint("songExamplePage - responseData: $responseJson");
+      final songData = SongDetailModel.fromJson(responseJson['data']);
+
+      return songData;
+    } on DioException catch (e) {
+      debugPrint("error2: ${e.response}");
+      throw Exception(e.response);
+    }
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    Map<String, dynamic> decoded = json;
-    Map<String, dynamic> data = decoded['data'] ?? {};
-    SongDetailModel songDetail = SongDetailModel.fromJson(data);
-    final String url = songDetail.youtubeLink;
-    String videoId = url.substring(url.lastIndexOf('/') + 1, url.indexOf('?'));
+  void initState() {
+    super.initState();
+    _songDetail = _fetchSongData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final bool isButtonEnabled = ref.watch(isOnboardingRecordingStartButtonEnabledProvider);
 
     return Scaffold(
@@ -69,7 +142,7 @@ class SongExampleVideoPage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                (analysisType == AnalysisType.guest)
+                (widget.analysisType == AnalysisType.guest)
                     ? PageIndicator(currentPage: 4, pageCount: 6)
                     : PageIndicator(currentPage: 0, pageCount: 2), // 상단 페이지네이션 위젯
                 Expanded(
@@ -88,7 +161,7 @@ class SongExampleVideoPage extends ConsumerWidget {
                               // 텍스트 필드 (글씨 안내)
                               padding: EdgeInsets.symmetric(vertical: 4.h),
                               child: Text(
-                                switch (analysisType) {
+                                switch (widget.analysisType) {
                                   AnalysisType.guest => "마지막 과정이에요",
                                   AnalysisType.pre => "훈련 전 진단을 시작합니다",
                                   AnalysisType.post => "훈련 후 진단을 시작합니다",
@@ -107,12 +180,38 @@ class SongExampleVideoPage extends ConsumerWidget {
                         ),
                       ),
                       // 유튜브 영상
-                      Container(
-                        width: 327.w,
-                        margin: EdgeInsets.symmetric(vertical: 20.h),
-                        child: YoutubePlayerWidget(
-                          videoId: videoId, // 도레미송 공식 가사 비디오
-                        ),
+                      FutureBuilder(
+                        future: _songDetail,
+                        builder: (BuildContext context, AsyncSnapshot snapshot) {
+                          if (snapshot.hasError) {
+                            final errorString = snapshot.error.toString();
+                            debugPrint("결과: ${snapshot.error.toString()}");
+
+                            try {
+                              final Map<String, dynamic> errorJson = jsonDecode(
+                                errorString.replaceFirst('Exception: ', '').trim(),
+                              );
+
+                              return Text(errorJson['message']);
+                            } catch (e) {
+                              return Text('알 수 없는 오류가 발생했습니다.');
+                            }
+                          } else if (snapshot.hasData == false) {
+                            // api 응답 대기 중
+                            return SizedBox.shrink();
+                          } else {
+                            // api 응답 완료:),
+                            SongDetailModel songDetail = snapshot.data;
+                            debugPrint("songDetailModel: ${songDetail.youtubeLink}");
+                            return Container(
+                              width: 327.w,
+                              margin: EdgeInsets.symmetric(vertical: 20.h),
+                              child: YoutubePlayerWidget(
+                                youtubeLink: songDetail.youtubeLink, // 도레미송 공식 가사 비디오
+                              ),
+                            );
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -131,18 +230,25 @@ class SongExampleVideoPage extends ConsumerWidget {
                     padding: EdgeInsets.all(0),
                     onPressed:
                         isButtonEnabled
-                            ? () {
-                              if (trainingMode == TrainingMode.solo) {
-                                context.go(
-                                  "${AppRoutePaths.soloPreRecordingSong}/${analysisType.name}/$songId",
-                                  extra: songDetail.id,
-                                );
-                              } else {
-                                context.go(
-                                  "${AppRoutePaths.duetRecordingSong}/${analysisType.name}/$songId?roomId=${roomId ?? ""}",
-                                  extra: songDetail.id,
-                                );
-                              }
+                            ? () async {
+                              SongDetailModel song;
+                              await _songDetail.then((value) {
+                                song = value;
+                                if (mounted) {
+                                  ref.invalidate(watchedDurationProvider);
+                                  if (widget.trainingMode == TrainingMode.solo) {
+                                    context.go(
+                                      "${AppRoutePaths.soloPreRecordingSong}/${widget.analysisType.name}/${widget.songId}",
+                                      extra: song.id,
+                                    );
+                                  } else {
+                                    context.go(
+                                      "${AppRoutePaths.duetRecordingSong}/${widget.analysisType.name}/${widget.songId}?roomId=${widget.roomId ?? ""}",
+                                      extra: song.id,
+                                    );
+                                  }
+                                }
+                              });
                             }
                             : null,
                     minSize: 0.0,

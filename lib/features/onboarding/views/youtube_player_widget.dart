@@ -5,10 +5,10 @@ import '../logics/watch_youtube_providers.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class YoutubePlayerWidget extends ConsumerStatefulWidget {
-  final String videoId;
+  final String youtubeLink;
   final int videoStartSec;
 
-  const YoutubePlayerWidget({super.key, required this.videoId, this.videoStartSec = 0});
+  const YoutubePlayerWidget({super.key, required this.youtubeLink, this.videoStartSec = 0});
 
   @override
   ConsumerState<YoutubePlayerWidget> createState() => _VideoPlayerWidgetState();
@@ -21,9 +21,10 @@ class _VideoPlayerWidgetState extends ConsumerState<YoutubePlayerWidget> {
   @override
   void initState() {
     super.initState();
-
+    // youtube 링크에서 videoId만 추출
+    final videoId = YoutubePlayer.convertUrlToId(widget.youtubeLink) ?? widget.youtubeLink;
     _controller = YoutubePlayerController(
-      initialVideoId: widget.videoId,
+      initialVideoId: videoId,
       flags: YoutubePlayerFlags(autoPlay: false, startAt: widget.videoStartSec), // 자동 재생 금지
     );
 
