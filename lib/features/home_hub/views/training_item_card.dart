@@ -2,8 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
-import 'package:sync2sing/features/shared/logics/dio_factory.dart';
-import 'package:sync2sing/features/shared/logics/secure_storage.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sync2sing/config/routes/route_names.dart';
+
 
 import '../logics/training_item.dart';
 
@@ -13,6 +14,7 @@ class TrainingItemCard extends StatelessWidget {
   final bool showButton;
   final bool isMicReq;
   final Color? backGroundColor;
+  final String returnPath;
 
   /// [isMicReq] 마이크가 필요한지 여부, 기본값: [true]
   /// [backGroundColor] 기본값: [AppColors.grayscale8]
@@ -21,9 +23,32 @@ class TrainingItemCard extends StatelessWidget {
     required this.trainingItem,
     required this.sessionId,
     required this.showButton,
-    this.isMicReq = false,
+    required this.returnPath,
+    this.isMicReq = true,
     this.backGroundColor = AppColors.grayscale8,
   });
+
+  String _getCategoryEnglish(String categoryKr) {
+    const categoryMap = {
+      '음정': 'pitch',
+      '박자': 'rhythm',
+      '발음': 'pronunciation',
+    };
+    return categoryMap[categoryKr] ?? categoryKr.toLowerCase();
+  }
+
+  String _getGradeEnglish(String gradeKr) {
+    if (gradeKr == 'HIGH' || gradeKr == 'MEDIUM' || gradeKr == 'LOW') {
+      return gradeKr.toLowerCase();
+    }
+
+    const gradeMap = {
+      '상': 'high',
+      '중': 'medium',
+      '하': 'low',
+    };
+    return gradeMap[gradeKr] ?? gradeKr.toLowerCase();
+  }
 
   Widget _trainingCardTop() {
     return Row(
@@ -56,13 +81,13 @@ class TrainingItemCard extends StatelessWidget {
     return Stack(
       children: [
         Container(
+          height: showButton ? 150.h : 95.h,
           width: double.infinity,
           padding: EdgeInsets.fromLTRB(12.w, 5.h, 12.w, 5.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.r),
             color: backGroundColor,
           ),
-          constraints: BoxConstraints(minHeight: showButton ? 150.h : 95.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -86,24 +111,35 @@ class TrainingItemCard extends StatelessWidget {
                 ),
               ),
               if (showButton)
-                CupertinoButton(
-                  padding: EdgeInsets.symmetric(vertical: 4.h),
-                  onPressed: () {
-                    Map<String, dynamic> data = {'progress': 100};
-                    DioFactory(SecureStorage()).put(
-                      '/training/sessions/$sessionId/trainings/${trainingItem.id}/progress',
-                      data: data,
-                    );
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    width: double.infinity,
-                    height: 40.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryPink,
-                      borderRadius: BorderRadius.circular(30.r),
-                    ),
-                    margin: EdgeInsets.only(top: 12.h),
+                Container(
+                  alignment: Alignment.center,
+                  width: double.infinity,
+                  height: 40.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryPink,
+                    borderRadius: BorderRadius.circular(30.r),
+                  ),
+                  margin: EdgeInsets.only(top: 12.h),
+                  child: CupertinoButton(
+                    padding: EdgeInsets.symmetric(vertical: 4.h),
+                    onPressed: () {
+                      final categoryEn = _getCategoryEnglish(trainingItem.category);
+                      final gradeEn = _getGradeEnglish(trainingItem.grade);
+                      context.goNamed(
+                          AppRouteNames.trainingCard,
+                          pathParameters: {
+                          'trainingType': categoryEn,
+                          'difficulty': gradeEn,
+                          },
+                          extra: {
+                            'title': trainingItem.title,
+                            'description': trainingItem.description,
+                            'sessionId': sessionId,
+                            'trainingId': trainingItem.id,
+                            'returnPath': returnPath,
+                          }
+                      );
+                    },
                     child: Text('연습하러 가기', style: AppTextStyles.body2BoldWhite),
                   ),
                 ),
