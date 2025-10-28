@@ -6,7 +6,7 @@ class PublicSongModels {
   static List<DuetSongModel> duetSongModels = [
     // rose
     DuetSongModel(
-      26,
+      28,
       "APT.",
       "로제, Bruno Mars",
       'https://www.youtube.com/watch?v=8Ebqe2Dbzls',
@@ -36,8 +36,9 @@ class PublicSongModels {
         TimedLyric(19, "아파트 아파트", 39001),
         TimedLyric(20, "Uh, uh huh uh huh", 40901),
       ],
-      "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/06802146-3055-4f82-bf52-fc653ce63791.jpg",
+      "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/231a84ee-b910-4e49-a1d9-53355e761ab9.jpg",
       'assets/songs/audios/apt_mr_v1.wav',
+      pitchJsonPath: 'assets/songs/datas/apt_rose_pitch_bar_v1.json',
       duetParts: [
         DuetPart(
           partNumber: 0,
@@ -57,7 +58,7 @@ class PublicSongModels {
     ),
     // bruno
     DuetSongModel(
-      26,
+      28,
       "APT.",
       "로제, Bruno Mars",
       'https://www.youtube.com/watch?v=8Ebqe2Dbzls',
@@ -87,8 +88,9 @@ class PublicSongModels {
         TimedLyric(19, "아파트 아파트", 39001),
         TimedLyric(20, "Uh, uh huh uh huh", 40901),
       ],
-      "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/06802146-3055-4f82-bf52-fc653ce63791.jpg",
+      "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/231a84ee-b910-4e49-a1d9-53355e761ab9.jpg",
       'assets/songs/audios/apt_mr_v1.wav',
+      pitchJsonPath: 'assets/songs/datas/apt_bruno_pitch_bar_v1.json',
       duetParts: [
         DuetPart(
           partNumber: 0,
@@ -109,7 +111,7 @@ class PublicSongModels {
   ];
 
   static SongDetailModel soloSong = SongDetailModel(
-    27,
+    29,
     "Soda Pop",
     "Saja Boys, Andrew Choi, Neckwav, Danny Chung, Kevin Woo, samUIL Lee, KPop Demon Hunters Cast",
     'https://www.youtube.com/watch?v=983bBbJx0Mk',
@@ -135,13 +137,13 @@ class PublicSongModels {
       TimedLyric(16, "(간주중)", 34021),
       TimedLyric(17, "My little soda pop", 39921),
     ],
-    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/662e63ef-6472-4049-b328-b74c44a372de.jpg",
+    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/523223fc-73c5-4c3f-b61f-3ae5cf05f700.jpg",
     "assets/songs/audios/soda_pop_mr_v3.wav",
     pitchJsonPath: 'assets/songs/datas/soda_pop_pitch_bar_v2.json',
   );
 
   static SongDetailModel onboardingSong = SongDetailModel(
-    2,
+    3,
     "Do-Re-Mi Song",
     "Richard Rodgers",
     'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
@@ -155,7 +157,7 @@ class PublicSongModels {
       TimedLyric(3, "Ray - a drop of golden sun", 6000),
       TimedLyric(4, "Me, a name I call myself", 10000),
     ],
-    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
+    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/39f14afc-704b-453a-b481-474728491780.jpg",
     "assets/songs/audios/doremi_song_v3_mr.wav",
     pitchJsonPath: 'assets/songs/datas/doremi_song_v3_mr.json',
   );

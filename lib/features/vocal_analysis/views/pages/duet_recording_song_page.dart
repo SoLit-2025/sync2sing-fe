@@ -75,7 +75,7 @@ class _DuetRecordingSongPageState extends ConsumerState<DuetRecordingSongPage>
       TimedLyric(19, "아파트 아파트", 39001),
       TimedLyric(20, "Uh, uh huh uh huh", 40901),
     ],
-    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/06802146-3055-4f82-bf52-fc653ce63791.jpg",
+    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/231a84ee-b910-4e49-a1d9-53355e761ab9.jpg",
     'assets/songs/audios/apt_mr_v1.wav',
     duetParts: [
       DuetPart(
@@ -127,7 +127,7 @@ class _DuetRecordingSongPageState extends ConsumerState<DuetRecordingSongPage>
       TimedLyric(19, "아파트 아파트", 39001),
       TimedLyric(20, "Uh, uh huh uh huh", 40901),
     ],
-    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/06802146-3055-4f82-bf52-fc653ce63791.jpg",
+    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/231a84ee-b910-4e49-a1d9-53355e761ab9.jpg",
     'assets/songs/audios/apt_mr_v1.wav',
     duetParts: [
       DuetPart(
@@ -156,28 +156,8 @@ class _DuetRecordingSongPageState extends ConsumerState<DuetRecordingSongPage>
     debugPrint("duet recording song page: ${widget.analysisType.name}");
 
     _songDetailModel = (widget.partNumber == 0) ? _roseSong : _brunoSong;
-    // (widget.partNumber != 3)
-    //     ? SongDetailModel(
-    //       2,
-    //       "Do-Re-Mi Song",
-    //       "Richard Rodgers",
-    //       'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
-    //       "SOPRANO",
-    //       "C4",
-    //       "D5",
-    //       [
-    //         TimedLyric(0, "(전주중)", 0),
-    //         TimedLyric(1, "Doe - a deer,", 2300),
-    //         TimedLyric(2, "a female deer", 4000),
-    //         TimedLyric(3, "Ray - a drop of golden sun", 6000),
-    //         TimedLyric(4, "Me, a name I call myself", 10000),
-    //       ],
-    //       "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-    //       "assets/songs/audios/doremi_song_v3_mr.wav",
-    //       pitchJsonPath: 'assets/songs/datas/doremi_song_v3_mr.json',
-    //     )
-    //     : _roseSong;
-    _pitchJsonPath = _songDetailModel.pitchJsonPath!;
+    _pitchJsonPath =
+        _songDetailModel.pitchJsonPath ?? 'assets/songs/datas/apt_bruno_pitch_bar_v1.json';
   }
 
   @override

@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
-import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
 import 'package:sync2sing/features/shared/logics/analysis_type.dart';
+import 'package:sync2sing/features/shared/logics/public_song_models.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
 import 'package:sync2sing/features/vocal_analysis/views/widgets/music_content_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -34,64 +34,18 @@ class _SoloRecordingSongPageState extends ConsumerState<SoloRecordingSongPage>
   late final String _pitchJsonPath;
   final timeOffset = 0.3;
 
-  final SongDetailModel sodaPopSong = SongDetailModel(
-    27,
-    "Soda Pop",
-    "Saja Boys, Andrew Choi, Neckwav, Danny Chung, Kevin Woo, samUIL Lee, KPop Demon Hunters Cast",
-    'https://www.youtube.com/watch?v=983bBbJx0Mk',
-    "SOPRANO",
-    "F4",
-    "C6",
-    [
-      TimedLyric(0, "(전주중)", 0),
-      TimedLyric(1, "지금 당장 날 봐 시간 없잖아", 3127),
-      TimedLyric(2, "넌 내꺼야 이미 알고 있잖아", 7005),
-      TimedLyric(3, "'Cause I need you to need me", 10633),
-      TimedLyric(4, "I'm empty you feed me", 12851),
-      TimedLyric(5, "so refreshin'", 14757),
-      TimedLyric(6, "My little soda pop", 17098),
-      TimedLyric(7, "You're all I can think of", 18716),
-      TimedLyric(8, "every drop I drink up", 20691),
-      TimedLyric(9, "You're my soda pop", 22969),
-      TimedLyric(11, "my little soda pop", 24603),
-      TimedLyric(12, "Cool me down you're so hot", 26512),
-      TimedLyric(13, "pour me up I won't stop", 28551),
-      TimedLyric(14, "You're my soda pop", 30684),
-      TimedLyric(15, "my little soda pop", 32222),
-      TimedLyric(16, "(간주중)", 34021),
-      TimedLyric(17, "My little soda pop", 39921),
-    ],
-    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/662e63ef-6472-4049-b328-b74c44a372de.jpg",
-    "assets/songs/audios/soda_pop_mr_v3.wav",
-    pitchJsonPath: 'assets/songs/datas/soda_pop_pitch_bar_v2.json',
-  );
-
-  final SongDetailModel onboardingSong = SongDetailModel(
-    2,
-    "Do-Re-Mi Song",
-    "Richard Rodgers",
-    'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
-    "SOPRANO",
-    "C4",
-    "D5",
-    [
-      TimedLyric(0, "(전주중)", 0),
-      TimedLyric(1, "Doe - a deer,", 2300),
-      TimedLyric(2, "a female deer", 4000),
-      TimedLyric(3, "Ray - a drop of golden sun", 6000),
-      TimedLyric(4, "Me, a name I call myself", 10000),
-    ],
-    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-    "assets/songs/audios/doremi_song_v3_mr.wav",
-    pitchJsonPath: 'assets/songs/datas/doremi_song_v3_mr.json',
-  );
+  final SongDetailModel sodaPopSong = PublicSongModels.soloSong;
+  final SongDetailModel onboardingSong = PublicSongModels.onboardingSong;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    _songDetailModel = (widget.analysisType == AnalysisType.guest) ? onboardingSong : sodaPopSong;
+    _songDetailModel =
+        (widget.analysisType == AnalysisType.guest && widget.songId == onboardingSong.id)
+            ? onboardingSong
+            : sodaPopSong;
 
     _pitchJsonPath =
         _songDetailModel.pitchJsonPath ?? 'assets/songs/datas/soda_pop_pitch_bar_v2.json';

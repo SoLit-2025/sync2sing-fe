@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/curriculum/logics/song_detail_model.dart';
 import 'package:sync2sing/features/curriculum/logics/timed_lyric.dart';
+import 'package:sync2sing/features/shared/logics/public_song_models.dart';
 import 'package:sync2sing/features/vocal_analysis/logics/providers/vocal_result_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sync2sing/config/routes/route_names.dart';
@@ -42,94 +43,7 @@ class _OnboardingRecordingSongPageState extends ConsumerState<OnboardingRecordin
   Key _playerKey = UniqueKey();
   bool _isButtonEnabled = false;
 
-  late final SongDetailModel _songDetailModel = SongDetailModel(
-    2,
-    "Do-Re-Mi Song",
-    "Richard Rodgers",
-    'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
-    "SOPRANO",
-    "C4",
-    "D5",
-    [
-      TimedLyric(1, "Doe - a deer,", 2300),
-      TimedLyric(2, "a female deer", 4000),
-      TimedLyric(3, "Ray - a drop of golden sun", 6000),
-      TimedLyric(4, "Me, a name I call myself", 10000),
-    ],
-    "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-    'assets/songs/audios/doremi_song_v3_mr.wav',
-    pitchJsonPath: 'assets/songs/datas/apt_rose_pitch_bar_v1.json',
-  );
-
-  // apt - rose
-  // late final SongDetailModel _songDetailModel = SongDetailModel(
-  //   28,
-  //   "APT.",
-  //   "로제, Bruno Mars",
-  //   'https://youtu.be/jyLP6XLgEYY?si=OysroAyUTirMbPCT',
-  //   "SOPRANO",
-  //   "C4",
-  //   "D5",
-  //   [
-  //     TimedLyric(0, "(전주중)", 0),
-  //     TimedLyric(1, "Don't you want me like I want you baby", 3352),
-  //     TimedLyric(2, "Don't you need me like I need you now", 6828),
-  //     TimedLyric(3, "Sleep tomorrow but tonight go crazy", 9967),
-  //     TimedLyric(4, "All you gotta do is just meet me at the", 13249),
-  //     TimedLyric(5, "아파트 아파트", 16468),
-  //     TimedLyric(6, "아파트 아파트", 18080),
-  //     TimedLyric(7, "아파트 아파트", 19936),
-  //     TimedLyric(8, "Just meet me at the", 20936),
-  //     TimedLyric(9, "아파트 아파트", 22886),
-  //     TimedLyric(10, "아파트 아파트", 24500),
-  //     TimedLyric(11, "아파트 아파트", 26146),
-  //     TimedLyric(12, "Uh, uh huh uh huh", 27475),
-  //     TimedLyric(13, "아파트 아파트", 29388),
-  //     TimedLyric(14, "아파트 아파트", 30938),
-  //     TimedLyric(15, "아파트 아파트", 32615),
-  //     TimedLyric(16, "Just meet me at the", 34139),
-  //     TimedLyric(17, "아파트 아파트", 35952),
-  //     TimedLyric(18, "아파트 아파트", 37348),
-  //     TimedLyric(19, "아파트 아파트", 39001),
-  //     TimedLyric(20, "Uh, uh huh uh huh", 40901),
-  //   ],
-  //   "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-  //   'assets/songs/audios/apt_mr_v1.wav',
-  //   pitchJsonPath: 'assets/songs/datas/apt_rose_pitch_bar_v1.json'
-  //   //"assets/songs/audios/doremi_song_v3_mr.wav", // 백엔드에 저장된 파일과 음정 박자 파일 불일치 -> asset 사용. 다만 길이 조정 필요 (음악 끝나기 전까지 다음버튼 클릭 불가)
-  // );
-
-  //  소다팝
-  // late final SongDetailModel _songDetailModel = SongDetailModel(
-  //   2,
-  //   "Soda Pop",
-  //   "Saja Boys, Andrew Choi, Neckwav, Danny Chung, Kevin Woo, samUIL Lee, KPop Demon Hunters Cast",
-  //   'https://www.youtube.com/watch?v=983bBbJx0Mk',
-  //   "SOPRANO",
-  //   "F4",
-  //   "C6",
-  //   [
-  //     TimedLyric(0, "(전주중)", 0),
-  //     TimedLyric(1, "지금 당장 날 봐 시간 없잖아", 3127),
-  //     TimedLyric(2, "넌 내꺼야 이미 알고 있잖아", 7005),
-  //     TimedLyric(3, "'Cause I need you to need me", 10633),
-  //     TimedLyric(4, "I'm empty you feed me", 12851),
-  //     TimedLyric(5, "so refreshin'", 14757),
-  //     TimedLyric(6, "My little soda pop", 17098),
-  //     TimedLyric(7, "You're all I can think of", 18716),
-  //     TimedLyric(8, "every drop I drink up", 20691),
-  //     TimedLyric(9, "You're my soda pop", 22969),
-  //     TimedLyric(11, "my little soda pop", 24603),
-  //     TimedLyric(12, "Cool me down you're so hot", 26512),
-  //     TimedLyric(13, "pour me up I won't stop", 28551),
-  //     TimedLyric(14, "You're my soda pop", 30684),
-  //     TimedLyric(15, "my little soda pop", 32222),
-  //     TimedLyric(16, "(간주중)", 34021),
-  //     TimedLyric(17, "My little soda pop", 39921),
-  //   ],
-  //   "https://sync2sing-bucket.s3.ap-northeast-2.amazonaws.com/images/album-cover/5fe33ac0-fd48-4fdb-908a-12441469fea3.jpg",
-  //   "assets/songs/audios/soda_pop_mr_v3.wav",
-  // );
+  late final SongDetailModel _songDetailModel = PublicSongModels.onboardingSong;
 
   @override
   void initState() {
