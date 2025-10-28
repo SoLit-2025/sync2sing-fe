@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:sync2sing/config/theme/app_colors.dart';
 import 'package:sync2sing/config/theme/app_text_styles.dart';
 import 'package:sync2sing/features/shared/logics/dio_factory.dart';
 import 'package:sync2sing/features/shared/logics/secure_storage.dart';
-
-import 'package:sync2sing/config/routes/route_names.dart';
-
 
 class TrainingCompletionCard extends StatelessWidget {
   final String iconPath;
@@ -27,8 +23,6 @@ class TrainingCompletionCard extends StatelessWidget {
     required this.trainingId,
   }) : super(key: key);
 
-
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -38,28 +32,15 @@ class TrainingCompletionCard extends StatelessWidget {
           children: [
             const Spacer(),
             // 완료 아이콘
-            Center(
-              child: Image.asset(
-                iconPath,
-                width: 100.w,
-                height: 100.w,
-              ),
-            ),
+            Center(child: Image.asset(iconPath, width: 100.w, height: 100.w)),
             // 제목
-            Center(
-              child: Text(
-                title,
-                style: AppTextStyles.heading2Bold,
-              ),
-            ),
+            Center(child: Text(title, style: AppTextStyles.heading2Bold)),
             SizedBox(height: 16.h),
             // 부제목
             Center(
               child: Text(
                 subtitle,
-                style: AppTextStyles.body1.copyWith(
-                  color: AppColors.grayscale2,
-                ),
+                style: AppTextStyles.body1.copyWith(color: AppColors.grayscale2),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -88,19 +69,13 @@ class TrainingCompletionCard extends StatelessWidget {
 
                     if (!context.mounted) return;
 
-                      onConfirm();
-
+                    onConfirm();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryPink,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
                   ),
-                  child: Text(
-                    '확인',
-                    style: AppTextStyles.body1BoldWhite,
-                  ),
+                  child: Text('확인', style: AppTextStyles.body1BoldWhite),
                 ),
               ),
             ),
@@ -110,5 +85,4 @@ class TrainingCompletionCard extends StatelessWidget {
       ),
     );
   }
-
 }
