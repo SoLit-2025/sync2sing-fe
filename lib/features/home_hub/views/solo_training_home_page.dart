@@ -333,6 +333,7 @@ class _SoloTrainingHomePageState extends State<SoloTrainingHomePage> {
                 trainingItem: items[index],
                 sessionId: sessionId!,
                 showButton: selectedIdx == index,
+                returnPath: AppRoutePaths.soloTrainingHome,
               ),
             ); //
           },

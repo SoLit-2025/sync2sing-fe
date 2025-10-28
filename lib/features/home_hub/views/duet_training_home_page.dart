@@ -421,6 +421,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
                 trainingItem: items[index],
                 sessionId: sessionId!,
                 showButton: selectedIdx == index,
+                returnPath: AppRoutePaths.duetTrainingHome,
                 backGroundColor: AppColors.grayscale7,
               ),
             ); //
