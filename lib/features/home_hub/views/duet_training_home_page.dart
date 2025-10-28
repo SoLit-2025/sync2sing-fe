@@ -87,7 +87,7 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
                 ? DateTime.parse(nowSessionInfoJson['post_recording_due_date'])
                 : null;
         userPartName = nowSessionInfoJson['song']?['user_part_name'] ?? '';
-        bool isHost = (room?.hostPart.partName == userPartName) ?? false;
+        bool isHost = (room?.hostPart.partName == userPartName);
         userPartNumber = isHost ? room?.hostPart.partNumber : room?.partnerPart.partNumber;
       }
       selectedIdx =
@@ -116,7 +116,8 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
     var tTrainingSessionStatus = getTrainingStatusFromJson(responseBody);
     var dTrainingSessionStatus = DuetTrainingSessionStatus.fromName(tTrainingSessionStatus.name);
     if (dTrainingSessionStatus == DuetTrainingSessionStatus.afterTraining &&
-        responseBody['post_recording_file_url'] != null) {
+        responseBody['has_post_vocal_analysis_report'] != null &&
+        responseBody['has_post_vocal_analysis_report'] == true) {
       dTrainingSessionStatus = DuetTrainingSessionStatus.pendingMerge;
     }
     switch (dTrainingSessionStatus) {
@@ -464,7 +465,9 @@ class _DuetTrainingHomePageState extends State<DuetTrainingHomePage> {
           padding: EdgeInsets.symmetric(vertical: 4.h),
 
           onPressed: () {
-            context.go("${AppRoutePaths.songExampleVideo}/duet/pre/${room.song.id}");
+            context.go(
+              "${AppRoutePaths.songExampleVideo}/duet/pre/${room.song.id}?partNumber=$userPartNumber",
+            );
           },
           child: Container(
             alignment: Alignment.center,
